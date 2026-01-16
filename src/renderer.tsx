@@ -25,9 +25,17 @@
  *  });
  * ```
  */
+import { render } from 'solid-js/web';
+import App from './components/App';
 
 import './index.css';
 
-console.log(
-  '👋 This message is being logged by "renderer.ts", included via Vite',
-);
+const root = document.getElementById('root');
+
+if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
+  throw new Error(
+    'Root element not found. Did you forget to add it to your index.html?',
+  );
+}
+
+render(() => <App />, root!);
