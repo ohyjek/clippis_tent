@@ -1,14 +1,26 @@
 /**
- * ui/index.ts - Barrel export for UI components
+ * ui/index.ts - UI component exports
  *
- * Re-exports all reusable UI components:
- * import { Button, Slider, Tabs, ... } from "@/components/ui"
+ * Re-exports UI components from @clippis/ui and app-specific wrappers.
+ * Most components come directly from the UI library, while ErrorBoundary
+ * and ToastContainer have app-specific wrappers that add logging.
+ *
+ * Usage: import { Button, Slider, Tabs } from "@/components/ui"
  */
-export { Button, type ButtonVariant } from "./Button";
+
+// Pure UI components from @clippis/ui
+export { 
+  Button, 
+  type ButtonVariant,
+  Section,
+  SelectField,
+  type SelectOption,
+  Slider,
+  Tabs,
+  type Tab,
+  Toggle,
+} from "@clippis/ui";
+
+// App-specific wrappers (with logging integration)
 export { ErrorBoundary } from "./ErrorBoundary";
-export { Section } from "./Section";
-export { SelectField } from "./SelectField";
-export { Slider } from "./Slider";
-export { Tabs } from "./Tabs";
 export { ToastContainer } from "./Toast";
-export { Toggle } from "./Toggle";

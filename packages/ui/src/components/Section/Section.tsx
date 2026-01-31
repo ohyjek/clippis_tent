@@ -1,8 +1,8 @@
 /**
  * Section.tsx - Card-style container with a title heading
  *
- * Used on the Settings page to group related controls.
- * Provides consistent padding, background, and border radius.
+ * Used to group related controls with consistent styling.
+ * Provides padding, background, and border radius.
  *
  * @example
  * <Section title="Audio Devices">
