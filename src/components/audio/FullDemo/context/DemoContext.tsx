@@ -37,13 +37,8 @@ import type {
   Wall,
   AudioSourceType,
 } from "./types";
-import {
-  ROOM_COLORS,
-  DEFAULT_ATTENUATION,
-  DEFAULT_MAX_DISTANCE,
-  DEFAULT_REAR_GAIN,
-} from "../constants";
-import { getPositionFromEvent, getScreenPosition } from "../utils";
+import { ROOM_COLORS, DEFAULT_MAX_DISTANCE, DEFAULT_REAR_GAIN } from "../constants";
+import { getPositionFromEvent, getScreenPosition, DEFAULT_ATTENUATION } from "../utils";
 
 // ============================================================================
 // CONTEXT TYPES

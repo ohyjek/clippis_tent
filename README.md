@@ -6,21 +6,30 @@ A desktop application prototype recreating **Dolby Axon**-style spatial voice ch
 
 Clippis demonstrates spatial audio positioning where sound sources have virtual positions in a 2D room. The listener (you) can move around, and audio volume/panning adjusts based on:
 
-- **Distance attenuation** — Sounds get quieter as they move further away
+- **Distance attenuation** — Sounds get quieter as they move further away (linear, inverse, exponential models)
 - **Stereo panning** — Sounds pan left/right based on horizontal position relative to the listener
-- **Directional audio** — Speakers have directivity patterns (cardioid, omnidirectional, etc.)
+- **Directional audio** — Speakers have directivity patterns (cardioid, omnidirectional, supercardioid, hypercardioid, figure8, hemisphere)
 - **Wall occlusion** — Sound attenuates when passing through room walls
+- **Max distance cutoff** — Configurable maximum hearing range with smooth falloff
+- **Rear gain floor** — Minimum audibility for sounds behind the listener
 
 ## Features
 
-- **The Tent** — Interactive spatial audio playground featuring:
-  - Draw rooms by clicking and dragging
-  - Draggable listener with facing direction
-  - Multiple speakers with configurable directivity patterns
-  - Real-time audio with distance attenuation models
-  - Room boundaries with configurable wall attenuation
-- **Settings** — Configure audio devices, theme, language, and processing options
-- **Modern Architecture** — Modular components, SolidJS Context, CSS Modules, `@/` path aliases
+### The Tent — Spatial Audio Playground
+
+- **Draw rooms** by switching to draw mode and clicking/dragging
+- **Multiple speakers** with configurable directivity patterns and frequencies
+- **Switch perspective** — Double-click any speaker to "become" them
+- **Real-time audio** with test tones (oscillators) or microphone input
+- **Visual feedback** — Sound cones, gain bars, and optional sound path lines
+- **Room boundaries** with configurable wall attenuation
+
+### Settings
+
+- Configure audio devices (input/output)
+- Theme selection (light/dark/system)
+- Language preferences
+- Audio processing options (echo cancellation, noise suppression)
 
 ## Tech Stack
 
@@ -31,7 +40,7 @@ Clippis demonstrates spatial audio positioning where sound sources have virtual 
 | UI Framework      | SolidJS + @solidjs/router (lazy loading)   |
 | Styling           | CSS Modules + CSS Custom Properties        |
 | Audio             | Web Audio API (oscillators, stereo panner) |
-| Testing           | Vitest + Playwright + Storybook            |
+| Testing           | Vitest + Playwright                        |
 | Package Manager   | pnpm (workspace monorepo)                  |
 
 ## Getting Started
@@ -73,92 +82,79 @@ pnpm dev
 | `pnpm e2e`        | Run Playwright E2E tests                |
 | `pnpm e2e:ui`     | Run E2E tests with interactive UI       |
 | `pnpm e2e:headed` | Run E2E tests with visible browser      |
-| `pnpm storybook`  | Launch Storybook component explorer     |
 | `pnpm clean`      | Remove build artifacts                  |
 
 ### Testing
 
 The project has comprehensive test coverage:
 
-- **Spatial audio library** (`src/lib/spatial-audio.ts`) — Distance, panning, and wall attenuation calculations
+- **Spatial audio library** (`src/lib/spatial-audio*.ts`) — Distance, panning, directivity, and wall attenuation calculations
+- **Custom hooks** (`src/lib/hooks/`) — Room, speaker, audio playback, microphone, and drawing hooks
 - **UI components** (`packages/ui/`) — All components tested with `@solidjs/testing-library`
 - **E2E tests** (`e2e/`) — Critical user flows with Playwright
 
 ```bash
-# Run all tests
+# Run all tests (275 unit tests)
 pnpm test
 
-# Run tests with watch mode
-pnpm test:watch
+# Run E2E tests (19 tests)
+pnpm e2e
 ```
 
 ## Architecture
 
-This is a **pnpm workspace monorepo** with UI components extracted into a reusable package.
+This is a **pnpm workspace monorepo** with UI components and types extracted into reusable packages.
 
 ```
 clippis_tent/
 ├── packages/
-│   └── ui/                           # @clippis/ui - Reusable UI component library
-│       └── src/components/
-│           ├── Button/               # Button with variants (primary, success, danger)
-│           ├── ColorSwatches/        # Color picker grid
-│           ├── ItemList/             # Selectable list with swatches
-│           ├── Panel/                # Card container for sidebars
-│           ├── Section/              # Card container with title
-│           ├── SelectField/          # Dropdown with label
-│           ├── Slider/               # Range input with value display
-│           ├── Speaker/              # Draggable speaker with directional cone
-│           ├── Tabs/                 # Tab navigation
-│           ├── Toast/                # Toast notifications
-│           ├── Toggle/               # Checkbox with description
-│           └── ErrorBoundary/        # Error boundary with fallback UI
+│   ├── ui/                           # @clippis/ui - Reusable UI component library
+│   │   └── src/components/
+│   │       ├── Button/               # Button with variants
+│   │       ├── ColorSwatches/        # Color picker grid
+│   │       ├── FormField/            # Input, dropdown, slider fields
+│   │       ├── ItemList/             # Selectable list
+│   │       ├── Panel/                # Card container
+│   │       ├── Section/              # Card with title
+│   │       ├── SelectField/          # Dropdown
+│   │       ├── Slider/               # Range input
+│   │       ├── Speaker/              # Draggable speaker with cone
+│   │       ├── Tabs/                 # Tab navigation
+│   │       ├── Toast/                # Notifications
+│   │       ├── Toggle/               # Checkbox with description
+│   │       └── ErrorBoundary/        # Error boundary
+│   └── types/                        # @clippis/types - Shared TypeScript types
 ├── src/
 │   ├── main.ts                       # Electron main process
 │   ├── preload.ts                    # Preload script for IPC
 │   ├── renderer.tsx                  # App entry with lazy-loaded routes
 │   ├── components/
-│   │   ├── ui/                       # App-specific UI wrappers (logging)
-│   │   ├── audio/                    # Audio-specific components
+│   │   ├── ui/                       # App-specific UI wrappers
+│   │   ├── audio/                    # Audio components
 │   │   │   └── FullDemo/             # Main spatial audio playground
-│   │   │       ├── context/          # SolidJS context for state management
-│   │   │       │   ├── DemoContext.tsx
-│   │   │       │   └── types.ts
+│   │   │       ├── context/          # SolidJS context (composes hooks)
 │   │   │       ├── components/       # Modular sub-components
-│   │   │       │   ├── Toolbar/
-│   │   │       │   ├── SpatialCanvas/
-│   │   │       │   ├── StatusBar/
-│   │   │       │   ├── Sidebar/
-│   │   │       │   └── panels/
 │   │   │       ├── constants.ts
 │   │   │       └── utils.ts
-│   │   └── layout/                   # Layout components (App, Sidebar)
+│   │   └── layout/                   # Layout components
 │   ├── pages/                        # Route pages (lazy-loaded)
 │   │   ├── Tent.tsx                  # The Tent - spatial audio playground
 │   │   └── Settings.tsx              # Audio settings page
 │   ├── stores/                       # Global state (SolidJS signals)
-│   │   ├── audio.ts
-│   │   ├── theme.ts
-│   │   └── toast.ts
-│   └── lib/                          # Core libraries
-│       ├── spatial-audio.ts          # Spatial audio math utilities
-│       ├── spatial-audio-engine.ts   # Advanced audio engine
-│       ├── i18n.tsx                  # Localization
-│       └── logger.ts                 # Logging utilities
+│   ├── lib/                          # Core libraries
+│   │   ├── spatial-audio.ts          # Spatial audio math utilities
+│   │   ├── spatial-audio-engine.ts   # Advanced audio engine
+│   │   ├── hooks/                    # Reusable SolidJS hooks
+│   │   │   ├── useAudioPlayback.ts   # Audio node lifecycle
+│   │   │   ├── useMicrophone.ts      # Microphone access
+│   │   │   ├── useRoomManager.ts     # Room CRUD
+│   │   │   ├── useSpeakerManager.ts  # Speaker CRUD + perspective
+│   │   │   ├── useCanvasDrawing.ts   # Draw mode interactions
+│   │   │   └── useDragHandler.ts     # Drag/rotate interactions
+│   │   └── i18n.tsx                  # Localization
+│   └── locales/                      # Translation files
 └── docs/
-    └── TECHNICAL_ROADMAP.md          # Development roadmap
-```
-
-### Import Aliases
-
-The project uses `@/` as a path alias to `src/`:
-
-```tsx
-// Instead of relative paths like:
-import { Button } from "../../components/ui";
-
-// Use the alias:
-import { Button } from "@/components/ui";
+    └── TECHNICAL_ROADMAP.md          # Development roadmap & HRTF plan
 ```
 
 ### Spatial Audio Model
@@ -168,57 +164,57 @@ The spatial audio system uses a 2D model with advanced features:
 ```
                     ┌─────────────────────────┐
                     │                         │
-                    │    🎙️ Sound Source      │
-                    │     (x: -1, y: 2)       │
-                    │     facing: →           │
+                    │    🎤 Sound Source      │
+                    │     position, facing    │
+                    │     directivity pattern │
                     │           │             │
-                    │      distance + walls   │
+                    │    distance + walls     │
+                    │    + directivity        │
                     │           │             │
                     │           ▼             │
-                    │    🎧 Listener          │
-                    │     (x: 0, y: 0)        │
-                    │     facing: ↑           │
+                    │    🎧 Listener (You)    │
+                    │     position, facing    │
                     └─────────────────────────┘
 
-Volume = distanceAttenuation × directivityGain × wallOcclusion × masterVolume
+Volume = distanceAttenuation × directivityGain × listenerDirectionalGain × wallOcclusion × masterVolume
 Pan    = calculateStereoPan(listener, source, listenerFacing)
 ```
 
 ## Roadmap
 
-### Completed
+See [docs/TECHNICAL_ROADMAP.md](./docs/TECHNICAL_ROADMAP.md) for the detailed technical roadmap.
 
-- [x] Logging and monitoring with `electron-log`
-- [x] Error handling with ErrorBoundary and Toast notifications
+### ✅ Phase 1: Foundation (Complete)
+
+- [x] Electron + SolidJS + Vite setup
 - [x] UI library extraction to `@clippis/ui` package
-- [x] Unit tests for spatial audio and UI components
-- [x] Theme system (light/dark/system)
-- [x] Localization infrastructure (i18n)
-- [x] Accessibility (WCAG 2.1)
-- [x] Advanced spatial audio engine (distance models, directivity patterns)
+- [x] Spatial audio engine with distance models and directivity patterns
 - [x] Interactive room drawing with wall occlusion
 - [x] Multiple speakers with configurable properties
-- [x] Draggable listener with facing direction
-- [x] Modular component architecture with SolidJS Context
+- [x] Perspective switching (become any speaker)
+- [x] Modular component architecture with SolidJS Context and hooks
+- [x] Comprehensive test coverage (275 unit + 19 E2E)
 
-### Phase 2: Voice Integration
+### 🔄 Phase 2: Voice Integration (In Progress)
 
-- [ ] Microphone input capture
+- [x] Microphone input capture with permissions
+- [x] Audio source switching (oscillator/microphone)
 - [ ] Voice activity detection (VAD)
-- [ ] Local audio processing preview
+- [ ] Push-to-talk mode
+- [ ] Audio level meters / visualizers
 
-### Phase 3: Multiplayer
+### 📋 Phase 3: Advanced Audio (Planned)
+
+- [ ] **HRTF** — Migrate from StereoPanner to PannerNode for true 3D audio
+- [ ] **Room acoustics** — Reverb and early reflections
+- [ ] **Audio quality settings** — Bitrate, sample rate options
+
+### 📋 Phase 4: Multiplayer (Future)
 
 - [ ] WebRTC peer-to-peer connections
 - [ ] Signaling server for room coordination
-- [ ] Avatar/user representation in room
-- [ ] Speaking direction arrows on avatars
-
-### Phase 4: Advanced Audio
-
-- [ ] HRTF (Head-Related Transfer Function) for true 3D audio
-- [ ] Room acoustics simulation (reverb, echo)
-- [ ] Audio quality settings (bitrate, sample rate)
+- [ ] User avatars with position sync
+- [ ] Proximity-based audio routing
 
 ## License
 

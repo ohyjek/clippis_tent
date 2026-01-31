@@ -2,6 +2,7 @@
  * constants.ts - Constants for the spatial audio demo
  *
  * Contains color palettes, default values, and configuration options.
+ * Note: DEFAULT_ATTENUATION is defined in @/lib/spatial-utils.ts
  */
 import type { SelectOption } from "./context/types";
 
@@ -16,9 +17,6 @@ export const ROOM_COLORS = [
   "#6366f1",
   "#14b8a6",
 ] as const;
-
-/** Default wall attenuation (0-1) */
-export const DEFAULT_ATTENUATION = 1.0;
 
 /** Default maximum distance for sound propagation (in world units) */
 export const DEFAULT_MAX_DISTANCE = 5;

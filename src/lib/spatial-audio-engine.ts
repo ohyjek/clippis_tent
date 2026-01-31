@@ -4,8 +4,9 @@
  * A centralized audio engine that manages:
  * - Listener with position and facing direction
  * - Sources with configurable directivity patterns
- * - Rooms with material properties and openings
- * - Multiple distance attenuation models
+ * - Walls for occlusion/attenuation calculation
+ * - Multiple distance attenuation models (linear, inverse, exponential)
+ * - Directivity patterns (omni, cardioid, supercardioid, hypercardioid, figure8, hemisphere)
  * - Real-time audio parameter updates
  *
  * Uses Web Audio API for actual sound generation.
