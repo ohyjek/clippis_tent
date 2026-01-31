@@ -18,7 +18,7 @@ export const ROOM_COLORS = [
 ] as const;
 
 /** Default wall attenuation (0-1) */
-export const DEFAULT_ATTENUATION = 0.7;
+export const DEFAULT_ATTENUATION = 1.0;
 
 /** Default maximum distance for sound propagation (in world units) */
 export const DEFAULT_MAX_DISTANCE = 5;
