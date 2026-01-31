@@ -1,4 +1,4 @@
-# Clippis - Spatial Voice Chat
+# 🎪 Clippi's Tent - Spatial Voice Chat
 
 A desktop application prototype recreating **Dolby Axon**-style spatial voice chat functionality. Built with Electron, SolidJS, and Web Audio API.
 
@@ -55,24 +55,24 @@ pnpm start
 
 ### Scripts
 
-| Command              | Description                             |
-| -------------------- | --------------------------------------- |
-| `pnpm dev`           | Run in development mode with hot reload |
-| `pnpm build`         | Package the app for distribution        |
-| `pnpm make`          | Build platform-specific installers      |
-| `pnpm lint`          | Run ESLint                              |
-| `pnpm lint:fix`      | Run ESLint with auto-fix                |
-| `pnpm typecheck`     | TypeScript type checking                |
-| `pnpm check`         | Run both typecheck and lint             |
-| `pnpm test`          | Run all unit tests                      |
-| `pnpm test:watch`    | Run tests in watch mode                 |
-| `pnpm test:ui`       | Run UI component tests only             |
-| `pnpm test:all`      | Run unit tests + E2E tests              |
-| `pnpm e2e`           | Run Playwright E2E tests                |
-| `pnpm e2e:ui`        | Run E2E tests with interactive UI       |
-| `pnpm e2e:headed`    | Run E2E tests with visible browser      |
-| `pnpm storybook`     | Launch Storybook component explorer     |
-| `pnpm clean`         | Remove build artifacts                  |
+| Command           | Description                             |
+| ----------------- | --------------------------------------- |
+| `pnpm dev`        | Run in development mode with hot reload |
+| `pnpm build`      | Package the app for distribution        |
+| `pnpm make`       | Build platform-specific installers      |
+| `pnpm lint`       | Run ESLint                              |
+| `pnpm lint:fix`   | Run ESLint with auto-fix                |
+| `pnpm typecheck`  | TypeScript type checking                |
+| `pnpm check`      | Run both typecheck and lint             |
+| `pnpm test`       | Run all unit tests                      |
+| `pnpm test:watch` | Run tests in watch mode                 |
+| `pnpm test:ui`    | Run UI component tests only             |
+| `pnpm test:all`   | Run unit tests + E2E tests              |
+| `pnpm e2e`        | Run Playwright E2E tests                |
+| `pnpm e2e:ui`     | Run E2E tests with interactive UI       |
+| `pnpm e2e:headed` | Run E2E tests with visible browser      |
+| `pnpm storybook`  | Launch Storybook component explorer     |
+| `pnpm clean`      | Remove build artifacts                  |
 
 ### Testing
 
@@ -176,6 +176,7 @@ Pan    = clamp(dx / 3, -1, 1)
 ## Roadmap
 
 ### Technical Infrastructure (Completed)
+
 - [x] Logging and monitoring with `electron-log`
 - [x] Error handling with ErrorBoundary and Toast notifications
 - [x] UI library extraction to `@clippis/ui` package
@@ -185,6 +186,7 @@ Pan    = clamp(dx / 3, -1, 1)
 - [x] Accessibility (WCAG 2.1)
 
 ### Phase 1: The Tent Enhancements
+
 - [x] Draggable sound sources
 - [x] Speaking direction (cardioid pattern)
 - [x] Room boundaries with wall attenuation
@@ -195,17 +197,20 @@ Pan    = clamp(dx / 3, -1, 1)
 - [ ] Keyboard controls for listener movement
 
 ### Phase 2: Voice Integration
+
 - [ ] Microphone input capture
 - [ ] Voice activity detection (VAD)
 - [ ] Local audio processing preview
 
 ### Phase 3: Multiplayer
+
 - [ ] WebRTC peer-to-peer connections
 - [ ] Signaling server for room coordination
 - [ ] Avatar/user representation in room
 - [ ] Speaking direction arrows on avatars
 
 ### Phase 4: Advanced Audio
+
 - [ ] HRTF (Head-Related Transfer Function) for true 3D audio
 - [ ] Room acoustics simulation (reverb, echo)
 - [ ] Audio quality settings (bitrate, sample rate)

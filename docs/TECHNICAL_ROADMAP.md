@@ -8,7 +8,8 @@ This roadmap is organized into phases that can be worked on incrementally. Each 
 - ✅ Phase 1-4: Infrastructure complete (logging, errors, UI library, testing)
 - 🔲 Phase 5: CI/CD & versioning planned
 - ✅ Phase 6-7: UX enhancements complete (themes, i18n, accessibility)
-- 🔲 Phase 8: Enhanced Room System planned
+- ✅ Phase 7.5: Advanced Audio Engine complete
+- 🔄 Phase 8: Room Building Tool (in progress)
 - 🔲 Phase 9: Auth foundation planned
 - 🔲 Phase 10: Analytics planned (late)
 
@@ -578,7 +579,62 @@ jobs:
 
 ---
 
-## Phase 8: Enhanced Room System 🔲 PLANNED
+## Phase 7.5: Advanced Audio Engine ✅ COMPLETED
+
+**Goal**: Production-ready spatial audio engine with realistic acoustic modeling.
+
+**Status**: Implemented in `src/lib/spatial-audio-engine.ts` with comprehensive test coverage.
+
+### 7.5.1 Core Features Implemented
+
+| Feature | Description |
+|---------|-------------|
+| **Distance Attenuation** | 3 models: linear, inverse, exponential |
+| **Speaker Directivity** | 6 patterns: omnidirectional, cardioid, supercardioid, hypercardioid, figure8, hemisphere |
+| **Listener Directional Hearing** | Sounds behind listener are quieter (cardioid pattern) |
+| **Listener-Relative Panning** | Stereo pan based on listener facing direction |
+| **Wall Occlusion** | Sound attenuates through walls |
+| **Material Properties** | Absorption/transmission coefficients for walls |
+| **Real-time Updates** | Smooth parameter transitions during movement |
+
+### 7.5.2 Key Functions
+
+```typescript
+// Calculate all audio parameters for source-listener pair
+calculateAudioParameters(source, listener, walls, distanceModel, masterVolume)
+// Returns: { volume, pan, distance, directionalGain, wallAttenuation, wallCount }
+
+// Directivity patterns
+calculateDirectivityGain(pattern, angleDiff)
+
+// Distance models
+calculateDistanceAttenuation(distance, model, refDistance, maxDistance, rolloff)
+
+// Listener hearing direction
+calculateListenerDirectionalGain(listener, sourcePos)
+
+// Stereo positioning
+calculateStereoPan(listener, sourcePos, panWidth)
+```
+
+### 7.5.3 Full Demo Integration
+
+The Full Demo tab (`src/components/audio/FullDemo.tsx`) showcases all features:
+- Draggable listener with facing direction (same UI as speakers)
+- Multiple speakers with configurable directivity patterns
+- Continuous tone playback with real-time audio updates
+- Distance model selection (inverse/linear/exponential)
+- Wall occlusion between rooms
+
+### 7.5.4 Files
+
+- `src/lib/spatial-audio-engine.ts` - Core engine (677 lines)
+- `src/lib/spatial-audio-engine.test.ts` - 44 unit tests
+- `src/components/audio/FullDemo.tsx` - Full demo integration
+
+---
+
+## Phase 8: Room Building Tool 🔄 IN PROGRESS
 
 **Goal**: Advanced spatial audio room simulation with multiple rooms, custom shapes, and interactive sound sources.
 
