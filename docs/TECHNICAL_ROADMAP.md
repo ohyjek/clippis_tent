@@ -6,9 +6,11 @@ This roadmap is organized into phases that can be worked on incrementally. Each 
 
 ---
 
-## Phase 1: Logging and Monitoring Foundation
+## Phase 1: Logging and Monitoring Foundation ✅ COMPLETED
 
 **Goal**: Establish structured logging before adding more complexity.
+
+**Status**: Implemented in `src/lib/logger.ts`, `src/lib/logger.main.ts`, and `src/lib/perf.ts`.
 
 ### 1.1 Logging Library
 
@@ -63,9 +65,11 @@ export const perf = {
 
 ---
 
-## Phase 2: Error Handling and Resilience
+## Phase 2: Error Handling and Resilience ✅ COMPLETED
 
 **Goal**: Graceful error handling with user feedback.
+
+**Status**: Implemented with `ErrorBoundary`, `ToastContainer`, global error handlers in `renderer.tsx`, and audio error handling in `stores/audio.ts`.
 
 ### 2.1 SolidJS Error Boundary
 
@@ -132,17 +136,19 @@ const initializeAudio = () => {
 
 ---
 
-## Phase 3: UI Library Extraction (pnpm Workspace)
+## Phase 3: UI Library Extraction (pnpm Workspace) ✅ COMPLETED
 
 **Goal**: Decouple UI components with their own test suite.
 
-### 3.1 Workspace Structure
+**Status**: Implemented with `@clippis/ui` package containing 8 components (Button, Section, SelectField, Slider, Tabs, Toggle, ErrorBoundary, Toast).
+
+### 3.1 Workspace Structure (Actual)
 
 ```
 clippis_tent/
 ├── pnpm-workspace.yaml
 ├── packages/
-│   └── ui/                      # UI Library
+│   └── ui/                      # @clippis/ui Library
 │       ├── package.json
 │       ├── tsconfig.json
 │       ├── vitest.config.ts
@@ -152,25 +158,25 @@ clippis_tent/
 │       │   │   │   ├── Button.tsx
 │       │   │   │   ├── Button.module.css
 │       │   │   │   ├── Button.test.tsx
-│       │   │   │   └── Button.stories.tsx  # Later
-│       │   │   └── ...
-│       │   ├── hooks/           # Shared hooks
-│       │   ├── utils/           # UI utilities
+│       │   │   │   └── index.ts
+│       │   │   └── ... (7 more components)
 │       │   └── index.ts         # Public API
-│       └── mocks/               # Test mocks and fixtures
-└── apps/
-    └── desktop/                 # Current app (moved)
-        └── ...
+│       └── test/
+│           ├── setup.ts         # Test setup with CSS vars
+│           └── vitest.d.ts      # jest-dom type definitions
+├── src/                         # Main Electron app (kept in place)
+│   └── ...
+└── docs/
+    └── TECHNICAL_ROADMAP.md
 ```
 
 ### 3.2 pnpm Workspace Config
 
-Create `pnpm-workspace.yaml`:
+`pnpm-workspace.yaml`:
 
 ```yaml
 packages:
   - "packages/*"
-  - "apps/*"
 ```
 
 ### 3.3 UI Package Dependencies
@@ -237,9 +243,11 @@ mocks/
 
 ---
 
-## Phase 4: Comprehensive Testing Strategy
+## Phase 4: Comprehensive Testing Strategy 🟡 IN PROGRESS
 
 **Goal**: Layered testing for confidence in agent-assisted development.
+
+**Status**: Unit tests completed (129 tests). Storybook and E2E tests not yet implemented.
 
 ### Testing Pyramid
 

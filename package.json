@@ -18,6 +18,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "pnpm --filter @clippis/ui test",
     "prepare": "husky"
   },
   "lint-staged": {
