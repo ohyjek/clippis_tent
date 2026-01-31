@@ -264,6 +264,35 @@ export function calculateStereoPan(
 // ============================================================================
 
 /**
+ * Calculate listener directional hearing gain
+ *
+ * Simulates human hearing - sounds in front are louder, sounds behind
+ * are attenuated. Uses a gentle cardioid-like pattern.
+ *
+ * @param listener - Listener with position and facing
+ * @param sourcePos - Sound source position
+ */
+export function calculateListenerDirectionalGain(
+  listener: Listener,
+  sourcePos: Position
+): number {
+  // Angle from listener to source
+  const angleToSource = calculateAngleToPoint(listener.position, sourcePos);
+
+  // Relative angle (how far off from where listener is facing)
+  const relativeAngle = normalizeAngle(angleToSource - listener.facing);
+
+  // Use a gentle cardioid pattern for realistic human hearing
+  // Sounds directly in front: 1.0
+  // Sounds to the side: ~0.75
+  // Sounds directly behind: ~0.5
+  // Formula: 0.5 + 0.5 * cos(angle) gives range [0, 1]
+  const gain = 0.5 + 0.5 * Math.cos(relativeAngle);
+
+  return gain;
+}
+
+/**
  * Calculate all audio parameters for a source-listener pair
  *
  * @param source - Sound source configuration
@@ -285,10 +314,16 @@ export function calculateAudioParameters(
   // Distance attenuation
   const distanceAtten = calculateDistanceAttenuation(distance, distanceModel);
 
-  // Directional gain from source
+  // Directional gain from source (speaker pointing direction)
   const angleToListener = calculateAngleToPoint(source.position, listener.position);
   const angleDiff = normalizeAngle(angleToListener - source.facing);
-  const directionalGain = calculateDirectivityGain(source.directivity, angleDiff);
+  const sourceDirectionalGain = calculateDirectivityGain(source.directivity, angleDiff);
+
+  // Directional gain from listener (hearing direction)
+  const listenerDirectionalGain = calculateListenerDirectionalGain(listener, source.position);
+
+  // Combined directional gain (source + listener)
+  const directionalGain = sourceDirectionalGain * listenerDirectionalGain;
 
   // Wall occlusion
   const wallCount = countWallsBetween(source.position, listener.position, walls);

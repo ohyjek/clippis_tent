@@ -6,6 +6,7 @@ import {
   calculateDirectivityGain,
   calculateDistanceAttenuation,
   calculateStereoPan,
+  calculateListenerDirectionalGain,
   calculateAudioParameters,
   createSourceConfig,
   createListener,
@@ -161,6 +162,51 @@ describe("Stereo Pan", () => {
     const panLeft = calculateStereoPan(facingDown, { x: 2, y: 0 });
     expect(panRight).toBeGreaterThan(0); // Now on right
     expect(panLeft).toBeLessThan(0); // Now on left
+  });
+});
+
+describe("Listener Directional Hearing", () => {
+  it("returns 1.0 when source is directly in front", () => {
+    const listener = createListener({ x: 0, y: 0 }, 0); // Facing right
+    const gain = calculateListenerDirectionalGain(listener, { x: 2, y: 0 });
+    expect(gain).toBeCloseTo(1.0);
+  });
+
+  it("returns ~0.75 when source is at 90 degrees (to the side)", () => {
+    const listener = createListener({ x: 0, y: 0 }, 0); // Facing right
+    const gain = calculateListenerDirectionalGain(listener, { x: 0, y: 2 });
+    expect(gain).toBeCloseTo(0.5); // cos(90°) = 0, so 0.5 + 0.5*0 = 0.5
+  });
+
+  it("returns ~0.0 when source is directly behind", () => {
+    const listener = createListener({ x: 0, y: 0 }, 0); // Facing right
+    const gain = calculateListenerDirectionalGain(listener, { x: -2, y: 0 });
+    expect(gain).toBeCloseTo(0.0); // cos(180°) = -1, so 0.5 + 0.5*(-1) = 0
+  });
+
+  it("returns ~0.75 when listener faces source at 60 degrees", () => {
+    const listener = createListener({ x: 0, y: 0 }, 0); // Facing right
+    // Source at 60 degrees from facing direction
+    const gain = calculateListenerDirectionalGain(listener, {
+      x: Math.cos(Math.PI / 3), // 0.5
+      y: Math.sin(Math.PI / 3), // ~0.866
+    });
+    expect(gain).toBeCloseTo(0.75); // cos(60°) = 0.5, so 0.5 + 0.5*0.5 = 0.75
+  });
+
+  it("updates correctly when listener rotates", () => {
+    const sourcePos = { x: 2, y: 0 };
+
+    // Facing toward source
+    const facingSource = createListener({ x: 0, y: 0 }, 0);
+    const gainFront = calculateListenerDirectionalGain(facingSource, sourcePos);
+
+    // Facing away from source
+    const facingAway = createListener({ x: 0, y: 0 }, Math.PI);
+    const gainBack = calculateListenerDirectionalGain(facingAway, sourcePos);
+
+    expect(gainFront).toBeCloseTo(1.0);
+    expect(gainBack).toBeCloseTo(0.0);
   });
 });
 
