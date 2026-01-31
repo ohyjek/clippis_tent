@@ -29,7 +29,9 @@ interface ErrorBoundaryProps {
 function DefaultFallback(props: { error: Error; reset: () => void }) {
   return (
     <div class={styles.error} role="alert" aria-live="assertive">
-      <div class={styles.icon} aria-hidden="true">⚠️</div>
+      <div class={styles.icon} aria-hidden="true">
+        ⚠️
+      </div>
       <h2 class={styles.title}>Something went wrong</h2>
       <p class={styles.message}>{props.error.message}</p>
       <div class={styles.actions}>

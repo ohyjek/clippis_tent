@@ -44,9 +44,7 @@ export function Toolbar() {
           max={1}
           step={0.01}
           value={audioStore.masterVolume()}
-          onInput={(e) =>
-            audioStore.updateMasterVolume(parseFloat(e.currentTarget.value))
-          }
+          onInput={(e) => audioStore.updateMasterVolume(parseFloat(e.currentTarget.value))}
           showValue
         />
       </div>

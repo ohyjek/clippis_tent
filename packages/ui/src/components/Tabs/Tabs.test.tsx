@@ -38,7 +38,7 @@ describe("Tabs", () => {
   it("calls onTabChange when tab is clicked", () => {
     const onTabChange = vi.fn();
     render(() => <Tabs tabs={tabs} activeTab="tab1" onTabChange={onTabChange} />);
-    
+
     fireEvent.click(screen.getByText("Tab 2"));
     expect(onTabChange).toHaveBeenCalledWith("tab2");
   });
@@ -49,10 +49,8 @@ describe("Tabs", () => {
   });
 
   it("sets correct tabIndex for keyboard navigation", () => {
-    render(() => (
-      <Tabs tabs={tabs} activeTab="tab2" onTabChange={vi.fn()} />
-    ));
-    
+    render(() => <Tabs tabs={tabs} activeTab="tab2" onTabChange={vi.fn()} />);
+
     const tabElements = screen.getAllByRole("tab");
     // Active tab should have tabIndex 0, others -1
     expect(tabElements[1]).toHaveAttribute("tabindex", "0");

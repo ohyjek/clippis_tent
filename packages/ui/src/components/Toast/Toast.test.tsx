@@ -19,10 +19,7 @@ describe("ToastContainer", () => {
 
   it("renders toast with role alert", () => {
     render(() => (
-      <ToastContainer 
-        toasts={[{ id: "1", type: "info", message: "Info" }]} 
-        onDismiss={vi.fn()} 
-      />
+      <ToastContainer toasts={[{ id: "1", type: "info", message: "Info" }]} onDismiss={vi.fn()} />
     ));
     expect(screen.getByRole("alert")).toBeInTheDocument();
   });
@@ -30,21 +27,21 @@ describe("ToastContainer", () => {
   it("calls onDismiss when dismiss button is clicked", () => {
     const onDismiss = vi.fn();
     render(() => (
-      <ToastContainer 
-        toasts={[{ id: "toast-1", type: "info", message: "Test" }]} 
-        onDismiss={onDismiss} 
+      <ToastContainer
+        toasts={[{ id: "toast-1", type: "info", message: "Test" }]}
+        onDismiss={onDismiss}
       />
     ));
-    
+
     fireEvent.click(screen.getByLabelText("Dismiss"));
     expect(onDismiss).toHaveBeenCalledWith("toast-1");
   });
 
   it("renders success icon for success type", () => {
     render(() => (
-      <ToastContainer 
-        toasts={[{ id: "1", type: "success", message: "Done" }]} 
-        onDismiss={vi.fn()} 
+      <ToastContainer
+        toasts={[{ id: "1", type: "success", message: "Done" }]}
+        onDismiss={vi.fn()}
       />
     ));
     expect(screen.getByText("✓")).toBeInTheDocument();
@@ -52,9 +49,9 @@ describe("ToastContainer", () => {
 
   it("renders error icon for error type", () => {
     const { container } = render(() => (
-      <ToastContainer 
-        toasts={[{ id: "1", type: "error", message: "Failed" }]} 
-        onDismiss={vi.fn()} 
+      <ToastContainer
+        toasts={[{ id: "1", type: "error", message: "Failed" }]}
+        onDismiss={vi.fn()}
       />
     ));
     // The error icon is in a span with class containing "icon"
@@ -64,9 +61,9 @@ describe("ToastContainer", () => {
 
   it("renders warning icon for warning type", () => {
     render(() => (
-      <ToastContainer 
-        toasts={[{ id: "1", type: "warning", message: "Caution" }]} 
-        onDismiss={vi.fn()} 
+      <ToastContainer
+        toasts={[{ id: "1", type: "warning", message: "Caution" }]}
+        onDismiss={vi.fn()}
       />
     ));
     expect(screen.getByText("⚠")).toBeInTheDocument();
@@ -74,10 +71,7 @@ describe("ToastContainer", () => {
 
   it("renders info icon for info type", () => {
     render(() => (
-      <ToastContainer 
-        toasts={[{ id: "1", type: "info", message: "Note" }]} 
-        onDismiss={vi.fn()} 
-      />
+      <ToastContainer toasts={[{ id: "1", type: "info", message: "Note" }]} onDismiss={vi.fn()} />
     ));
     expect(screen.getByText("ℹ")).toBeInTheDocument();
   });
@@ -89,9 +83,9 @@ describe("ToastContainer", () => {
 
   it("applies correct class for toast type", () => {
     render(() => (
-      <ToastContainer 
-        toasts={[{ id: "1", type: "success", message: "Test" }]} 
-        onDismiss={vi.fn()} 
+      <ToastContainer
+        toasts={[{ id: "1", type: "success", message: "Test" }]}
+        onDismiss={vi.fn()}
       />
     ));
     const toast = screen.getByRole("alert");

@@ -25,7 +25,7 @@ export function Slider(props: SliderProps) {
   const [local, others] = splitProps(props, ["label", "showValue", "formatValue", "class", "id"]);
   const generatedId = createUniqueId();
   const inputId = () => local.id ?? `slider-${generatedId}`;
-  
+
   const displayValue = () => {
     const val = Number(props.value ?? 0);
     return local.formatValue ? local.formatValue(val) : `${Math.round(val * 100)}%`;

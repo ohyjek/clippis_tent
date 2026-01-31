@@ -36,7 +36,7 @@ export function RoomDemo() {
   ]);
 
   // Get all walls from all rooms
-  const allWalls = (): Wall[] => rooms().flatMap(r => r.walls);
+  const allWalls = (): Wall[] => rooms().flatMap((r) => r.walls);
 
   const [speakerPos, setSpeakerPos] = createSignal<Position>({ x: -1.2, y: 0 });
   const [listenerPos, setListenerPos] = createSignal<Position>({ x: 1.2, y: 0 });
@@ -104,11 +104,11 @@ export function RoomDemo() {
 
     const wallCount = getWallCount();
     const wallAttenuation = calculateWallAttenuation(wallCount);
-    
+
     // Calculate distance-based volume
     const distance = calculateDistance(speakerPos(), listenerPos());
     const baseVolume = 1 / (1 + distance);
-    
+
     // Calculate pan
     const dx = speakerPos().x - listenerPos().x;
     const pan = calculatePan(dx);
@@ -164,7 +164,9 @@ export function RoomDemo() {
 
       {!audioStore.audioInitialized() && (
         <div class={styles.banner}>
-          <p>🔊 <strong>Click the room</strong> to enable audio</p>
+          <p>
+            🔊 <strong>Click the room</strong> to enable audio
+          </p>
         </div>
       )}
 
@@ -195,7 +197,7 @@ export function RoomDemo() {
                     const length = isVertical
                       ? Math.abs(wall.end.y - wall.start.y)
                       : Math.abs(wall.end.x - wall.start.x);
-                    
+
                     return (
                       <div
                         class={`${styles.wall} ${isVertical ? styles.vertical : styles.horizontal}`}
@@ -255,21 +257,17 @@ export function RoomDemo() {
           <span class={getWallCount() > 0 ? styles.attenuated : ""}>
             Walls crossed: {getWallCount()}
           </span>
-          <span>
-            Attenuation: {(getAttenuation() * 100).toFixed(0)}%
-          </span>
-          <span class={styles.hint}>
-            Drag speaker and listener to different rooms
-          </span>
+          <span>Attenuation: {(getAttenuation() * 100).toFixed(0)}%</span>
+          <span class={styles.hint}>Drag speaker and listener to different rooms</span>
         </div>
       </div>
 
       <div class={styles.legend}>
         <h4>How it works</h4>
         <p>
-          Each <strong>wall</strong> between the speaker and listener reduces sound by 
-          <strong> 70%</strong>. When they're in different rooms, sound must pass through 
-          walls and becomes much quieter.
+          Each <strong>wall</strong> between the speaker and listener reduces sound by
+          <strong> 70%</strong>. When they're in different rooms, sound must pass through walls and
+          becomes much quieter.
         </p>
         <ul>
           <li>Same room = clear audio (100% volume)</li>

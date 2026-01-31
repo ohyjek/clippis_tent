@@ -54,9 +54,9 @@ export function Settings() {
       );
     } catch (err) {
       logger.error("Failed to enumerate audio devices:", err);
-      showToast({ 
-        type: "warning", 
-        message: t("errors.audioDevices") 
+      showToast({
+        type: "warning",
+        message: t("errors.audioDevices"),
       });
     }
   });
@@ -69,14 +69,11 @@ export function Settings() {
   ];
 
   // Language options from locales
-  const languageOptions = () => 
-    locales.map((l) => ({ value: l.code, label: l.name }));
+  const languageOptions = () => locales.map((l) => ({ value: l.code, label: l.name }));
 
-  const inputOptions = () =>
-    inputDevices().map((d) => ({ value: d.deviceId, label: d.label }));
+  const inputOptions = () => inputDevices().map((d) => ({ value: d.deviceId, label: d.label }));
 
-  const outputOptions = () =>
-    outputDevices().map((d) => ({ value: d.deviceId, label: d.label }));
+  const outputOptions = () => outputDevices().map((d) => ({ value: d.deviceId, label: d.label }));
 
   return (
     <div class={styles.page}>
@@ -129,9 +126,7 @@ export function Settings() {
               onInput={(e) => audioStore.updateMasterVolume(parseFloat(e.currentTarget.value))}
               class={styles.volumeSlider}
             />
-            <span class={styles.volumeValue}>
-              {Math.round(audioStore.masterVolume() * 100)}%
-            </span>
+            <span class={styles.volumeValue}>{Math.round(audioStore.masterVolume() * 100)}%</span>
           </div>
         </Section>
 
@@ -160,11 +155,13 @@ export function Settings() {
 
         <Section title={t("settings.about")}>
           <div class={styles.about}>
-            <p><strong>{t("app.name")}</strong> — {t("app.tagline")}</p>
+            <p>
+              <strong>{t("app.name")}</strong> — {t("app.tagline")}
+            </p>
             <p class={styles.muted}>{t("settings.version")} 1.0.0</p>
             <p class={styles.muted}>
-              A Dolby Axon-inspired spatial audio prototype built with Electron,
-              SolidJS, and Web Audio API.
+              A Dolby Axon-inspired spatial audio prototype built with Electron, SolidJS, and Web
+              Audio API.
             </p>
           </div>
         </Section>

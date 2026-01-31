@@ -23,7 +23,12 @@ import {
 } from "@/lib/spatial-audio-engine";
 import { audioStore } from "@/stores/audio";
 import type { SpeakerState, AudioNodes, DrawnRoom, DrawingMode, Position, Wall } from "./types";
-import { ROOM_COLORS, DEFAULT_ATTENUATION, DEFAULT_MAX_DISTANCE, DEFAULT_REAR_GAIN } from "../constants";
+import {
+  ROOM_COLORS,
+  DEFAULT_ATTENUATION,
+  DEFAULT_MAX_DISTANCE,
+  DEFAULT_REAR_GAIN,
+} from "../constants";
 import { createRoomFromCorners, getPositionFromEvent, getScreenPosition } from "../utils";
 
 /** Context value type */
@@ -337,9 +342,7 @@ export function DemoProvider(props: { children: JSX.Element }) {
 
   const updateFrequency = (frequency: number) => {
     const speakerId = selectedSpeaker();
-    setSpeakers((prev) =>
-      prev.map((s) => (s.id === speakerId ? { ...s, frequency } : s))
-    );
+    setSpeakers((prev) => prev.map((s) => (s.id === speakerId ? { ...s, frequency } : s)));
     const nodes = audioNodes.get(speakerId);
     if (nodes) {
       nodes.oscillator.frequency.value = frequency;
@@ -348,9 +351,7 @@ export function DemoProvider(props: { children: JSX.Element }) {
 
   const updateSpeakerColor = (color: string) => {
     const speakerId = selectedSpeaker();
-    setSpeakers((prev) =>
-      prev.map((s) => (s.id === speakerId ? { ...s, color } : s))
-    );
+    setSpeakers((prev) => prev.map((s) => (s.id === speakerId ? { ...s, color } : s)));
   };
 
   // ============================================================================
@@ -490,9 +491,7 @@ export function DemoProvider(props: { children: JSX.Element }) {
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const pos = getPositionFromEvent(moveEvent, roomRefValue);
-      setSpeakers((prev) =>
-        prev.map((s) => (s.id === speakerId ? { ...s, position: pos } : s))
-      );
+      setSpeakers((prev) => prev.map((s) => (s.id === speakerId ? { ...s, position: pos } : s)));
     };
 
     const handleMouseUp = () => {
@@ -517,10 +516,7 @@ export function DemoProvider(props: { children: JSX.Element }) {
 
     let currentAngle = speaker.facing;
     const speakerScreen = getScreenPosition(speaker.position, roomRefValue);
-    let prevRawAngle = Math.atan2(
-      e.clientY - speakerScreen.y,
-      e.clientX - speakerScreen.x
-    );
+    let prevRawAngle = Math.atan2(e.clientY - speakerScreen.y, e.clientX - speakerScreen.x);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const currentSpeaker = speakers().find((s) => s.id === speakerId);
@@ -645,10 +641,7 @@ export function DemoProvider(props: { children: JSX.Element }) {
       const nodes = audioNodes.get(speaker.id);
       if (nodes) {
         const params = getAudioParams(speaker);
-        nodes.gainNode.gain.linearRampToValueAtTime(
-          params.volume,
-          audioContext.currentTime + 0.02
-        );
+        nodes.gainNode.gain.linearRampToValueAtTime(params.volume, audioContext.currentTime + 0.02);
         nodes.panner.pan.value = params.pan;
       }
     }

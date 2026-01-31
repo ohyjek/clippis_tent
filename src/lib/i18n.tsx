@@ -83,11 +83,7 @@ export function I18nProvider(props: { children: JSX.Element }) {
     setLocale,
   };
 
-  return (
-    <I18nContext.Provider value={value}>
-      {props.children}
-    </I18nContext.Provider>
-  );
+  return <I18nContext.Provider value={value}>{props.children}</I18nContext.Provider>;
 }
 
 /**

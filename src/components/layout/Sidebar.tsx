@@ -36,7 +36,9 @@ export function Sidebar() {
   return (
     <aside class={styles.sidebar} aria-label="Application sidebar">
       <div class={styles.logo}>
-        <span class={styles.logoIcon} aria-hidden="true">🎮</span>
+        <span class={styles.logoIcon} aria-hidden="true">
+          🎮
+        </span>
         <span class={styles.logoText}>{t("app.name")}</span>
       </div>
 
@@ -47,7 +49,9 @@ export function Sidebar() {
             class={`${styles.navItem} ${isActive(item.path) ? styles.active : ""}`}
             aria-current={isActive(item.path) ? "page" : undefined}
           >
-            <span class={styles.navIcon} aria-hidden="true">{item.icon}</span>
+            <span class={styles.navIcon} aria-hidden="true">
+              {item.icon}
+            </span>
             <span>{t(item.labelKey)}</span>
           </A>
         ))}

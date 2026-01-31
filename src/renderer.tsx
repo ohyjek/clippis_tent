@@ -43,19 +43,13 @@ window.onunhandledrejection = (event) => {
 logger.info("Renderer starting");
 
 // Lazy load pages for code splitting
-const Tent = lazy(() =>
-  import("@/pages/Tent").then((m) => ({ default: m.Tent }))
-);
-const Settings = lazy(() =>
-  import("@/pages/Settings").then((m) => ({ default: m.Settings }))
-);
+const Tent = lazy(() => import("@/pages/Tent").then((m) => ({ default: m.Tent })));
+const Settings = lazy(() => import("@/pages/Settings").then((m) => ({ default: m.Settings })));
 
 const root = document.getElementById("root");
 
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
-  throw new Error(
-    "Root element not found. Did you forget to add it to your index.html?"
-  );
+  throw new Error("Root element not found. Did you forget to add it to your index.html?");
 }
 
 render(

@@ -146,17 +146,15 @@ export function TentRoom() {
       {!audioStore.audioInitialized() && (
         <div class={styles.banner}>
           <p>
-            🔊 <strong>Audio needs activation:</strong> Click anywhere on the
-            room to enable audio playback.
+            🔊 <strong>Audio needs activation:</strong> Click anywhere on the room to enable audio
+            playback.
           </p>
         </div>
       )}
 
       {/* Room visualization */}
       <div class={styles.roomCard}>
-        <h2 class={styles.roomTitle}>
-          The Tent {audioStore.audioInitialized() && "🔊"}
-        </h2>
+        <h2 class={styles.roomTitle}>The Tent {audioStore.audioInitialized() && "🔊"}</h2>
 
         <div class={styles.room} ref={roomRef} onClick={handleRoomClick}>
           <Listener position={audioStore.listenerPos()} />
@@ -191,9 +189,7 @@ export function TentRoom() {
             {audioStore.sounds().length} sound
             {audioStore.sounds().length !== 1 ? "s" : ""} active
           </span>
-          <span class={styles.hint}>
-            Click room to move listener • Drag sounds to reposition
-          </span>
+          <span class={styles.hint}>Click room to move listener • Drag sounds to reposition</span>
         </div>
       </div>
     </div>

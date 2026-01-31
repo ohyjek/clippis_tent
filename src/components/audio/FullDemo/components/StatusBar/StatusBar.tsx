@@ -22,9 +22,7 @@ export function StatusBar() {
         {playingSpeakers().size > 0 && ` (${playingSpeakers().size} playing)`}
       </span>
       <span class={styles.hint}>
-        {drawingMode() === "draw"
-          ? "Click and drag to draw"
-          : "Drag to move • Click to select"}
+        {drawingMode() === "draw" ? "Click and drag to draw" : "Drag to move • Click to select"}
       </span>
     </div>
   );

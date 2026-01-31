@@ -55,11 +55,11 @@ export type {
 export const MATERIALS: Record<string, Material> = {
   concrete: { name: "Concrete", absorption: 0.02, transmission: 0.05 },
   brick: { name: "Brick", absorption: 0.03, transmission: 0.08 },
-  drywall: { name: "Drywall", absorption: 0.10, transmission: 0.30 },
-  glass: { name: "Glass", absorption: 0.03, transmission: 0.20 },
-  wood: { name: "Wood", absorption: 0.10, transmission: 0.15 },
-  curtain: { name: "Curtain", absorption: 0.50, transmission: 0.60 },
-  acoustic_panel: { name: "Acoustic Panel", absorption: 0.80, transmission: 0.10 },
+  drywall: { name: "Drywall", absorption: 0.1, transmission: 0.3 },
+  glass: { name: "Glass", absorption: 0.03, transmission: 0.2 },
+  wood: { name: "Wood", absorption: 0.1, transmission: 0.15 },
+  curtain: { name: "Curtain", absorption: 0.5, transmission: 0.6 },
+  acoustic_panel: { name: "Acoustic Panel", absorption: 0.8, transmission: 0.1 },
   open: { name: "Open", absorption: 1.0, transmission: 1.0 },
 };
 
@@ -74,10 +74,7 @@ export const MATERIALS: Record<string, Material> = {
  * @param angleDiff - Angle difference between facing and direction to listener
  * @returns Gain multiplier (0 to 1)
  */
-export function calculateDirectivityGain(
-  pattern: DirectivityPattern,
-  angleDiff: number
-): number {
+export function calculateDirectivityGain(pattern: DirectivityPattern, angleDiff: number): number {
   const cos = Math.cos(angleDiff);
 
   switch (pattern) {
@@ -193,11 +190,7 @@ export function calculateDistanceAttenuation(
  * @param sourcePos - Sound source position
  * @param panWidth - Width factor for pan calculation
  */
-export function calculateStereoPan(
-  listener: Listener,
-  sourcePos: Position,
-  panWidth = 3
-): number {
+export function calculateStereoPan(listener: Listener, sourcePos: Position, panWidth = 3): number {
   // Calculate angle from listener to source
   const angleToSource = calculateAngleToPoint(listener.position, sourcePos);
 
@@ -605,10 +598,7 @@ export class SpatialAudioEngine {
 /**
  * Create a default source configuration
  */
-export function createSourceConfig(
-  id?: string,
-  options: Partial<SourceConfig> = {}
-): SourceConfig {
+export function createSourceConfig(id?: string, options: Partial<SourceConfig> = {}): SourceConfig {
   return {
     id: id ?? `source-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     position: { x: 0, y: 0 },
@@ -625,10 +615,7 @@ export function createSourceConfig(
 /**
  * Create a default listener
  */
-export function createListener(
-  position: Position = { x: 0, y: 0 },
-  facing = 0
-): Listener {
+export function createListener(position: Position = { x: 0, y: 0 }, facing = 0): Listener {
   return { position, facing };
 }
 

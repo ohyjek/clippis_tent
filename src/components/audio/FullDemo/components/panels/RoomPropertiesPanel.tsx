@@ -19,7 +19,7 @@ export function RoomPropertiesPanel() {
   } = useDemoContext();
 
   // Local slider value to prevent race conditions when room selection changes
-  const [sliderValue, setSliderValue] = createSignal(70);
+  const [sliderValue, setSliderValue] = createSignal(100);
 
   // Sync local slider value when selected room changes
   createEffect(() => {
@@ -64,9 +64,7 @@ export function RoomPropertiesPanel() {
           </div>
 
           <div class={styles.propertyGroup}>
-            <label class={styles.propertyLabel}>
-              Wall Attenuation: {sliderValue()}%
-            </label>
+            <label class={styles.propertyLabel}>Wall Attenuation: {sliderValue()}%</label>
             <input
               type="range"
               class={styles.propertySlider}

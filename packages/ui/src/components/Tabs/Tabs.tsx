@@ -71,11 +71,7 @@ export function Tabs(props: TabsProps) {
   const prefix = () => props.idPrefix ?? "tab";
 
   return (
-    <div
-      class={styles.tabs}
-      role="tablist"
-      aria-label={props.ariaLabel}
-    >
+    <div class={styles.tabs} role="tablist" aria-label={props.ariaLabel}>
       <For each={props.tabs}>
         {(tab, index) => {
           const isActive = () => props.activeTab === tab.id;
@@ -92,7 +88,11 @@ export function Tabs(props: TabsProps) {
               onKeyDown={(e) => handleKeyDown(e, index())}
               onFocus={() => setFocusedIndex(index())}
             >
-              {tab.icon && <span class={styles.icon} aria-hidden="true">{tab.icon}</span>}
+              {tab.icon && (
+                <span class={styles.icon} aria-hidden="true">
+                  {tab.icon}
+                </span>
+              )}
               <span>{tab.label}</span>
             </button>
           );

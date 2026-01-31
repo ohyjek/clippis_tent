@@ -29,9 +29,7 @@ export function AudioSettingsPanel() {
         <select
           class={styles.propertySelect}
           value={distanceModel()}
-          onChange={(e) =>
-            setDistanceModel(e.currentTarget.value as DistanceModel)
-          }
+          onChange={(e) => setDistanceModel(e.currentTarget.value as DistanceModel)}
         >
           <For each={DISTANCE_MODEL_OPTIONS}>
             {(opt) => <option value={opt.value}>{opt.label}</option>}

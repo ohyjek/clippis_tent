@@ -354,7 +354,7 @@ describe("spatial-audio utilities", () => {
     it("returns values between 0 and 1", () => {
       const speakerPos = { x: 0, y: 0 };
       const listenerPos = { x: 1, y: 1 };
-      
+
       for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 8) {
         const gain = calculateDirectionalGain(angle, speakerPos, listenerPos);
         expect(gain).toBeGreaterThanOrEqual(0);
@@ -440,19 +440,19 @@ describe("spatial-audio utilities", () => {
 
     it("creates walls at correct positions", () => {
       const room = createRectangularRoom({ x: 0, y: 0 }, 2, 2, "test-room");
-      
+
       // Check that walls form a closed rectangle
-      const wallEnds = room.walls.flatMap(w => [w.start, w.end]);
+      const wallEnds = room.walls.flatMap((w) => [w.start, w.end]);
       const corners = [
         { x: -1, y: -1 },
         { x: 1, y: -1 },
         { x: 1, y: 1 },
         { x: -1, y: 1 },
       ];
-      
-      corners.forEach(corner => {
+
+      corners.forEach((corner) => {
         const hasCorner = wallEnds.some(
-          p => Math.abs(p.x - corner.x) < 0.01 && Math.abs(p.y - corner.y) < 0.01
+          (p) => Math.abs(p.x - corner.x) < 0.01 && Math.abs(p.y - corner.y) < 0.01
         );
         expect(hasCorner).toBe(true);
       });
@@ -503,7 +503,7 @@ describe("spatial-audio utilities", () => {
     });
 
     it("contains valid hex color strings", () => {
-      SPEAKER_COLORS.forEach(color => {
+      SPEAKER_COLORS.forEach((color) => {
         expect(color).toMatch(/^#[0-9a-f]{6}$/i);
       });
     });

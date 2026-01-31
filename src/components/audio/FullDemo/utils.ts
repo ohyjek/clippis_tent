@@ -105,10 +105,7 @@ export function toPercent(val: number): number {
  * @param roomRef - Reference to the room container element
  * @returns Position in room coordinates
  */
-export function getPositionFromEvent(
-  e: MouseEvent,
-  roomRef: HTMLDivElement | undefined
-): Position {
+export function getPositionFromEvent(e: MouseEvent, roomRef: HTMLDivElement | undefined): Position {
   if (!roomRef) return { x: 0, y: 0 };
   const rect = roomRef.getBoundingClientRect();
   const x = ((e.clientX - rect.left) / rect.width - 0.5) * 5;

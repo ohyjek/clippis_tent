@@ -43,10 +43,7 @@ const createWindow = () => {
     });
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
-    const filePath = path.join(
-      __dirname,
-      `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`
-    );
+    const filePath = path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`);
     logger.window.debug("Loading file", { path: filePath });
     mainWindow.loadFile(filePath);
   }

@@ -32,10 +32,10 @@ describe("SelectField", () => {
   it("calls onChange when selection changes", () => {
     const onChange = vi.fn();
     render(() => <SelectField label="Test" options={options} onChange={onChange} />);
-    
+
     const select = screen.getByRole("combobox");
     fireEvent.change(select, { target: { value: "opt2" } });
-    
+
     expect(onChange).toHaveBeenCalled();
   });
 

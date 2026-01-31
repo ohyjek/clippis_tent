@@ -22,8 +22,7 @@ function AudioBanner() {
   return (
     <div class={styles.banner}>
       <p>
-        🔊 <strong>Click anywhere</strong> to enable audio, then click a speaker
-        to start!
+        🔊 <strong>Click anywhere</strong> to enable audio, then click a speaker to start!
       </p>
     </div>
   );
@@ -35,9 +34,7 @@ function CanvasTitle() {
 
   return (
     <h3 class={styles.canvasTitle}>
-      {drawingMode() === "draw"
-        ? "Click and drag to draw a room"
-        : "Spatial Audio Playground"}
+      {drawingMode() === "draw" ? "Click and drag to draw a room" : "Spatial Audio Playground"}
     </h3>
   );
 }

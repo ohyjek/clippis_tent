@@ -17,12 +17,7 @@ describe("Toggle", () => {
   });
 
   it("renders description when provided", () => {
-    render(() => (
-      <Toggle 
-        label="Dark Mode" 
-        description="Enable dark color scheme" 
-      />
-    ));
+    render(() => <Toggle label="Dark Mode" description="Enable dark color scheme" />);
     expect(screen.getByText("Enable dark color scheme")).toBeInTheDocument();
   });
 
@@ -39,7 +34,7 @@ describe("Toggle", () => {
   it("calls onChange when toggled", () => {
     const onChange = vi.fn();
     render(() => <Toggle label="Test" onChange={onChange} />);
-    
+
     fireEvent.click(screen.getByRole("checkbox"));
     expect(onChange).toHaveBeenCalled();
   });
@@ -52,7 +47,7 @@ describe("Toggle", () => {
   it("can be clicked via label", () => {
     const onChange = vi.fn();
     render(() => <Toggle label="Click me" onChange={onChange} />);
-    
+
     // Clicking the label should toggle the checkbox
     fireEvent.click(screen.getByText("Click me"));
     expect(onChange).toHaveBeenCalled();

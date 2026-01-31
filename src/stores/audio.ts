@@ -37,10 +37,8 @@ function createAudioStore() {
   const [audioInputDevice, setAudioInputDevice] = createSignal<string>("");
   const [audioOutputDevice, setAudioOutputDevice] = createSignal<string>("");
   const [spatialAudioEnabled, setSpatialAudioEnabled] = createSignal(true);
-  const [noiseSuppressionEnabled, setNoiseSuppressionEnabled] =
-    createSignal(true);
-  const [echoCancellationEnabled, setEchoCancellationEnabled] =
-    createSignal(true);
+  const [noiseSuppressionEnabled, setNoiseSuppressionEnabled] = createSignal(true);
+  const [echoCancellationEnabled, setEchoCancellationEnabled] = createSignal(true);
 
   // Initialize audio context
   const initializeAudio = (): boolean => {
@@ -54,8 +52,7 @@ function createAudioStore() {
         logger.audio.error("Failed to initialize audio context:", err);
         showToast({
           type: "error",
-          message:
-            "Could not initialize audio. Please check your audio settings.",
+          message: "Could not initialize audio. Please check your audio settings.",
         });
         return false;
       }
@@ -95,9 +92,7 @@ function createAudioStore() {
 
   // Update a sound source's position (for dragging)
   const updateSoundPosition = (soundId: string, position: Position) => {
-    setSounds((prev) =>
-      prev.map((s) => (s.id === soundId ? { ...s, position } : s))
-    );
+    setSounds((prev) => prev.map((s) => (s.id === soundId ? { ...s, position } : s)));
   };
 
   // Get a sound by ID

@@ -9,8 +9,8 @@
  */
 
 // Pure UI components from @clippis/ui
-export { 
-  Button, 
+export {
+  Button,
   type ButtonVariant,
   ColorSwatches,
   type ColorSwatchesProps,

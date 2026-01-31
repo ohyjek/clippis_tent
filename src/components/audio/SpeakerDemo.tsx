@@ -26,7 +26,7 @@ import styles from "./SpeakerDemo.module.css";
 
 export function SpeakerDemo() {
   let roomRef: HTMLDivElement | undefined;
-  
+
   const [speakers, setSpeakers] = createSignal<SpeakerData[]>([
     { ...createSpeaker("speaker-1", 0), position: { x: -1, y: 0 } },
     { ...createSpeaker("speaker-2", 1), position: { x: 1, y: 0 } },
@@ -74,26 +74,24 @@ export function SpeakerDemo() {
   const handleSpeakerRotateStart = (speakerId: string) => (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    
+
     audioStore.initializeAudio();
     setSelectedSpeaker(speakerId);
     setIsDraggingSpeaker(speakerId);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       // Get current speaker position (it may have moved)
-      const currentSpeaker = speakers().find(s => s.id === speakerId);
+      const currentSpeaker = speakers().find((s) => s.id === speakerId);
       if (!currentSpeaker) return;
-      
+
       const speakerScreen = getSpeakerScreenPosition(currentSpeaker);
       // Calculate angle from speaker to cursor
       const angle = Math.atan2(
         moveEvent.clientY - speakerScreen.y,
         moveEvent.clientX - speakerScreen.x
       );
-      
-      setSpeakers(prev => prev.map(s => 
-        s.id === speakerId ? { ...s, facing: angle } : s
-      ));
+
+      setSpeakers((prev) => prev.map((s) => (s.id === speakerId ? { ...s, facing: angle } : s)));
     };
 
     const handleMouseUp = () => {
@@ -115,16 +113,14 @@ export function SpeakerDemo() {
   const handleSpeakerMoveStart = (speakerId: string) => (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    
+
     audioStore.initializeAudio();
     setSelectedSpeaker(speakerId);
     setIsMovingSpeaker(speakerId);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const pos = getPositionFromEvent(moveEvent);
-      setSpeakers(prev => prev.map(s => 
-        s.id === speakerId ? { ...s, position: pos } : s
-      ));
+      setSpeakers((prev) => prev.map((s) => (s.id === speakerId ? { ...s, position: pos } : s)));
     };
 
     const handleMouseUp = () => {
@@ -139,7 +135,7 @@ export function SpeakerDemo() {
 
   const handleListenerDrag = (e: MouseEvent) => {
     e.stopPropagation();
-    
+
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const pos = getPositionFromEvent(moveEvent);
       setListenerPos(pos);
@@ -164,7 +160,7 @@ export function SpeakerDemo() {
     if (!audioContext) return;
 
     const targetId = speakerId ?? selectedSpeaker();
-    const speaker = speakers().find(s => s.id === targetId);
+    const speaker = speakers().find((s) => s.id === targetId);
     if (!speaker) return;
 
     // Set visual playing state
@@ -181,7 +177,7 @@ export function SpeakerDemo() {
     // Calculate distance-based volume
     const distance = calculateDistance(speaker.position, listenerPos());
     const baseVolume = 1 / (1 + distance);
-    
+
     // Calculate pan
     const dx = speaker.position.x - listenerPos().x;
     const pan = calculatePan(dx);
@@ -213,7 +209,7 @@ export function SpeakerDemo() {
   const addSpeaker = () => {
     const index = speakers().length;
     const newSpeaker = createSpeaker(undefined, index);
-    setSpeakers(prev => [...prev, newSpeaker]);
+    setSpeakers((prev) => [...prev, newSpeaker]);
     setSelectedSpeaker(newSpeaker.id);
   };
 
@@ -251,13 +247,15 @@ export function SpeakerDemo() {
 
       {!audioStore.audioInitialized() && (
         <div class={styles.banner}>
-          <p>🔊 <strong>Click a speaker</strong> to play sound, or drag to move/rotate</p>
+          <p>
+            🔊 <strong>Click a speaker</strong> to play sound, or drag to move/rotate
+          </p>
         </div>
       )}
 
       <div class={styles.roomCard}>
         <h2 class={styles.roomTitle}>Speaking Direction Demo</h2>
-        
+
         <div class={styles.room} ref={roomRef} onClick={handleRoomClick}>
           {/* Listener */}
           <div
@@ -305,25 +303,33 @@ export function SpeakerDemo() {
           <span>
             Listener: ({listenerPos().x.toFixed(1)}, {listenerPos().y.toFixed(1)})
           </span>
-          <span>{speakers().length} speaker{speakers().length !== 1 ? "s" : ""}</span>
-          <span class={styles.hint}>
-            Click to play • Drag icon to move • Drag cone to rotate
+          <span>
+            {speakers().length} speaker{speakers().length !== 1 ? "s" : ""}
           </span>
+          <span class={styles.hint}>Click to play • Drag icon to move • Drag cone to rotate</span>
         </div>
       </div>
 
       <div class={styles.legend}>
         <h4>How it works</h4>
         <p>
-          Each speaker has a <strong>facing direction</strong> (shown by the cone).
-          Sound is <strong>loudest</strong> when the speaker faces you, and 
+          Each speaker has a <strong>facing direction</strong> (shown by the cone). Sound is{" "}
+          <strong>loudest</strong> when the speaker faces you, and
           <strong>quietest</strong> when facing away.
         </p>
         <ul>
-          <li><strong>Click</strong> the microphone icon to play a sound</li>
-          <li><strong>Drag</strong> the microphone icon to move speakers</li>
-          <li><strong>Drag</strong> the colored cone to rotate direction</li>
-          <li><strong>Drag</strong> the listener to change your position</li>
+          <li>
+            <strong>Click</strong> the microphone icon to play a sound
+          </li>
+          <li>
+            <strong>Drag</strong> the microphone icon to move speakers
+          </li>
+          <li>
+            <strong>Drag</strong> the colored cone to rotate direction
+          </li>
+          <li>
+            <strong>Drag</strong> the listener to change your position
+          </li>
           <li>The gain bar shows how loud you'll hear that speaker</li>
         </ul>
       </div>

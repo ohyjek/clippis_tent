@@ -34,7 +34,7 @@ test.describe("The Tent Page", () => {
     await expect(page.getByText("Mode", { exact: true })).toBeVisible();
     await expect(page.getByText("Speakers", { exact: true })).toBeVisible();
     await expect(page.getByText("Volume", { exact: true })).toBeVisible();
-    
+
     // Check for specific buttons in the toolbar
     await expect(page.getByRole("button", { name: /select/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /draw room/i })).toBeVisible();

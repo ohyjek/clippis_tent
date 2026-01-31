@@ -25,14 +25,19 @@ interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export function Button(props: ButtonProps) {
   const [local, others] = splitProps(props, ["variant", "icon", "children", "class"]);
-  
+
   const variantClass = () => {
     switch (local.variant) {
-      case "success": return styles.success;
-      case "purple": return styles.purple;
-      case "danger": return styles.danger;
-      case "outline": return styles.outline;
-      default: return styles.primary;
+      case "success":
+        return styles.success;
+      case "purple":
+        return styles.purple;
+      case "danger":
+        return styles.danger;
+      case "outline":
+        return styles.outline;
+      default:
+        return styles.primary;
     }
   };
 
@@ -40,10 +45,7 @@ export function Button(props: ButtonProps) {
   const hasTextContent = () => !!local.children;
 
   return (
-    <button
-      class={`${styles.btn} ${variantClass()} ${local.class || ""}`}
-      {...others}
-    >
+    <button class={`${styles.btn} ${variantClass()} ${local.class || ""}`} {...others}>
       {local.icon && (
         <span class={styles.icon} aria-hidden={hasTextContent()}>
           {local.icon}

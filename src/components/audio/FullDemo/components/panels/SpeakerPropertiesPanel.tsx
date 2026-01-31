@@ -33,9 +33,7 @@ export function SpeakerPropertiesPanel() {
             <select
               class={styles.propertySelect}
               value={speaker().directivity}
-              onChange={(e) =>
-                updateDirectivity(e.currentTarget.value as DirectivityPattern)
-              }
+              onChange={(e) => updateDirectivity(e.currentTarget.value as DirectivityPattern)}
             >
               <For each={DIRECTIVITY_OPTIONS}>
                 {(opt) => <option value={opt.value}>{opt.label}</option>}
@@ -81,11 +79,7 @@ export function SpeakerPropertiesPanel() {
               {isPlaying(speaker().id) ? "Stop" : "Play"}
             </Button>
             <Show when={speakers().length > 1}>
-              <Button
-                variant="danger"
-                icon="🗑️"
-                onClick={deleteSelectedSpeaker}
-              >
+              <Button variant="danger" icon="🗑️" onClick={deleteSelectedSpeaker}>
                 Delete
               </Button>
             </Show>

@@ -17,9 +17,7 @@ export function Tent() {
     <div class={styles.page}>
       <header class={styles.header}>
         <h1 class={styles.title}>The Tent</h1>
-        <p class={styles.subtitle}>
-          Experience spatial audio with draggable sources and listener
-        </p>
+        <p class={styles.subtitle}>Experience spatial audio with draggable sources and listener</p>
       </header>
 
       <FullDemo />

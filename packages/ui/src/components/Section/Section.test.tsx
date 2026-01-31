@@ -7,12 +7,20 @@ import { Section } from "./Section";
 
 describe("Section", () => {
   it("renders title", () => {
-    render(() => <Section title="Test Section"><p>Content</p></Section>);
+    render(() => (
+      <Section title="Test Section">
+        <p>Content</p>
+      </Section>
+    ));
     expect(screen.getByText("Test Section")).toBeInTheDocument();
   });
 
   it("renders title as h2 element", () => {
-    render(() => <Section title="Heading"><p>Content</p></Section>);
+    render(() => (
+      <Section title="Heading">
+        <p>Content</p>
+      </Section>
+    ));
     expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("Heading");
   });
 
@@ -26,13 +34,21 @@ describe("Section", () => {
   });
 
   it("renders as section element", () => {
-    const { container } = render(() => <Section title="Test"><p>Content</p></Section>);
+    const { container } = render(() => (
+      <Section title="Test">
+        <p>Content</p>
+      </Section>
+    ));
     const section = container.querySelector("section");
     expect(section).toBeInTheDocument();
   });
 
   it("applies section class", () => {
-    const { container } = render(() => <Section title="Test"><p>Content</p></Section>);
+    const { container } = render(() => (
+      <Section title="Test">
+        <p>Content</p>
+      </Section>
+    ));
     const section = container.querySelector("section");
     expect(section?.className).toContain("section");
   });

@@ -22,23 +22,17 @@ describe("Slider", () => {
   });
 
   it("uses custom formatValue function", () => {
-    render(() => (
-      <Slider 
-        value={75} 
-        showValue 
-        formatValue={(v) => `${v}dB`} 
-      />
-    ));
+    render(() => <Slider value={75} showValue formatValue={(v) => `${v}dB`} />);
     expect(screen.getByText("75dB")).toBeInTheDocument();
   });
 
   it("calls onInput when value changes", () => {
     const onInput = vi.fn();
     render(() => <Slider onInput={onInput} />);
-    
+
     const slider = screen.getByRole("slider");
     fireEvent.input(slider, { target: { value: "0.7" } });
-    
+
     expect(onInput).toHaveBeenCalled();
   });
 

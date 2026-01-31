@@ -35,17 +35,9 @@ export function ItemList(props: ItemListProps): JSX.Element {
   return (
     <Show
       when={props.items.length > 0}
-      fallback={
-        props.emptyText ? (
-          <div class={styles.emptyState}>{props.emptyText}</div>
-        ) : null
-      }
+      fallback={props.emptyText ? <div class={styles.emptyState}>{props.emptyText}</div> : null}
     >
-      <div
-        class={styles.list}
-        role="listbox"
-        aria-label={props.label ?? "Item list"}
-      >
+      <div class={styles.list} role="listbox" aria-label={props.label ?? "Item list"}>
         <For each={props.items}>
           {(item) => (
             <button
@@ -56,11 +48,7 @@ export function ItemList(props: ItemListProps): JSX.Element {
               aria-selected={props.selected === item.id}
             >
               <Show when={item.color}>
-                <span
-                  class={styles.swatch}
-                  style={{ background: item.color }}
-                  aria-hidden="true"
-                />
+                <span class={styles.swatch} style={{ background: item.color }} aria-hidden="true" />
               </Show>
               <span class={styles.label}>
                 {item.label}

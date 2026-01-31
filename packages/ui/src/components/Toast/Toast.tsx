@@ -33,11 +33,7 @@ const TOAST_ICONS: Record<ToastType, string> = {
  */
 function ToastItem(props: { toast: ToastData; onDismiss: (id: string) => void }) {
   return (
-    <div
-      class={styles.toast}
-      classList={{ [styles[props.toast.type]]: true }}
-      role="alert"
-    >
+    <div class={styles.toast} classList={{ [styles[props.toast.type]]: true }} role="alert">
       <span class={styles.icon}>{TOAST_ICONS[props.toast.type]}</span>
       <span class={styles.message}>{props.toast.message}</span>
       <button

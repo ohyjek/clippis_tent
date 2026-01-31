@@ -57,7 +57,7 @@ export interface SpeakerProps {
 export function Speaker(props: SpeakerProps) {
   const color = () => props.color ?? "#3b82f6";
   const icon = () => props.icon ?? "🎙️";
-  const facingDegrees = () => props.facing !== undefined ? (props.facing * 180 / Math.PI) : 0;
+  const facingDegrees = () => (props.facing !== undefined ? (props.facing * 180) / Math.PI : 0);
   const showCone = () => props.facing !== undefined;
   const showGain = () => props.gain !== undefined;
 
@@ -80,14 +80,17 @@ export function Speaker(props: SpeakerProps) {
     }
   };
 
-  const classes = () => [
-    styles.speaker,
-    props.isSelected && styles.selected,
-    props.isPlaying && styles.playing,
-    props.isMoving && styles.moving,
-    props.isRotating && styles.rotating,
-    props.class,
-  ].filter(Boolean).join(" ");
+  const classes = () =>
+    [
+      styles.speaker,
+      props.isSelected && styles.selected,
+      props.isPlaying && styles.playing,
+      props.isMoving && styles.moving,
+      props.isRotating && styles.rotating,
+      props.class,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
   return (
     <div
@@ -121,17 +124,12 @@ export function Speaker(props: SpeakerProps) {
       </span>
 
       {/* Label (e.g., frequency) */}
-      {props.label && (
-        <span class={styles.label}>{props.label}</span>
-      )}
+      {props.label && <span class={styles.label}>{props.label}</span>}
 
       {/* Gain indicator */}
       {showGain() && (
         <div class={styles.gainBar}>
-          <div
-            class={styles.gainFill}
-            style={{ width: `${(props.gain ?? 0) * 100}%` }}
-          />
+          <div class={styles.gainFill} style={{ width: `${(props.gain ?? 0) * 100}%` }} />
         </div>
       )}
     </div>
