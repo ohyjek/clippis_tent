@@ -753,8 +753,10 @@ export function RoomBuilder() {
                 if (!start || !end) return null;
                 const left = Math.min(toPercent(start.x), toPercent(end.x));
                 const top = Math.min(toPercent(start.y), toPercent(end.y));
-                const width = Math.abs(toPercent(end.x) - toPercent(start.x));
-                const height = Math.abs(toPercent(end.y) - toPercent(start.y));
+                const widthPct = Math.abs(toPercent(end.x) - toPercent(start.x));
+                const heightPct = Math.abs(toPercent(end.y) - toPercent(start.y));
+                const widthUnits = Math.abs(end.x - start.x).toFixed(1);
+                const heightUnits = Math.abs(end.y - start.y).toFixed(1);
 
                 return (
                   <div
@@ -762,9 +764,10 @@ export function RoomBuilder() {
                     style={{
                       left: `${left}%`,
                       top: `${top}%`,
-                      width: `${width}%`,
-                      height: `${height}%`,
+                      width: `${widthPct}%`,
+                      height: `${heightPct}%`,
                     }}
+                    data-dimensions={`${widthUnits} × ${heightUnits}`}
                   />
                 );
               }}
@@ -782,7 +785,7 @@ export function RoomBuilder() {
                 return (
                   <>
                     <div
-                      class={`${styles.roomArea} ${selectedRoomId() === room.id ? styles.selected : ""} ${isDraggingRoom() === room.id ? styles.dragging : ""} ${isResizingRoom()?.roomId === room.id ? styles.resizing : ""}`}
+                      class={`${styles.roomArea} ${selectedRoomId() === room.id ? styles.selected : ""} ${isDraggingRoom() === room.id ? styles.dragging : ""} ${isResizingRoom()?.roomId === room.id ? styles.resizing : ""} ${drawingMode() === "rectangle" ? styles.drawMode : ""}`}
                       style={{
                         left: `${left}%`,
                         top: `${top}%`,
