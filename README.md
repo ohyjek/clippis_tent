@@ -11,10 +11,10 @@ Clippis demonstrates spatial audio positioning where sound sources have virtual 
 
 ## Features
 
-- **Demo Room** — Interactive 2D visualization to test spatial audio with oscillator tones
+- **The Tent** — Interactive 2D visualization to test spatial audio with oscillator tones
 - **Voice Room** — (Coming soon) Real-time voice chat with WebRTC
 - **Settings** — Configure audio devices, volume, and processing options
-- **Modern Architecture** — Lazy-loaded routes, global state, CSS Modules, design tokens
+- **Modern Architecture** — Lazy-loaded routes, global state, CSS Modules, `@/` path aliases
 
 ## Tech Stack
 
@@ -74,14 +74,14 @@ src/
 │   │   ├── SelectField.tsx    # Dropdown with label
 │   │   └── Toggle.tsx         # Checkbox with title and description
 │   ├── audio/                 # Audio-specific components
-│   │   ├── DemoRoom.tsx       # Main spatial audio demo interface
+│   │   ├── TentRoom.tsx       # Main spatial audio interface
 │   │   ├── Listener.tsx       # The "you" icon in the room
-│   │   └── SoundSource.tsx    # Numbered sound source circles
+│   │   └── SoundSource.tsx    # Draggable sound source circles
 │   └── layout/                # Layout components
-│       ├── Shell.tsx          # App shell with sidebar + main content
+│       ├── App.tsx            # App layout with sidebar + main content
 │       └── Sidebar.tsx        # Navigation sidebar
 ├── pages/                     # Route pages (lazy-loaded)
-│   ├── Demo.tsx               # Spatial audio demo page
+│   ├── Tent.tsx               # The Tent - spatial audio playground
 │   ├── VoiceRoom.tsx          # Voice chat page (placeholder)
 │   └── Settings.tsx           # Audio settings page
 ├── stores/
@@ -90,6 +90,18 @@ src/
 │   └── spatial-audio.ts       # Spatial audio math utilities (tested)
 └── styles/
     └── variables.css          # CSS custom properties (colors, spacing, etc.)
+```
+
+### Import Aliases
+
+The project uses `@/` as a path alias to `src/`:
+
+```tsx
+// Instead of relative paths like:
+import { Button } from "../../components/ui";
+
+// Use the alias:
+import { Button } from "@/components/ui";
 ```
 
 See [`src/components/README.md`](src/components/README.md) for component documentation.
@@ -118,11 +130,11 @@ Pan    = clamp(dx / 3, -1, 1)
 
 ## Roadmap
 
-### Phase 1: Demo Room Enhancements
+### Phase 1: The Tent Enhancements
 - [ ] Waveform options (sine, square, sawtooth, triangle)
 - [ ] Looping/continuous sound sources
 - [ ] Keyboard controls for listener movement
-- [ ] Draggable sound sources
+- [x] Draggable sound sources
 - [ ] Preset scenarios (surround test, stereo test)
 
 ### Phase 2: Voice Integration

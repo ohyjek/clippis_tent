@@ -1,19 +1,19 @@
 import { For } from "solid-js";
-import { audioStore } from "../../stores/audio";
-import { calculateSpatialParams, CARDINAL_DIRECTIONS, Position } from "../../lib/spatial-audio";
-import { Button, Slider } from "../ui";
+import { audioStore } from "@/stores/audio";
+import { calculateSpatialParams, CARDINAL_DIRECTIONS, Position } from "@/lib/spatial-audio";
+import { Button, Slider } from "@/components/ui";
 import { Listener } from "./Listener";
 import { SoundSource } from "./SoundSource";
-import styles from "./DemoRoom.module.css";
+import styles from "./TentRoom.module.css";
 
 /**
- * DemoRoom - Interactive spatial audio demonstration
+ * TentRoom - Interactive spatial audio demonstration
  * 
  * This component provides a visual demonstration of spatial audio positioning.
  * Users can add sound sources, move the listener, and hear how audio changes
  * based on position (volume attenuation and stereo panning).
  */
-export function DemoRoom() {
+export function TentRoom() {
   let roomRef: HTMLDivElement | undefined;
 
   /**
@@ -115,7 +115,7 @@ export function DemoRoom() {
           Add Sound
         </Button>
         <Button variant="success" icon="🔊" onClick={playSoundDemo}>
-          Play Demo
+          Play All
         </Button>
         <Button variant="purple" icon="🧭" onClick={testCardinalDirections}>
           Test Directions
@@ -150,7 +150,7 @@ export function DemoRoom() {
       {/* Room visualization */}
       <div class={styles.roomCard}>
         <h2 class={styles.roomTitle}>
-          Demo Room {audioStore.audioInitialized() && "🔊"}
+          The Tent {audioStore.audioInitialized() && "🔊"}
         </h2>
 
         <div class={styles.room} ref={roomRef} onClick={handleRoomClick}>

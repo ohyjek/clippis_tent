@@ -22,7 +22,7 @@ Reusable interface elements with consistent styling via CSS Modules.
 Primary action button with multiple variants.
 
 ```tsx
-import { Button } from "./components/ui";
+import { Button } from "@/components/ui";
 
 <Button variant="primary" icon="➕" onClick={handleClick}>
   Add Item
@@ -42,7 +42,7 @@ import { Button } from "./components/ui";
 Range input with optional label and value display.
 
 ```tsx
-import { Slider } from "./components/ui";
+import { Slider } from "@/components/ui";
 
 <Slider
   label="Volume"
@@ -68,7 +68,7 @@ import { Slider } from "./components/ui";
 Card-style container with a title, used for grouping content.
 
 ```tsx
-import { Section } from "./components/ui";
+import { Section } from "@/components/ui";
 
 <Section title="Audio Devices">
   {/* content */}
@@ -87,7 +87,7 @@ import { Section } from "./components/ui";
 Dropdown select with label and options.
 
 ```tsx
-import { SelectField } from "./components/ui";
+import { SelectField } from "@/components/ui";
 
 <SelectField
   label="Input Device"
@@ -111,7 +111,7 @@ import { SelectField } from "./components/ui";
 Checkbox with title and description, for boolean settings.
 
 ```tsx
-import { Toggle } from "./components/ui";
+import { Toggle } from "@/components/ui";
 
 <Toggle
   label="Spatial Audio"
@@ -133,20 +133,21 @@ import { Toggle } from "./components/ui";
 
 Components for the spatial audio visualization.
 
-### DemoRoom
+### TentRoom
 
-Main spatial audio demonstration interface. Contains the 2D room, controls, and status bar.
+Main spatial audio interface. Contains the 2D room, controls, and status bar.
 
 ```tsx
-import { DemoRoom } from "./components/audio";
+import { TentRoom } from "@/components/audio";
 
-<DemoRoom />
+<TentRoom />
 ```
 
 Uses `audioStore` internally for state management. No props required.
 
 **Features:**
 - Click room to move listener position
+- Drag sound sources to reposition
 - Add/remove sound sources
 - Play demo sequences
 - Test cardinal directions
@@ -159,7 +160,7 @@ Uses `audioStore` internally for state management. No props required.
 The "you are here" indicator in the audio room.
 
 ```tsx
-import { Listener } from "./components/audio";
+import { Listener } from "@/components/audio";
 
 <Listener position={{ x: 0, y: 0 }} />
 ```
@@ -175,7 +176,7 @@ import { Listener } from "./components/audio";
 A draggable numbered circle representing a sound source in the room.
 
 ```tsx
-import { SoundSource } from "./components/audio";
+import { SoundSource } from "@/components/audio";
 
 <SoundSource
   sound={{ id: "1", position: { x: 1, y: -1 }, frequency: 440 }}
@@ -200,14 +201,14 @@ import { SoundSource } from "./components/audio";
 
 App-level structure and navigation.
 
-### Shell
+### App
 
 Main app layout with sidebar and content area.
 
 ```tsx
-import { Shell } from "./components/layout";
+import { App } from "@/components/layout";
 
-<Router root={Shell}>
+<Router root={App}>
   {/* routes */}
 </Router>
 ```
@@ -221,7 +222,7 @@ Used as the router root. Renders `<Sidebar />` and `<main>` content area.
 Navigation sidebar with route links and audio status.
 
 ```tsx
-import { Sidebar } from "./components/layout";
+import { Sidebar } from "@/components/layout";
 
 <Sidebar />
 ```
@@ -229,6 +230,6 @@ import { Sidebar } from "./components/layout";
 No props — reads routes from internal config and audio state from `audioStore`.
 
 **Routes:**
-- `/` — Demo Room
+- `/` — The Tent
 - `/voice` — Voice Room
 - `/settings` — Settings
