@@ -1,5 +1,5 @@
-import { createSignal, onCleanup } from "solid-js";
-import { SoundSource as SoundSourceType, Position } from "../../lib/spatial-audio";
+import { createSignal } from "solid-js";
+import { SoundSource as SoundSourceType, Position } from "@/lib/spatial-audio";
 import styles from "./SoundSource.module.css";
 
 interface SoundSourceProps {

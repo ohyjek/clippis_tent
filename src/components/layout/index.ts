@@ -1,2 +1,2 @@
-export { Shell } from "./Shell";
+export { App } from "./App";
 export { Sidebar } from "./Sidebar";

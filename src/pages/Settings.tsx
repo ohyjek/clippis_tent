@@ -1,6 +1,6 @@
 import { createSignal, onMount } from "solid-js";
-import { audioStore } from "../stores/audio";
-import { Section, SelectField, Slider, Toggle } from "../components/ui";
+import { audioStore } from "@/stores/audio";
+import { Section, SelectField, Slider, Toggle } from "@/components/ui";
 import styles from "./Settings.module.css";
 
 interface AudioDevice {

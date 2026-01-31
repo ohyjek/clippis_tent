@@ -1,4 +1,4 @@
-import { Button } from "../components/ui";
+import { Button } from "@/components/ui";
 import styles from "./VoiceRoom.module.css";
 
 export function VoiceRoom() {
@@ -35,7 +35,7 @@ export function VoiceRoom() {
         </div>
 
         <p class={styles.hint}>
-          Try the <strong>Demo Room</strong> to experience spatial audio with test sounds.
+          Try <strong>The Tent</strong> to experience spatial audio with test sounds.
         </p>
       </div>
     </div>

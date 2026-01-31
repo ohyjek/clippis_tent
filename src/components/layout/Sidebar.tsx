@@ -1,5 +1,5 @@
 import { A, useLocation } from "@solidjs/router";
-import { audioStore } from "../../stores/audio";
+import { audioStore } from "@/stores/audio";
 import styles from "./Sidebar.module.css";
 
 interface NavItem {
@@ -9,7 +9,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { path: "/", label: "Demo Room", icon: "🎧" },
+  { path: "/", label: "The Tent", icon: "🎪" },
   { path: "/voice", label: "Voice Room", icon: "🎙️" },
   { path: "/settings", label: "Settings", icon: "⚙️" },
 ];
@@ -22,7 +22,7 @@ export function Sidebar() {
     <aside class={styles.sidebar}>
       <div class={styles.logo}>
         <span class={styles.logoIcon}>🎮</span>
-        <span class={styles.logoText}>Clippis</span>
+        <span class={styles.logoText}>Clippi's Tent</span>
       </div>
 
       <nav class={styles.nav}>
