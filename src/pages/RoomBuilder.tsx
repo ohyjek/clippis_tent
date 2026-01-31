@@ -127,6 +127,10 @@ export function RoomBuilder() {
   const [selectedRoomId, setSelectedRoomId] = createSignal<string | null>(null);
   const [nextColorIndex, setNextColorIndex] = createSignal(0);
   const [isDraggingRoom, setIsDraggingRoom] = createSignal<string | null>(null);
+  const [isResizingRoom, setIsResizingRoom] = createSignal<{
+    roomId: string;
+    handle: "nw" | "ne" | "sw" | "se" | "n" | "s" | "e" | "w";
+  } | null>(null);
 
   // Drawing state
   const [drawingMode, setDrawingMode] = createSignal<DrawingMode>("rectangle");
@@ -311,6 +315,73 @@ export function RoomBuilder() {
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
+
+  /** Start resizing a room from a handle */
+  const handleRoomResizeStart =
+    (roomId: string, handle: "nw" | "ne" | "sw" | "se" | "n" | "s" | "e" | "w") =>
+    (e: MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      const room = rooms().find((r) => r.id === roomId);
+      if (!room) return;
+
+      setIsResizingRoom({ roomId, handle });
+
+      // Calculate initial edges
+      const b = room.bounds;
+      let left = b.x - b.width / 2;
+      let right = b.x + b.width / 2;
+      let top = b.y - b.height / 2;
+      let bottom = b.y + b.height / 2;
+
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        const pos = getPositionFromEvent(moveEvent);
+        const minSize = 0.3; // Minimum room size
+
+        // Update edges based on which handle is being dragged
+        if (handle.includes("w")) left = Math.min(pos.x, right - minSize);
+        if (handle.includes("e")) right = Math.max(pos.x, left + minSize);
+        if (handle.includes("n")) top = Math.min(pos.y, bottom - minSize);
+        if (handle.includes("s")) bottom = Math.max(pos.y, top + minSize);
+
+        // Clamp to canvas bounds
+        left = Math.max(-2.4, left);
+        right = Math.min(2.4, right);
+        top = Math.max(-2.4, top);
+        bottom = Math.min(2.4, bottom);
+
+        const newWidth = right - left;
+        const newHeight = bottom - top;
+        const newCenterX = (left + right) / 2;
+        const newCenterY = (top + bottom) / 2;
+
+        const newBounds = {
+          x: newCenterX,
+          y: newCenterY,
+          width: newWidth,
+          height: newHeight,
+        };
+        const newWalls = createWallsFromBounds(newBounds);
+
+        setRooms((prev) =>
+          prev.map((r) =>
+            r.id === roomId
+              ? { ...r, bounds: newBounds, walls: newWalls, center: { x: newCenterX, y: newCenterY } }
+              : r
+          )
+        );
+      };
+
+      const handleMouseUp = () => {
+        setIsResizingRoom(null);
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    };
 
   // ============================================================================
   // LISTENER HANDLERS
@@ -711,7 +782,7 @@ export function RoomBuilder() {
                 return (
                   <>
                     <div
-                      class={`${styles.roomArea} ${selectedRoomId() === room.id ? styles.selected : ""} ${isDraggingRoom() === room.id ? styles.dragging : ""}`}
+                      class={`${styles.roomArea} ${selectedRoomId() === room.id ? styles.selected : ""} ${isDraggingRoom() === room.id ? styles.dragging : ""} ${isResizingRoom()?.roomId === room.id ? styles.resizing : ""}`}
                       style={{
                         left: `${left}%`,
                         top: `${top}%`,
@@ -746,6 +817,51 @@ export function RoomBuilder() {
                         );
                       }}
                     </For>
+                    {/* Resize handles for selected room */}
+                    <Show when={selectedRoomId() === room.id && drawingMode() === "select"}>
+                      {/* Corner handles */}
+                      <div
+                        class={`${styles.resizeHandle} ${styles.nw}`}
+                        style={{ left: `${left}%`, top: `${top}%` }}
+                        onMouseDown={handleRoomResizeStart(room.id, "nw")}
+                      />
+                      <div
+                        class={`${styles.resizeHandle} ${styles.ne}`}
+                        style={{ left: `${left + width}%`, top: `${top}%` }}
+                        onMouseDown={handleRoomResizeStart(room.id, "ne")}
+                      />
+                      <div
+                        class={`${styles.resizeHandle} ${styles.sw}`}
+                        style={{ left: `${left}%`, top: `${top + height}%` }}
+                        onMouseDown={handleRoomResizeStart(room.id, "sw")}
+                      />
+                      <div
+                        class={`${styles.resizeHandle} ${styles.se}`}
+                        style={{ left: `${left + width}%`, top: `${top + height}%` }}
+                        onMouseDown={handleRoomResizeStart(room.id, "se")}
+                      />
+                      {/* Edge handles */}
+                      <div
+                        class={`${styles.resizeHandle} ${styles.n}`}
+                        style={{ left: `${left + width / 2}%`, top: `${top}%` }}
+                        onMouseDown={handleRoomResizeStart(room.id, "n")}
+                      />
+                      <div
+                        class={`${styles.resizeHandle} ${styles.s}`}
+                        style={{ left: `${left + width / 2}%`, top: `${top + height}%` }}
+                        onMouseDown={handleRoomResizeStart(room.id, "s")}
+                      />
+                      <div
+                        class={`${styles.resizeHandle} ${styles.w}`}
+                        style={{ left: `${left}%`, top: `${top + height / 2}%` }}
+                        onMouseDown={handleRoomResizeStart(room.id, "w")}
+                      />
+                      <div
+                        class={`${styles.resizeHandle} ${styles.e}`}
+                        style={{ left: `${left + width}%`, top: `${top + height / 2}%` }}
+                        onMouseDown={handleRoomResizeStart(room.id, "e")}
+                      />
+                    </Show>
                   </>
                 );
               }}
