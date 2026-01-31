@@ -1,0 +1,138 @@
+/**
+ * Speaker.module.css - Styles for the Speaker component
+ *
+ * Visual states:
+ * - Default: Icon with optional cone
+ * - Selected: Dashed border animation
+ * - Playing: Glow effect
+ * - Moving/Rotating: Scale feedback
+ */
+
+.speaker {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  transition: transform var(--transition-fast, 0.15s ease);
+}
+
+.speaker.selected {
+  z-index: 6;
+}
+
+.speaker.selected::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 2px dashed var(--speaker-color);
+  border-radius: var(--radius-full, 9999px);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.speaker.playing {
+  z-index: 7;
+}
+
+.speaker.playing::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--speaker-color);
+  opacity: 0.2;
+  animation: playPulse 0.5s ease-out;
+}
+
+.speaker.rotating {
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.speaker.moving {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@keyframes playPulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Sound cone - triangular shape showing direction of audio projection */
+.soundCone {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  /* Cone spans ~90 degrees, pointing right (0deg), rotated by JS */
+  clip-path: polygon(50% 50%, 100% 25%, 100% 75%);
+  background: linear-gradient(
+    to right,
+    var(--speaker-color) 0%,
+    transparent 90%
+  );
+  transform-origin: 50% 50%;
+  transition: transform 0.1s ease-out, opacity var(--transition-fast, 0.15s ease);
+  cursor: crosshair;
+  pointer-events: auto;
+}
+
+.soundCone:hover {
+  opacity: 0.6 !important;
+}
+
+/* Speaker icon - click to play, drag to move */
+.speakerIcon {
+  font-size: 1.25rem;
+  z-index: 1;
+  background: var(--color-bg-secondary, #16213e);
+  border-radius: var(--radius-full, 9999px);
+  padding: 8px;
+  cursor: pointer;
+  transition: transform var(--transition-fast, 0.15s ease), box-shadow var(--transition-fast, 0.15s ease);
+  user-select: none;
+}
+
+.speakerIcon:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px var(--speaker-color);
+}
+
+.speakerIcon:active {
+  cursor: grabbing;
+  transform: scale(1.15);
+}
+
+/* Label below speaker */
+.label {
+  position: absolute;
+  bottom: -20px;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #94a3b8);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Gain bar indicator */
+.gainBar {
+  position: absolute;
+  bottom: -8px;
+  width: 40px;
+  height: 4px;
+  background: var(--color-bg-tertiary, #0f3460);
+  border-radius: var(--radius-sm, 4px);
+  overflow: hidden;
+}
+
+.gainFill {
+  height: 100%;
+  background: var(--speaker-color);
+  transition: width var(--transition-fast, 0.15s ease);
+}
