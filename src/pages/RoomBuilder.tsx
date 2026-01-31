@@ -34,6 +34,8 @@ interface BuilderRoom {
   walls: Wall[];
   center: Position;
   color: string;
+  /** Wall attenuation strength (0 = no effect, 1 = full block). Default 0.7 */
+  attenuation: number;
 }
 
 /** Speaker state */
@@ -91,6 +93,9 @@ function createWallsFromBounds(bounds: { x: number; y: number; width: number; he
   ];
 }
 
+/** Default attenuation for new rooms (0-1, higher = more sound blocking) */
+const DEFAULT_ATTENUATION = 0.7;
+
 /** Create a new room from two corner positions */
 function createRoomFromCorners(start: Position, end: Position, id: string, color: string): BuilderRoom {
   const minX = Math.min(start.x, end.x);
@@ -112,6 +117,7 @@ function createRoomFromCorners(start: Position, end: Position, id: string, color
     walls,
     center,
     color,
+    attenuation: DEFAULT_ATTENUATION,
   };
 }
 
@@ -319,6 +325,14 @@ export function RoomBuilder() {
     if (!id) return;
     setRooms((prev) =>
       prev.map((r) => (r.id === id ? { ...r, color } : r))
+    );
+  };
+
+  const updateRoomAttenuation = (attenuation: number) => {
+    const id = selectedRoomId();
+    if (!id) return;
+    setRooms((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, attenuation } : r))
     );
   };
 
@@ -612,6 +626,14 @@ export function RoomBuilder() {
   // AUDIO
   // ============================================================================
 
+  // Calculate effective attenuation per wall (average of all rooms, or default if none)
+  const effectiveAttenuation = (): number => {
+    const roomList = rooms();
+    if (roomList.length === 0) return DEFAULT_ATTENUATION;
+    const sum = roomList.reduce((acc, r) => acc + r.attenuation, 0);
+    return sum / roomList.length;
+  };
+
   const getAudioParams = (speaker: SpeakerState) => {
     const listener = createListener(listenerPos(), listenerFacing());
     const sourceConfig = {
@@ -624,12 +646,16 @@ export function RoomBuilder() {
       waveform: "sine" as const,
       playing: true,
     };
+    // Convert attenuation (0-1) to "transmission" (what gets through)
+    // attenuation 0 = 100% transmission (no blocking), attenuation 1 = 0% transmission
+    const transmission = 1 - effectiveAttenuation();
     return calculateAudioParameters(
       sourceConfig,
       listener,
       allWalls(),
       distanceModel(),
-      audioStore.masterVolume()
+      audioStore.masterVolume(),
+      transmission
     );
   };
 
@@ -1025,6 +1051,24 @@ export function RoomBuilder() {
                         />
                       )}
                     </For>
+                  </div>
+                </div>
+
+                <div class={styles.propertyGroup}>
+                  <label class={styles.propertyLabel}>
+                    Wall Attenuation: {Math.round(room().attenuation * 100)}%
+                  </label>
+                  <input
+                    type="range"
+                    class={styles.propertySlider}
+                    min="0"
+                    max="100"
+                    value={room().attenuation * 100}
+                    onInput={(e) => updateRoomAttenuation(parseInt(e.currentTarget.value) / 100)}
+                  />
+                  <div class={styles.sliderLabels}>
+                    <span>Transparent</span>
+                    <span>Solid</span>
                   </div>
                 </div>
 
