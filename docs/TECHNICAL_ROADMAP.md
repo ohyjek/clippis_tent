@@ -148,7 +148,7 @@ const initializeAudio = () => {
 
 **Goal**: Decouple UI components with their own test suite.
 
-**Status**: Implemented with `@clippis/ui` package containing 8 components (Button, Section, SelectField, Slider, Tabs, Toggle, ErrorBoundary, Toast).
+**Status**: Implemented with `@clippis/ui` package containing reusable components (Button, Section, SelectField, Slider, Tabs, Toggle, ErrorBoundary, Toast, Speaker).
 
 ### 3.1 Workspace Structure (Actual)
 
@@ -256,9 +256,9 @@ mocks/
 **Goal**: Layered testing for confidence in agent-assisted development.
 
 **Status**: 
-- Unit tests: 129 tests (67 spatial-audio + 62 UI components)
-- Storybook: Configured with stories for all 8 UI components
-- E2E tests: Playwright setup with 4 test suites (navigation, scenarios, settings, tent)
+- Unit tests: Comprehensive coverage for spatial-audio library and UI components
+- Storybook: Configured with stories for all UI components
+- E2E tests: Playwright setup covering critical user flows
 
 ### Testing Pyramid
 
@@ -266,14 +266,14 @@ mocks/
         ╱╲
        ╱  ╲  E2E (Playwright)
       ╱────╲  - Critical user flows
-     ╱      ╲ - 5-10 tests
+     ╱      ╲
     ╱────────╲
    ╱          ╲  Integration
   ╱────────────╲ - Component + store interactions
- ╱              ╲ - 20-30 tests
+ ╱              ╲
 ╱────────────────╲
        Unit        - Pure functions, components
-       100+ tests  - Fast, isolated
+                   - Fast, isolated
 ```
 
 ### 4.1 Unit Tests (Already have Vitest)
@@ -886,8 +886,8 @@ Add to Settings page:
 
 - **Logging**: All errors logged with context, performance metrics for audio operations
 - **Error Handling**: Zero unhandled exceptions in production, user-facing error messages
-- **UI Library**: 129 unit tests, Storybook docs for all 8 components
-- **E2E**: 4 test suites covering critical paths
+- **UI Library**: Comprehensive unit tests, Storybook docs for all components
+- **E2E**: Test suites covering critical user flows
 - **Themes**: Light/dark/system modes, system preference sync, no flash on load
 - **Localization**: Type-safe translations with `@solid-primitives/i18n`, English complete
 - **Accessibility**: WCAG 2.1 Level AA, keyboard navigation, screen reader support
