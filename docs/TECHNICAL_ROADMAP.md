@@ -6,8 +6,9 @@ This roadmap is organized into phases that can be worked on incrementally. Each 
 
 **Status Overview**:
 - ✅ Phase 1-4: Infrastructure complete (logging, errors, UI library, testing)
-- 🔲 Phase 5-6: UX enhancements planned (themes, i18n)
-- 🔲 Phase 7: Auth foundation planned
+- 🔲 Phase 5: CI/CD pipeline planned
+- 🔲 Phase 6-7: UX enhancements planned (themes, i18n)
+- 🔲 Phase 8: Auth foundation planned
 
 ---
 
@@ -375,7 +376,96 @@ test("can play scenario audio", async ({ electronApp }) => {
 
 ---
 
-## Phase 5: Theme System 🔲 PLANNED
+## Phase 5: CI/CD Pipeline 🔲 PLANNED
+
+**Goal**: Automated quality gates and deployment pipeline.
+
+### 5.1 GitHub Actions Workflow
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
+      - run: pnpm e2e
+      
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+```
+
+### 5.2 Quality Gates
+
+| Check          | When                | Blocking |
+| -------------- | ------------------- | -------- |
+| TypeScript     | Every PR            | Yes      |
+| ESLint         | Every PR            | Yes      |
+| Unit Tests     | Every PR            | Yes      |
+| E2E Tests      | Every PR            | Yes      |
+| Build          | Every PR to main    | Yes      |
+
+### 5.3 Branch Protection Rules
+
+- Require PR reviews before merging
+- Require status checks to pass (CI workflow)
+- Require branches to be up to date before merging
+- No direct pushes to `main`
+
+### 5.4 Optional Enhancements
+
+- **Dependabot**: Automated dependency updates
+- **CodeQL**: Security scanning
+- **Chromatic**: Visual regression testing for Storybook
+- **Release Please**: Automated changelog and versioning
+
+### 5.5 Build & Release Pipeline (Future)
+
+```yaml
+# .github/workflows/release.yml (future)
+# Triggered on version tags
+# - Build Electron app for Windows/Mac/Linux
+# - Create GitHub release with artifacts
+# - Upload to distribution channels
+```
+
+---
+
+## Phase 6: Theme System 🔲 PLANNED
 
 **Goal**: Support light/dark themes and custom color schemes.
 
@@ -438,7 +528,7 @@ export interface Theme {
 
 ---
 
-## Phase 6: Localization (i18n) 🔲 PLANNED
+## Phase 7: Localization (i18n) 🔲 PLANNED
 
 **Goal**: Support multiple languages for global accessibility.
 
@@ -521,7 +611,7 @@ function Settings() {
 
 ---
 
-## Phase 7: Auth Foundation 🔲 PLANNED
+## Phase 8: Auth Foundation 🔲 PLANNED
 
 **Goal**: Prepare architecture for auth without implementing yet.
 
@@ -583,6 +673,7 @@ export interface AuthState {
 - **Error Handling**: Zero unhandled exceptions in production, user-facing error messages
 - **UI Library**: 80%+ test coverage, Storybook docs for all components
 - **E2E**: Critical paths covered, < 2min total runtime
+- **CI/CD**: All PRs pass quality gates, automated releases
 - **Themes**: Light/dark modes, system preference sync, no flash on load
 - **Localization**: Type-safe translations, 2+ languages, persisted preference
 - **Auth**: (Future) Login flow, session persistence
