@@ -11,9 +11,10 @@
  * <Button icon="✕" aria-label="Close" onClick={close} />
  */
 import { JSX, splitProps } from "solid-js";
+import type { ButtonVariant } from "@clippis/types";
 import styles from "./Button.module.css";
 
-export type ButtonVariant = "primary" | "success" | "purple" | "danger" | "outline";
+export type { ButtonVariant };
 
 interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   /** Visual style variant */

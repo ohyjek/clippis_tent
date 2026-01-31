@@ -15,13 +15,10 @@
  * />
  */
 import { For, createSignal } from "solid-js";
+import type { Tab } from "@clippis/types";
 import styles from "./Tabs.module.css";
 
-export interface Tab {
-  id: string;
-  label: string;
-  icon?: string;
-}
+export type { Tab };
 
 interface TabsProps {
   /** Array of tab definitions */

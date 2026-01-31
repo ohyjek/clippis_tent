@@ -11,12 +11,10 @@
  * Used in FullDemo for both speakers and the listener.
  */
 import { JSX } from "solid-js";
+import type { Position } from "@clippis/types";
 import styles from "./Speaker.module.css";
 
-export interface Position {
-  x: number;
-  y: number;
-}
+export type { Position };
 
 export interface SpeakerProps {
   /** Unique identifier */

@@ -13,21 +13,15 @@
  *   showToast({ type: "error", message: "Failed", duration: 5000 });
  */
 import { createSignal, createRoot } from "solid-js";
+import type { ToastType, ToastOptions } from "@clippis/types";
 
-export type ToastType = "success" | "error" | "warning" | "info";
+export type { ToastType, ToastOptions };
 
 export interface Toast {
   id: string;
   type: ToastType;
   message: string;
   duration: number;
-}
-
-export interface ToastOptions {
-  type: ToastType;
-  message: string;
-  /** Duration in ms before auto-dismiss. Default: 4000. Set to 0 for no auto-dismiss. */
-  duration?: number;
 }
 
 const DEFAULT_DURATION = 4000;

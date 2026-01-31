@@ -11,12 +11,9 @@
  * "computations created outside createRoot" warnings.
  */
 import { createSignal } from "solid-js";
+import type { ThemeMode, ResolvedTheme } from "@clippis/types";
 
-/** Available theme modes */
-export type ThemeMode = "light" | "dark" | "system";
-
-/** The resolved theme (light or dark, never system) */
-export type ResolvedTheme = "light" | "dark";
+export type { ThemeMode, ResolvedTheme };
 
 /**
  * Get the resolved theme based on current mode and system preference

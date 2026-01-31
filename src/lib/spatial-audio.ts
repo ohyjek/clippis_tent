@@ -14,55 +14,17 @@
  * Range: typically -2.5 to +2.5 in room coordinates
  */
 
-/** 2D position in the audio room */
-export interface Position {
-  x: number;
-  y: number;
-}
+import type {
+  Position,
+  SpatialParams,
+  SoundSource,
+  Speaker,
+  Wall,
+  Room,
+} from "@clippis/types";
 
-/** Spatial audio parameters for a sound source */
-export interface SpatialParams {
-  /** Volume level (0 to 1) */
-  volume: number;
-  /** Stereo pan position (-1 = left, 0 = center, 1 = right) */
-  pan: number;
-  /** Distance from listener to sound source */
-  distance: number;
-}
-
-/** Sound source with position and frequency */
-export interface SoundSource {
-  id: string;
-  position: Position;
-  frequency: number;
-}
-
-/** Speaker with position and facing direction */
-export interface Speaker {
-  id: string;
-  position: Position;
-  /** Facing direction in radians (0 = right, PI/2 = down, PI = left, -PI/2 = up) */
-  facing: number;
-  /** Speaker color for visual identification */
-  color: string;
-}
-
-/** Room boundary/wall segment */
-export interface Wall {
-  /** Start point of the wall */
-  start: Position;
-  /** End point of the wall */
-  end: Position;
-}
-
-/** Room with boundaries */
-export interface Room {
-  id: string;
-  walls: Wall[];
-  /** Room center position for labeling */
-  center: Position;
-  label?: string;
-}
+// Re-export types for consumers
+export type { Position, SpatialParams, SoundSource, Speaker, Wall, Room };
 
 /** Musical note frequencies (E4 to G5) */
 export const SOUND_FREQUENCIES = [330, 392, 440, 494, 523, 587, 659, 784] as const;

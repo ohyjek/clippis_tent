@@ -12,12 +12,10 @@
  * />
  */
 import { JSX, For, splitProps, createUniqueId } from "solid-js";
+import type { SelectOption } from "@clippis/types";
 import styles from "./SelectField.module.css";
 
-export interface SelectOption {
-  value: string;
-  label: string;
-}
+export type { SelectOption };
 
 interface SelectFieldProps extends Omit<JSX.SelectHTMLAttributes<HTMLSelectElement>, "children"> {
   /** Label text shown above the select */

@@ -12,22 +12,15 @@
  * />
  */
 import { For, Show, type JSX } from "solid-js";
+import type { ListItem } from "@clippis/types";
 import styles from "./ItemList.module.css";
 
-export interface ItemListItem {
-  /** Unique identifier for the item */
-  id: string;
-  /** Display label */
-  label: string;
-  /** Optional color swatch */
-  color?: string;
-  /** Optional icon to display after label */
-  icon?: string;
-}
+/** @deprecated Use ListItem from @clippis/types instead */
+export type ItemListItem = ListItem;
 
 export interface ItemListProps {
   /** Array of items to display */
-  items: ItemListItem[];
+  items: ListItem[];
   /** ID of the currently selected item */
   selected?: string | null;
   /** Callback when an item is clicked */

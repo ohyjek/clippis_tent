@@ -11,111 +11,42 @@
  * Uses Web Audio API for actual sound generation.
  */
 
-import {
+import type {
   Position,
+  Wall,
+  Listener,
+  DirectivityPattern,
+  DistanceModel,
+  SourceConfig,
+  Material,
+  AcousticWall,
+  Opening,
+  AcousticRoom,
+  AudioParameters,
+  AudioParameterOptions,
+} from "@clippis/types";
+
+import {
   calculateDistance,
   calculateAngleToPoint,
   normalizeAngle,
   countWallsBetween,
   calculateWallAttenuation,
-  Wall,
 } from "./spatial-audio";
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
-/** Listener with position, facing direction, and optional ear separation */
-export interface Listener {
-  position: Position;
-  /** Facing direction in radians (0 = right, PI/2 = down) */
-  facing: number;
-  /** Distance between ears for binaural simulation (meters, default 0.2) */
-  earSeparation?: number;
-}
-
-/** Directivity pattern types for sound sources */
-export type DirectivityPattern =
-  | "omnidirectional" // Equal in all directions
-  | "cardioid" // Heart-shaped, loudest forward
-  | "supercardioid" // Tighter than cardioid
-  | "hypercardioid" // Even tighter
-  | "figure8" // Front and back lobes
-  | "hemisphere"; // Front half only
-
-/** Distance attenuation model */
-export type DistanceModel =
-  | "linear" // Linear falloff
-  | "inverse" // 1 / distance
-  | "exponential"; // exponential decay
-
-/** Configuration for a sound source */
-export interface SourceConfig {
-  id: string;
-  position: Position;
-  /** Facing direction in radians */
-  facing: number;
-  /** Directivity pattern */
-  directivity: DirectivityPattern;
-  /** Base volume (0 to 1) */
-  volume: number;
-  /** Frequency in Hz */
-  frequency: number;
-  /** Waveform type */
-  waveform: OscillatorType;
-  /** Whether currently playing */
-  playing: boolean;
-}
-
-/** Material properties for acoustic surfaces */
-export interface Material {
-  /** Name for identification */
-  name: string;
-  /** Sound absorption coefficient (0 = reflects all, 1 = absorbs all) */
-  absorption: number;
-  /** Transmission coefficient (0 = blocks all, 1 = transmits all) */
-  transmission: number;
-}
-
-/** Wall with material properties */
-export interface AcousticWall extends Wall {
-  material: Material;
-}
-
-/** Opening/doorway in a wall */
-export interface Opening {
-  /** Center position of the opening */
-  position: Position;
-  /** Width of the opening */
-  width: number;
-  /** Transmission factor (typically 0.8-1.0) */
-  transmission: number;
-}
-
-/** Room with acoustic properties */
-export interface AcousticRoom {
-  id: string;
-  walls: AcousticWall[];
-  openings: Opening[];
-  center: Position;
-  label?: string;
-}
-
-/** Audio parameters calculated for a source-listener pair */
-export interface AudioParameters {
-  /** Final volume after all calculations */
-  volume: number;
-  /** Stereo pan (-1 to 1) */
-  pan: number;
-  /** Distance from source to listener */
-  distance: number;
-  /** Directional gain from source pattern */
-  directionalGain: number;
-  /** Wall attenuation factor */
-  wallAttenuation: number;
-  /** Number of walls between source and listener */
-  wallCount: number;
-}
+// Re-export types for consumers
+export type {
+  Listener,
+  DirectivityPattern,
+  DistanceModel,
+  SourceConfig,
+  Material,
+  AcousticWall,
+  Opening,
+  AcousticRoom,
+  AudioParameters,
+  AudioParameterOptions,
+};
 
 // ============================================================================
 // PREDEFINED MATERIALS
@@ -324,20 +255,6 @@ export function calculateListenerDirectionalGain(
   const gain = minGain + (1 - minGain) * rawGain;
 
   return gain;
-}
-
-/** Options for audio parameter calculation */
-export interface AudioParameterOptions {
-  /** Distance attenuation model */
-  distanceModel?: DistanceModel;
-  /** Master volume multiplier (0-1) */
-  masterVolume?: number;
-  /** Volume multiplier per wall crossed (0-1) */
-  attenuationPerWall?: number;
-  /** Maximum distance for sound propagation */
-  maxDistance?: number;
-  /** Minimum gain for sounds behind the listener (0-1) */
-  rearGainFloor?: number;
 }
 
 /**

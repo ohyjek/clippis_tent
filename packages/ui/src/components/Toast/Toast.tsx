@@ -8,15 +8,10 @@
  * <ToastContainer toasts={toasts()} onDismiss={dismissToast} />
  */
 import { For } from "solid-js";
+import type { ToastType, ToastData } from "@clippis/types";
 import styles from "./Toast.module.css";
 
-export type ToastType = "success" | "error" | "warning" | "info";
-
-export interface ToastData {
-  id: string;
-  type: ToastType;
-  message: string;
-}
+export type { ToastType, ToastData };
 
 interface ToastContainerProps {
   /** Array of toast notifications to display */
