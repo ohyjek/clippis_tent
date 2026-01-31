@@ -20,6 +20,12 @@ export const ROOM_COLORS = [
 /** Default wall attenuation (0-1) */
 export const DEFAULT_ATTENUATION = 0.7;
 
+/** Default maximum distance for sound propagation (in world units) */
+export const DEFAULT_MAX_DISTANCE = 5;
+
+/** Default minimum gain for sounds behind the listener (0-1) */
+export const DEFAULT_REAR_GAIN = 0.3;
+
 /**
  * Musical note names with octave
  * Maps common frequencies to their note names

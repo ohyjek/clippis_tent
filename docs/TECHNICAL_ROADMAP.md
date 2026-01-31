@@ -600,17 +600,23 @@ jobs:
 
 ```typescript
 // Calculate all audio parameters for source-listener pair
-calculateAudioParameters(source, listener, walls, distanceModel, masterVolume)
+calculateAudioParameters(source, listener, walls, {
+  distanceModel,    // "inverse" | "linear" | "exponential"
+  masterVolume,     // 0-1
+  attenuationPerWall, // Wall occlusion factor
+  maxDistance,      // Hard cutoff distance (default: 5)
+  rearGainFloor,    // Min gain for sounds behind listener (default: 0.3)
+})
 // Returns: { volume, pan, distance, directionalGain, wallAttenuation, wallCount }
 
 // Directivity patterns
 calculateDirectivityGain(pattern, angleDiff)
 
-// Distance models
+// Distance models (with hard cutoff at maxDistance)
 calculateDistanceAttenuation(distance, model, refDistance, maxDistance, rolloff)
 
-// Listener hearing direction
-calculateListenerDirectionalGain(listener, sourcePos)
+// Listener hearing direction (with configurable rear floor)
+calculateListenerDirectionalGain(listener, sourcePos, minGain)
 
 // Stereo positioning
 calculateStereoPan(listener, sourcePos, panWidth)

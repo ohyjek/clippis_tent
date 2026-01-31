@@ -166,32 +166,42 @@ describe("Stereo Pan", () => {
 });
 
 describe("Listener Directional Hearing", () => {
+  // Default minGain is 0.3, so the formula is: minGain + (1 - minGain) * rawGain
+  // where rawGain = 0.5 + 0.5 * cos(angle)
+  const DEFAULT_MIN_GAIN = 0.3;
+
   it("returns 1.0 when source is directly in front", () => {
     const listener = createListener({ x: 0, y: 0 }, 0); // Facing right
     const gain = calculateListenerDirectionalGain(listener, { x: 2, y: 0 });
     expect(gain).toBeCloseTo(1.0);
   });
 
-  it("returns ~0.75 when source is at 90 degrees (to the side)", () => {
+  it("returns ~0.65 when source is at 90 degrees (to the side)", () => {
     const listener = createListener({ x: 0, y: 0 }, 0); // Facing right
     const gain = calculateListenerDirectionalGain(listener, { x: 0, y: 2 });
-    expect(gain).toBeCloseTo(0.5); // cos(90°) = 0, so 0.5 + 0.5*0 = 0.5
+    // rawGain = 0.5 + 0.5*cos(90°) = 0.5
+    // gain = 0.3 + 0.7 * 0.5 = 0.65
+    expect(gain).toBeCloseTo(DEFAULT_MIN_GAIN + (1 - DEFAULT_MIN_GAIN) * 0.5);
   });
 
-  it("returns ~0.0 when source is directly behind", () => {
+  it("returns minGain when source is directly behind", () => {
     const listener = createListener({ x: 0, y: 0 }, 0); // Facing right
     const gain = calculateListenerDirectionalGain(listener, { x: -2, y: 0 });
-    expect(gain).toBeCloseTo(0.0); // cos(180°) = -1, so 0.5 + 0.5*(-1) = 0
+    // rawGain = 0.5 + 0.5*cos(180°) = 0
+    // gain = minGain (sounds behind are still audible!)
+    expect(gain).toBeCloseTo(DEFAULT_MIN_GAIN);
   });
 
-  it("returns ~0.75 when listener faces source at 60 degrees", () => {
+  it("returns ~0.825 when listener faces source at 60 degrees", () => {
     const listener = createListener({ x: 0, y: 0 }, 0); // Facing right
     // Source at 60 degrees from facing direction
     const gain = calculateListenerDirectionalGain(listener, {
       x: Math.cos(Math.PI / 3), // 0.5
       y: Math.sin(Math.PI / 3), // ~0.866
     });
-    expect(gain).toBeCloseTo(0.75); // cos(60°) = 0.5, so 0.5 + 0.5*0.5 = 0.75
+    // rawGain = 0.5 + 0.5*cos(60°) = 0.5 + 0.25 = 0.75
+    // gain = 0.3 + 0.7 * 0.75 = 0.825
+    expect(gain).toBeCloseTo(DEFAULT_MIN_GAIN + (1 - DEFAULT_MIN_GAIN) * 0.75);
   });
 
   it("updates correctly when listener rotates", () => {
@@ -206,7 +216,18 @@ describe("Listener Directional Hearing", () => {
     const gainBack = calculateListenerDirectionalGain(facingAway, sourcePos);
 
     expect(gainFront).toBeCloseTo(1.0);
-    expect(gainBack).toBeCloseTo(0.0);
+    expect(gainBack).toBeCloseTo(DEFAULT_MIN_GAIN); // Still audible behind
+  });
+
+  it("respects custom minGain parameter", () => {
+    const listener = createListener({ x: 0, y: 0 }, 0);
+    const sourcePos = { x: -2, y: 0 }; // Behind listener
+
+    const gainDefault = calculateListenerDirectionalGain(listener, sourcePos);
+    const gainCustom = calculateListenerDirectionalGain(listener, sourcePos, 0.5);
+
+    expect(gainDefault).toBeCloseTo(0.3);
+    expect(gainCustom).toBeCloseTo(0.5);
   });
 });
 
@@ -241,8 +262,14 @@ describe("calculateAudioParameters", () => {
   });
 
   it("respects master volume", () => {
-    const paramsHalf = calculateAudioParameters(source, listener, [], "inverse", 0.5);
-    const paramsFull = calculateAudioParameters(source, listener, [], "inverse", 1.0);
+    const paramsHalf = calculateAudioParameters(source, listener, [], {
+      distanceModel: "inverse",
+      masterVolume: 0.5,
+    });
+    const paramsFull = calculateAudioParameters(source, listener, [], {
+      distanceModel: "inverse",
+      masterVolume: 1.0,
+    });
     expect(paramsHalf.volume).toBeLessThan(paramsFull.volume);
   });
 });

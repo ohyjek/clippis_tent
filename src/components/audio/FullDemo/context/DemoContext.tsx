@@ -23,7 +23,7 @@ import {
 } from "@/lib/spatial-audio-engine";
 import { audioStore } from "@/stores/audio";
 import type { SpeakerState, AudioNodes, DrawnRoom, DrawingMode, Position, Wall } from "./types";
-import { ROOM_COLORS, DEFAULT_ATTENUATION } from "../constants";
+import { ROOM_COLORS, DEFAULT_ATTENUATION, DEFAULT_MAX_DISTANCE, DEFAULT_REAR_GAIN } from "../constants";
 import { createRoomFromCorners, getPositionFromEvent, getScreenPosition } from "../utils";
 
 /** Context value type */
@@ -72,6 +72,10 @@ interface DemoContextValue {
   // Audio state
   distanceModel: Accessor<DistanceModel>;
   setDistanceModel: Setter<DistanceModel>;
+  maxDistance: Accessor<number>;
+  setMaxDistance: Setter<number>;
+  rearGainFloor: Accessor<number>;
+  setRearGainFloor: Setter<number>;
   playingSpeakers: Accessor<Set<string>>;
   isPlaying: (speakerId: string) => boolean;
 
@@ -183,6 +187,8 @@ export function DemoProvider(props: { children: JSX.Element }) {
 
   // Audio settings
   const [distanceModel, setDistanceModel] = createSignal<DistanceModel>("inverse");
+  const [maxDistance, setMaxDistance] = createSignal(DEFAULT_MAX_DISTANCE);
+  const [rearGainFloor, setRearGainFloor] = createSignal(DEFAULT_REAR_GAIN);
 
   // Playing state
   const [playingSpeakers, setPlayingSpeakers] = createSignal<Set<string>>(new Set());
@@ -213,14 +219,13 @@ export function DemoProvider(props: { children: JSX.Element }) {
       playing: true,
     };
     const transmission = 1 - effectiveAttenuation();
-    return calculateAudioParameters(
-      sourceConfig,
-      listener,
-      allWalls(),
-      distanceModel(),
-      audioStore.masterVolume(),
-      transmission
-    );
+    return calculateAudioParameters(sourceConfig, listener, allWalls(), {
+      distanceModel: distanceModel(),
+      masterVolume: audioStore.masterVolume(),
+      attenuationPerWall: transmission,
+      maxDistance: maxDistance(),
+      rearGainFloor: rearGainFloor(),
+    });
   };
 
   const calculateDisplayGain = (speaker: SpeakerState): number => {
@@ -692,6 +697,10 @@ export function DemoProvider(props: { children: JSX.Element }) {
     // Audio state
     distanceModel,
     setDistanceModel,
+    maxDistance,
+    setMaxDistance,
+    rearGainFloor,
+    setRearGainFloor,
     playingSpeakers,
     isPlaying,
 

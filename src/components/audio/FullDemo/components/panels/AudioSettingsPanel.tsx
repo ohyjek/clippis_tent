@@ -1,7 +1,7 @@
 /**
  * AudioSettingsPanel.tsx - Panel for audio settings
  *
- * Contains distance model selection.
+ * Contains distance model selection, max distance, and rear gain settings.
  */
 import { For } from "solid-js";
 import type { DistanceModel } from "@/lib/spatial-audio-engine";
@@ -11,7 +11,14 @@ import { DISTANCE_MODEL_OPTIONS } from "../../constants";
 import styles from "./panels.module.css";
 
 export function AudioSettingsPanel() {
-  const { distanceModel, setDistanceModel } = useDemoContext();
+  const {
+    distanceModel,
+    setDistanceModel,
+    maxDistance,
+    setMaxDistance,
+    rearGainFloor,
+    setRearGainFloor,
+  } = useDemoContext();
 
   return (
     <Panel title="Audio Settings" icon="⚙️">
@@ -28,6 +35,42 @@ export function AudioSettingsPanel() {
             {(opt) => <option value={opt.value}>{opt.label}</option>}
           </For>
         </select>
+      </div>
+
+      <div class={styles.propertyGroup}>
+        <label class={styles.propertyLabel}>Max Distance</label>
+        <input
+          type="range"
+          class={styles.propertySlider}
+          min={2}
+          max={10}
+          step={0.5}
+          value={maxDistance()}
+          onInput={(e) => setMaxDistance(parseFloat(e.currentTarget.value))}
+        />
+        <div class={styles.sliderLabels}>
+          <span>Near (2)</span>
+          <span>{maxDistance().toFixed(1)}</span>
+          <span>Far (10)</span>
+        </div>
+      </div>
+
+      <div class={styles.propertyGroup}>
+        <label class={styles.propertyLabel}>Rear Gain Floor</label>
+        <input
+          type="range"
+          class={styles.propertySlider}
+          min={0}
+          max={0.8}
+          step={0.05}
+          value={rearGainFloor()}
+          onInput={(e) => setRearGainFloor(parseFloat(e.currentTarget.value))}
+        />
+        <div class={styles.sliderLabels}>
+          <span>Silent (0)</span>
+          <span>{Math.round(rearGainFloor() * 100)}%</span>
+          <span>Loud (80%)</span>
+        </div>
       </div>
     </Panel>
   );

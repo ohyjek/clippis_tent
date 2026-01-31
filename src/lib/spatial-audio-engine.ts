@@ -186,41 +186,66 @@ export function calculateDirectivityGain(
 /**
  * Calculate distance attenuation based on model
  *
+ * All models now apply a hard cutoff at maxDistance where sound becomes silent.
+ * This is more realistic than allowing infinitely propagating sound.
+ *
  * @param distance - Distance from source to listener
  * @param model - Attenuation model
  * @param refDistance - Reference distance (where volume = 1)
- * @param maxDistance - Maximum distance (where volume = 0 for linear)
+ * @param maxDistance - Maximum distance (hard cutoff, volume = 0 beyond this)
  * @param rolloffFactor - How quickly volume decreases
  */
 export function calculateDistanceAttenuation(
   distance: number,
   model: DistanceModel,
   refDistance = 1,
-  maxDistance = 10,
+  maxDistance = 5,
   rolloffFactor = 1
 ): number {
+  // Hard cutoff at max distance for all models
+  if (distance >= maxDistance) {
+    return 0;
+  }
+
   // Clamp distance to reference minimum
   const d = Math.max(distance, refDistance);
+
+  let attenuation: number;
 
   switch (model) {
     case "linear":
       // Linear: 1 - rolloff * (d - ref) / (max - ref)
-      return Math.max(
+      attenuation = Math.max(
         0,
         1 - rolloffFactor * ((d - refDistance) / (maxDistance - refDistance))
       );
+      break;
 
     case "inverse":
       // Inverse: ref / (ref + rolloff * (d - ref))
-      return refDistance / (refDistance + rolloffFactor * (d - refDistance));
+      // Normalized to reach near-zero at maxDistance
+      attenuation = refDistance / (refDistance + rolloffFactor * (d - refDistance));
+      break;
 
     case "exponential":
       // Exponential: (ref / d) ^ rolloff
-      return Math.pow(refDistance / d, rolloffFactor);
+      attenuation = Math.pow(refDistance / d, rolloffFactor);
+      break;
 
     default:
-      return 1.0;
+      attenuation = 1.0;
   }
+
+  // Apply smooth falloff near maxDistance to avoid abrupt cutoff
+  // Use cosine interpolation in the last 20% of the range
+  const falloffStart = maxDistance * 0.8;
+  if (distance > falloffStart) {
+    const t = (distance - falloffStart) / (maxDistance - falloffStart);
+    const smoothFactor = 0.5 * (1 + Math.cos(t * Math.PI)); // 1 -> 0 smoothly
+    attenuation *= smoothFactor;
+  }
+
+  return attenuation;
 }
 
 // ============================================================================
@@ -267,14 +292,20 @@ export function calculateStereoPan(
  * Calculate listener directional hearing gain
  *
  * Simulates human hearing - sounds in front are louder, sounds behind
- * are attenuated. Uses a gentle cardioid-like pattern.
+ * are attenuated but still audible. Uses a modified cardioid-like pattern
+ * with a minimum floor to ensure sounds from any direction can be heard.
+ *
+ * Humans can hear sounds from all directions, but sounds in front appear
+ * louder due to ear shape and head-related transfer functions.
  *
  * @param listener - Listener with position and facing
  * @param sourcePos - Sound source position
+ * @param minGain - Minimum gain floor for sounds behind (default 0.3)
  */
 export function calculateListenerDirectionalGain(
   listener: Listener,
-  sourcePos: Position
+  sourcePos: Position,
+  minGain = 0.3
 ): number {
   // Angle from listener to source
   const angleToSource = calculateAngleToPoint(listener.position, sourcePos);
@@ -282,14 +313,31 @@ export function calculateListenerDirectionalGain(
   // Relative angle (how far off from where listener is facing)
   const relativeAngle = normalizeAngle(angleToSource - listener.facing);
 
-  // Use a gentle cardioid pattern for realistic human hearing
+  // Use a modified cardioid pattern with a minimum floor
   // Sounds directly in front: 1.0
-  // Sounds to the side: ~0.75
-  // Sounds directly behind: ~0.5
-  // Formula: 0.5 + 0.5 * cos(angle) gives range [0, 1]
-  const gain = 0.5 + 0.5 * Math.cos(relativeAngle);
+  // Sounds to the side: ~0.65 + minGain/2
+  // Sounds directly behind: minGain (default 0.3, still audible!)
+  //
+  // Formula: minGain + (1 - minGain) * (0.5 + 0.5 * cos(angle))
+  // This maps the range [0, 1] to [minGain, 1]
+  const rawGain = 0.5 + 0.5 * Math.cos(relativeAngle);
+  const gain = minGain + (1 - minGain) * rawGain;
 
   return gain;
+}
+
+/** Options for audio parameter calculation */
+export interface AudioParameterOptions {
+  /** Distance attenuation model */
+  distanceModel?: DistanceModel;
+  /** Master volume multiplier (0-1) */
+  masterVolume?: number;
+  /** Volume multiplier per wall crossed (0-1) */
+  attenuationPerWall?: number;
+  /** Maximum distance for sound propagation */
+  maxDistance?: number;
+  /** Minimum gain for sounds behind the listener (0-1) */
+  rearGainFloor?: number;
 }
 
 /**
@@ -298,31 +346,44 @@ export function calculateListenerDirectionalGain(
  * @param source - Sound source configuration
  * @param listener - Listener configuration
  * @param walls - Array of walls for occlusion calculation
- * @param distanceModel - Distance attenuation model
- * @param masterVolume - Master volume multiplier
- * @param attenuationPerWall - Volume multiplier per wall crossed (0-1, default 0.3)
+ * @param options - Audio calculation options
  */
 export function calculateAudioParameters(
   source: SourceConfig,
   listener: Listener,
   walls: Wall[] = [],
-  distanceModel: DistanceModel = "inverse",
-  masterVolume = 1,
-  attenuationPerWall = 0.3
+  options: AudioParameterOptions = {}
 ): AudioParameters {
+  const {
+    distanceModel = "inverse",
+    masterVolume = 1,
+    attenuationPerWall = 0.3,
+    maxDistance = 5,
+    rearGainFloor = 0.3,
+  } = options;
+
   // Distance
   const distance = calculateDistance(source.position, listener.position);
 
-  // Distance attenuation
-  const distanceAtten = calculateDistanceAttenuation(distance, distanceModel);
+  // Distance attenuation (with max distance cutoff)
+  const distanceAtten = calculateDistanceAttenuation(
+    distance,
+    distanceModel,
+    1, // refDistance
+    maxDistance
+  );
 
   // Directional gain from source (speaker pointing direction)
   const angleToListener = calculateAngleToPoint(source.position, listener.position);
   const angleDiff = normalizeAngle(angleToListener - source.facing);
   const sourceDirectionalGain = calculateDirectivityGain(source.directivity, angleDiff);
 
-  // Directional gain from listener (hearing direction)
-  const listenerDirectionalGain = calculateListenerDirectionalGain(listener, source.position);
+  // Directional gain from listener (hearing direction, with floor)
+  const listenerDirectionalGain = calculateListenerDirectionalGain(
+    listener,
+    source.position,
+    rearGainFloor
+  );
 
   // Combined directional gain (source + listener)
   const directionalGain = sourceDirectionalGain * listenerDirectionalGain;
@@ -495,13 +556,10 @@ export class SpatialAudioEngine {
     oscillator.type = source.waveform;
 
     // Calculate and apply initial parameters
-    const params = calculateAudioParameters(
-      source,
-      this.listener,
-      this.walls,
-      this.distanceModel,
-      this.masterVolume
-    );
+    const params = calculateAudioParameters(source, this.listener, this.walls, {
+      distanceModel: this.distanceModel,
+      masterVolume: this.masterVolume,
+    });
     gainNode.gain.value = params.volume;
     panner.pan.value = params.pan;
 
@@ -568,13 +626,10 @@ export class SpatialAudioEngine {
     oscillator.frequency.value = source.frequency;
     oscillator.type = source.waveform;
 
-    const params = calculateAudioParameters(
-      source,
-      this.listener,
-      this.walls,
-      this.distanceModel,
-      this.masterVolume
-    );
+    const params = calculateAudioParameters(source, this.listener, this.walls, {
+      distanceModel: this.distanceModel,
+      masterVolume: this.masterVolume,
+    });
     gainNode.gain.value = params.volume;
     panner.pan.value = params.pan;
 
@@ -588,13 +643,10 @@ export class SpatialAudioEngine {
     const source = this.sources.get(id);
     if (!active || !source || !this.audioContext) return;
 
-    const params = calculateAudioParameters(
-      source,
-      this.listener,
-      this.walls,
-      this.distanceModel,
-      this.masterVolume
-    );
+    const params = calculateAudioParameters(source, this.listener, this.walls, {
+      distanceModel: this.distanceModel,
+      masterVolume: this.masterVolume,
+    });
 
     // Smooth transitions
     const now = this.audioContext.currentTime;
@@ -614,13 +666,10 @@ export class SpatialAudioEngine {
     const source = this.sources.get(id);
     if (!source) return null;
 
-    return calculateAudioParameters(
-      source,
-      this.listener,
-      this.walls,
-      this.distanceModel,
-      this.masterVolume
-    );
+    return calculateAudioParameters(source, this.listener, this.walls, {
+      distanceModel: this.distanceModel,
+      masterVolume: this.masterVolume,
+    });
   }
 
   /** Cleanup */

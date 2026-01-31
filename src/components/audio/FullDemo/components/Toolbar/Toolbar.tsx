@@ -1,7 +1,8 @@
 /**
  * Toolbar.tsx - Top toolbar for the spatial audio demo
  *
- * Contains mode selection, speaker controls, volume, and reset button.
+ * Contains mode selection, add speaker, volume, and reset button.
+ * Play controls are in the SpeakerPropertiesPanel for per-speaker control.
  */
 import { Button, Slider } from "@/components/ui";
 import { audioStore } from "@/stores/audio";
@@ -9,15 +10,7 @@ import { useDemoContext } from "../../context";
 import styles from "./Toolbar.module.css";
 
 export function Toolbar() {
-  const {
-    drawingMode,
-    setDrawingMode,
-    selectedSpeaker,
-    addSpeaker,
-    togglePlayback,
-    isPlaying,
-    resetDemo,
-  } = useDemoContext();
+  const { drawingMode, setDrawingMode, addSpeaker, resetDemo } = useDemoContext();
 
   return (
     <div class={styles.toolbar}>
@@ -39,16 +32,9 @@ export function Toolbar() {
         </Button>
       </div>
       <div class={styles.toolbarGroup}>
-        <span class={styles.toolLabel}>Audio</span>
+        <span class={styles.toolLabel}>Speakers</span>
         <Button variant="primary" icon="➕" onClick={addSpeaker}>
           Add Speaker
-        </Button>
-        <Button
-          variant={isPlaying(selectedSpeaker()) ? "danger" : "success"}
-          icon={isPlaying(selectedSpeaker()) ? "⏹️" : "🔊"}
-          onClick={() => togglePlayback(selectedSpeaker())}
-        >
-          {isPlaying(selectedSpeaker()) ? "Stop" : "Play"}
         </Button>
       </div>
       <div class={styles.toolbarGroup}>

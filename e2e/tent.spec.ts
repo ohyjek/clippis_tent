@@ -32,7 +32,7 @@ test.describe("The Tent Page", () => {
   test("should display toolbar with controls", async ({ page }) => {
     // Check for toolbar labels (use exact match to avoid "Distance Model" matching "Mode")
     await expect(page.getByText("Mode", { exact: true })).toBeVisible();
-    await expect(page.getByText("Audio", { exact: true })).toBeVisible();
+    await expect(page.getByText("Speakers", { exact: true })).toBeVisible();
     await expect(page.getByText("Volume", { exact: true })).toBeVisible();
     
     // Check for specific buttons in the toolbar
@@ -41,11 +41,11 @@ test.describe("The Tent Page", () => {
     await expect(page.getByRole("button", { name: /add speaker/i })).toBeVisible();
   });
 
-  test("should display play button in toolbar", async ({ page }) => {
-    // There are multiple play buttons - just verify at least one exists
+  test("should display play button in speaker panel", async ({ page }) => {
+    // Play button is in the speaker properties panel (per-speaker control)
     // The accessible name is "Play" (icon is aria-hidden)
-    const playButtons = page.getByRole("button", { name: /^play$/i });
-    await expect(playButtons.first()).toBeVisible();
+    const playButton = page.getByRole("button", { name: /^play$/i });
+    await expect(playButton).toBeVisible();
   });
 
   test("should have interactive canvas", async ({ page }) => {
@@ -63,8 +63,10 @@ test.describe("The Tent Page", () => {
   });
 
   test("should display audio settings panel", async ({ page }) => {
-    // The audio settings panel with distance model selector
+    // The audio settings panel with distance model, max distance, and rear gain
     await expect(page.getByText("Audio Settings")).toBeVisible();
     await expect(page.getByText("Distance Model")).toBeVisible();
+    await expect(page.getByText("Max Distance")).toBeVisible();
+    await expect(page.getByText("Rear Gain Floor")).toBeVisible();
   });
 });
