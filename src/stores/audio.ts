@@ -18,7 +18,9 @@ import {
   createSoundSource,
   randomPosition,
 } from "../lib/spatial-audio";
+import { logger } from "../lib/logger";
 
+// Store AudioContext outside of reactive system
 let audioContext: AudioContext | null = null;
 
 function createAudioStore() {
@@ -43,7 +45,7 @@ function createAudioStore() {
   const initializeAudio = () => {
     if (!audioInitialized()) {
       audioContext = new AudioContext();
-      console.log("Audio context initialized");
+      logger.audio.info("Audio context initialized");
       setAudioInitialized(true);
       return true;
     }

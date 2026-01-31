@@ -12,6 +12,7 @@
 import { For } from "solid-js";
 import { audioStore } from "@/stores/audio";
 import { calculateSpatialParams, CARDINAL_DIRECTIONS, Position } from "@/lib/spatial-audio";
+import { logger } from "@/lib/logger";
 import { Button, Slider } from "@/components/ui";
 import { Listener } from "./Listener";
 import { SoundSource } from "./SoundSource";
@@ -105,7 +106,7 @@ export function TentRoom() {
     audioStore.initializeAudio();
     CARDINAL_DIRECTIONS.forEach((dir, i) => {
       setTimeout(() => {
-        console.log(`Playing ${dir.name} tone`);
+        logger.audio.debug(`Playing ${dir.name} tone at (${dir.x}, ${dir.y})`);
         playSoundAtPosition({ x: dir.x, y: dir.y }, dir.frequency);
       }, i * 800);
     });

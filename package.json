@@ -61,6 +61,7 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.15.4",
+    "electron-log": "^5.4.3",
     "electron-squirrel-startup": "^1.0.1",
     "solid-js": "^1.9.10",
     "webrtc-adapter": "^9.0.3"
