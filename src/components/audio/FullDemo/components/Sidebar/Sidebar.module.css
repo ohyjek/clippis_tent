@@ -1,0 +1,12 @@
+/**
+ * Sidebar.module.css - Styles for the sidebar container
+ */
+
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  overflow-y: auto;
+}

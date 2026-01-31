@@ -1,0 +1,133 @@
+/**
+ * SpatialCanvas.module.css - Styles for the spatial canvas and its sub-components
+ */
+
+/* Canvas */
+.canvas {
+  position: relative;
+  flex: 1;
+  min-height: 600px;
+  aspect-ratio: 4 / 3;
+  background: var(--color-bg-primary);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: crosshair;
+  overflow: hidden;
+}
+
+.canvas.selectMode {
+  cursor: default;
+}
+
+/* Grid overlay */
+.gridOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--color-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-border) 1px, transparent 1px);
+  background-size: 20% 20%;
+  opacity: 0.3;
+}
+
+/* Drawing preview */
+.drawPreview {
+  position: absolute;
+  border: 2px dashed var(--color-accent-blue);
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  z-index: 100;
+}
+
+.drawPreview::after {
+  content: attr(data-dimensions);
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+/* Room areas */
+.roomArea {
+  position: absolute;
+  background: rgba(139, 92, 246, 0.1);
+  border: 2px solid var(--color-accent-purple);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: var(--spacing-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.roomArea:hover {
+  background: rgba(139, 92, 246, 0.15);
+}
+
+.roomArea.selected {
+  border-color: var(--color-accent-blue);
+  background: rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.roomArea.drawModeRoom {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.roomLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--color-bg-secondary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+/* Walls */
+.wall {
+  position: absolute;
+  background: var(--color-accent-purple);
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+  pointer-events: none;
+}
+
+.wall.vertical {
+  width: 4px;
+  transform: translateX(-50%);
+}
+
+.wall.horizontal {
+  height: 4px;
+  transform: translateY(-50%);
+}
+
+/* Sound path visualization */
+.pathSvg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.pathLine {
+  stroke: var(--color-accent-green);
+  stroke-width: 2;
+  transition: opacity var(--transition-fast);
+}
+
+.pathLine.blocked {
+  stroke: var(--color-accent-red);
+}
