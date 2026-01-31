@@ -14,13 +14,9 @@ import {
   type Accessor,
   type Setter,
 } from "solid-js";
+import type { DirectivityPattern, DistanceModel } from "@clippis/types";
 import { SPEAKER_COLORS } from "@/lib/spatial-audio";
-import {
-  calculateAudioParameters,
-  createListener,
-  type DirectivityPattern,
-  type DistanceModel,
-} from "@/lib/spatial-audio-engine";
+import { calculateAudioParameters, createListener } from "@/lib/spatial-audio-engine";
 import { audioStore } from "@/stores/audio";
 import {
   useMicrophone,

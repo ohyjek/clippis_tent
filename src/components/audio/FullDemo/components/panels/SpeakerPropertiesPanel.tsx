@@ -5,8 +5,7 @@
  */
 import { Show, For } from "solid-js";
 import { SPEAKER_COLORS } from "@/lib/spatial-audio";
-import type { DirectivityPattern } from "@/lib/spatial-audio-engine";
-import type { AudioSourceType } from "@clippis/types";
+import type { DirectivityPattern, AudioSourceType } from "@clippis/types";
 import {
   Button,
   ColorSwatches,

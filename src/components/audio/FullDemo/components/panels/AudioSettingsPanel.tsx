@@ -4,7 +4,7 @@
  * Contains perspective selection, distance model, max distance, rear gain, and visual settings.
  */
 import { For, Index } from "solid-js";
-import type { DistanceModel } from "@/lib/spatial-audio-engine";
+import type { DistanceModel } from "@clippis/types";
 import { Panel, Toggle, DropdownField, SliderField, FieldGroup } from "@/components/ui";
 import { useDemoContext } from "../../context";
 import { DISTANCE_MODEL_OPTIONS } from "../../constants";

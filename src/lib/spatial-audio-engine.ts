@@ -21,8 +21,6 @@ import type {
   SourceConfig,
   Material,
   AcousticWall,
-  Opening,
-  AcousticRoom,
   AudioParameters,
   AudioParameterOptions,
 } from "@clippis/types";
@@ -34,20 +32,6 @@ import {
   countWallsBetween,
   calculateWallAttenuation,
 } from "./spatial-audio";
-
-// Re-export types for consumers
-export type {
-  Listener,
-  DirectivityPattern,
-  DistanceModel,
-  SourceConfig,
-  Material,
-  AcousticWall,
-  Opening,
-  AcousticRoom,
-  AudioParameters,
-  AudioParameterOptions,
-};
 
 // ============================================================================
 // PREDEFINED MATERIALS

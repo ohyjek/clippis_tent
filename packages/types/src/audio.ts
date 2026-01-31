@@ -192,3 +192,24 @@ export interface AudioParameterOptions {
   maxDistance?: number;
   rearGainFloor?: number;
 }
+
+// ============================================================================
+// Audio Node Types (Web Audio API wrappers)
+// ============================================================================
+
+/**
+ * Audio nodes for continuous playback
+ *
+ * Supports both oscillator (test tones) and microphone (voice) sources.
+ * Used by the audio playback hook for real-time parameter updates.
+ */
+export interface AudioNodes {
+  /** Audio source - either oscillator or media stream source */
+  source: OscillatorNode | MediaStreamAudioSourceNode;
+  /** Source type for cleanup handling */
+  sourceType: AudioSourceType;
+  /** Gain node for volume control */
+  gainNode: GainNode;
+  /** Stereo panner for spatial positioning */
+  panner: StereoPannerNode;
+}

@@ -28,16 +28,18 @@ import "@/stores/theme";
 import "@/styles/variables.css";
 import "@/index.css";
 
+const GENERIC_ERROR_MESSAGE = "An unexpected error occurred";
+
 // Global error handlers
 window.onerror = (message, source, lineno, colno, error) => {
   logger.error("Uncaught error:", { message, source, lineno, colno, error });
-  showToast({ type: "error", message: "An unexpected error occurred" });
+  showToast({ type: "error", message: GENERIC_ERROR_MESSAGE });
   return false; // Let the error propagate
 };
 
 window.onunhandledrejection = (event) => {
   logger.error("Unhandled promise rejection:", event.reason);
-  showToast({ type: "error", message: "An unexpected error occurred" });
+  showToast({ type: "error", message: GENERIC_ERROR_MESSAGE });
 };
 
 logger.info("Renderer starting");

@@ -13,16 +13,9 @@
  *   showToast({ type: "error", message: "Failed", duration: 5000 });
  */
 import { createSignal, createRoot } from "solid-js";
-import type { ToastType, ToastOptions } from "@clippis/types";
+import type { Toast, ToastType, ToastOptions } from "@clippis/types";
 
-export type { ToastType, ToastOptions };
-
-export interface Toast {
-  id: string;
-  type: ToastType;
-  message: string;
-  duration: number;
-}
+export type { Toast, ToastType, ToastOptions };
 
 const DEFAULT_DURATION = 4000;
 

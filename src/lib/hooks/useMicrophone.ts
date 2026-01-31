@@ -6,6 +6,7 @@
 import { createSignal, onCleanup, type Accessor } from "solid-js";
 import { showToast } from "@/stores/toast";
 import { audioStore } from "@/stores/audio";
+import { logger } from "@/lib/logger";
 
 export interface MicrophoneOptions {
   /** Called when microphone access is granted */
@@ -52,7 +53,7 @@ export function useMicrophone(options?: MicrophoneOptions): MicrophoneState {
       options?.onEnabled?.();
       return true;
     } catch (err) {
-      console.error("Failed to get microphone:", err);
+      logger.error("Failed to get microphone:", err);
       showToast({
         type: "error",
         message: "Could not access microphone. Please check permissions.",

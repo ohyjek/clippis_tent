@@ -16,9 +16,6 @@
 
 import type { Position, SpatialParams, SoundSource, Speaker, Wall, Room } from "@clippis/types";
 
-// Re-export types for consumers
-export type { Position, SpatialParams, SoundSource, Speaker, Wall, Room };
-
 /** Musical note frequencies (E4 to G5) */
 export const SOUND_FREQUENCIES = [330, 392, 440, 494, 523, 587, 659, 784] as const;
 

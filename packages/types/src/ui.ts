@@ -43,7 +43,7 @@ export interface ListItem {
 export type ToastType = "success" | "error" | "warning" | "info";
 
 /**
- * Toast notification data
+ * Toast notification data (base)
  */
 export interface ToastData {
   id: string;
@@ -52,11 +52,20 @@ export interface ToastData {
 }
 
 /**
+ * Toast with duration (used in store)
+ */
+export interface Toast extends ToastData {
+  /** Auto-dismiss duration in ms (0 = no auto-dismiss) */
+  duration: number;
+}
+
+/**
  * Options for creating a toast
  */
 export interface ToastOptions {
   type: ToastType;
   message: string;
+  /** Duration in ms (default: 4000, 0 = no auto-dismiss) */
   duration?: number;
 }
 

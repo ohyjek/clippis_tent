@@ -21,6 +21,7 @@ export type {
   SpatialParams,
   AudioParameters,
   AudioParameterOptions,
+  AudioNodes,
 } from "./audio";
 
 // UI types
@@ -30,6 +31,7 @@ export type {
   ListItem,
   ToastType,
   ToastData,
+  Toast,
   ToastOptions,
   ThemeMode,
   ResolvedTheme,

@@ -12,12 +12,8 @@
  * Usage: import { audioStore } from "@/stores/audio"
  */
 import { createSignal, createRoot } from "solid-js";
-import {
-  type SoundSource,
-  type Position,
-  createSoundSource,
-  randomPosition,
-} from "../lib/spatial-audio";
+import type { SoundSource, Position } from "@clippis/types";
+import { createSoundSource, randomPosition } from "../lib/spatial-audio";
 import { logger } from "../lib/logger";
 import { showToast } from "./toast";
 

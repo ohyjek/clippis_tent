@@ -5,15 +5,9 @@
  */
 import { createSignal, onCleanup, type Accessor } from "solid-js";
 import { audioStore } from "@/stores/audio";
-import type { AudioSourceType } from "@clippis/types";
+import type { AudioSourceType, AudioNodes } from "@clippis/types";
 
-/** Audio nodes for a single speaker */
-export interface AudioNodes {
-  source: OscillatorNode | MediaStreamAudioSourceNode;
-  sourceType: AudioSourceType;
-  gainNode: GainNode;
-  panner: StereoPannerNode;
-}
+export type { AudioNodes };
 
 /** Parameters for starting playback */
 export interface PlaybackParams {

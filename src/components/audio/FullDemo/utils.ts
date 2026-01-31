@@ -1,27 +1,16 @@
 /**
  * utils.ts - Utility functions for the spatial audio demo
  *
- * Re-exports shared utilities from @/lib/spatial-utils and adds
- * demo-specific helpers like frequency-to-note conversion.
+ * Re-exports commonly used utilities from @/lib/spatial-utils
+ * and provides demo-specific helpers.
  */
 
-// Re-export shared utilities from central location
+// Re-export only what's actually used by demo components
 export {
   toPercent,
-  fromPercent,
   getPositionFromEvent,
   getScreenPosition,
-  toCssPosition,
-  createWallsFromBounds,
-  createRoomFromCorners,
-  isValidRoomSize,
-  distanceBetween,
-  angleBetween,
-  normalizeAngle,
-  generateId,
-  updateItemById,
   DEFAULT_ATTENUATION,
-  MIN_ROOM_SIZE,
 } from "@/lib/spatial-utils";
 
 import { FREQUENCY_NOTES } from "./constants";
