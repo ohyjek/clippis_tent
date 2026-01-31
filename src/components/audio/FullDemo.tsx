@@ -22,7 +22,7 @@ import {
   createListener,
 } from "@/lib/spatial-audio-engine";
 import { audioStore } from "@/stores/audio";
-import { Button, Slider, Speaker, SelectField } from "@/components/ui";
+import { Button, Slider, Speaker } from "@/components/ui";
 import styles from "./FullDemo.module.css";
 
 /** Extended speaker data for UI state */
@@ -662,6 +662,50 @@ export function FullDemo() {
     );
   };
 
+  // Update selected speaker's frequency
+  const updateFrequency = (frequency: number) => {
+    const speakerId = selectedSpeaker();
+    setSpeakers((prev) =>
+      prev.map((s) => (s.id === speakerId ? { ...s, frequency } : s))
+    );
+    // Update playing audio if active
+    const nodes = audioNodes.get(speakerId);
+    if (nodes) {
+      nodes.oscillator.frequency.value = frequency;
+    }
+  };
+
+  // Delete selected speaker
+  const deleteSelectedSpeaker = () => {
+    const id = selectedSpeaker();
+    if (!id) return;
+    stopPlayback(id);
+    setSpeakers((prev) => prev.filter((s) => s.id !== id));
+    // Select another speaker if available
+    const remaining = speakers().filter((s) => s.id !== id);
+    if (remaining.length > 0) {
+      setSelectedSpeaker(remaining[0].id);
+    }
+  };
+
+  // Update room label
+  const updateRoomLabel = (label: string) => {
+    const id = selectedRoomId();
+    if (!id) return;
+    setRooms((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, label } : r))
+    );
+  };
+
+  // Update room color
+  const updateRoomColor = (color: string) => {
+    const id = selectedRoomId();
+    if (!id) return;
+    setRooms((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, color } : r))
+    );
+  };
+
   // Reset to initial state
   const resetDemo = () => {
     stopAllPlayback();
@@ -693,9 +737,10 @@ export function FullDemo() {
 
   return (
     <div class={styles.container}>
-      {/* Mode toggle and primary controls */}
-      <div class={styles.controls}>
-        <div class={styles.modeToggle}>
+      {/* Toolbar */}
+      <div class={styles.toolbar}>
+        <div class={styles.toolbarGroup}>
+          <span class={styles.toolLabel}>Mode</span>
           <Button
             variant={drawingMode() === "select" ? "primary" : "outline"}
             icon="👆"
@@ -711,249 +756,392 @@ export function FullDemo() {
             Draw Room
           </Button>
         </div>
-        <Button variant="primary" icon="➕" onClick={addSpeaker}>
-          Add Speaker
-        </Button>
-        <Button
-          variant={isPlaying(selectedSpeaker()) ? "danger" : "success"}
-          icon={isPlaying(selectedSpeaker()) ? "⏹️" : "🔊"}
-          onClick={() => togglePlayback(selectedSpeaker())}
-        >
-          {isPlaying(selectedSpeaker()) ? "Stop" : "Play"}
-        </Button>
-        <Slider
-          label="Volume"
-          min={0}
-          max={1}
-          step={0.01}
-          value={audioStore.masterVolume()}
-          onInput={(e) => audioStore.updateMasterVolume(parseFloat(e.currentTarget.value))}
-          showValue
-        />
+        <div class={styles.toolbarGroup}>
+          <span class={styles.toolLabel}>Audio</span>
+          <Button variant="primary" icon="➕" onClick={addSpeaker}>
+            Add Speaker
+          </Button>
+          <Button
+            variant={isPlaying(selectedSpeaker()) ? "danger" : "success"}
+            icon={isPlaying(selectedSpeaker()) ? "⏹️" : "🔊"}
+            onClick={() => togglePlayback(selectedSpeaker())}
+          >
+            {isPlaying(selectedSpeaker()) ? "Stop" : "Play"}
+          </Button>
+        </div>
+        <div class={styles.toolbarGroup}>
+          <span class={styles.toolLabel}>Volume</span>
+          <Slider
+            min={0}
+            max={1}
+            step={0.01}
+            value={audioStore.masterVolume()}
+            onInput={(e) => audioStore.updateMasterVolume(parseFloat(e.currentTarget.value))}
+            showValue
+          />
+        </div>
         <Button variant="outline" icon="🔄" onClick={resetDemo}>
           Reset
         </Button>
       </div>
 
-      {/* Audio settings panel */}
-      <div class={styles.settingsPanel}>
-        <SelectField
-          label="Distance Model"
-          options={distanceModelOptions}
-          value={distanceModel()}
-          onChange={(e) => setDistanceModel(e.currentTarget.value as DistanceModel)}
-        />
-        <SelectField
-          label="Speaker Pattern"
-          options={directivityOptions}
-          value={getSelectedSpeaker()?.directivity ?? "cardioid"}
-          onChange={(e) => updateDirectivity(e.currentTarget.value as DirectivityPattern)}
-        />
-        <Show when={selectedRoom()}>
-          {(room) => (
-            <div class={styles.roomSettings}>
-              <label class={styles.settingsLabel}>
-                Room Attenuation: {Math.round(room().attenuation * 100)}%
-              </label>
-              <input
-                type="range"
-                class={styles.slider}
-                min="0"
-                max="100"
-                value={room().attenuation * 100}
-                onInput={(e) => updateRoomAttenuation(parseInt(e.currentTarget.value) / 100)}
-              />
-              <Button variant="danger" icon="🗑️" onClick={deleteSelectedRoom}>
-                Delete Room
-              </Button>
-            </div>
-          )}
-        </Show>
-      </div>
-
       {!audioStore.audioInitialized() && (
         <div class={styles.banner}>
           <p>
-            🔊 <strong>Click anywhere</strong> to enable audio, then click a speaker to
-            start a continuous tone!
+            🔊 <strong>Click anywhere</strong> to enable audio, then click a speaker to start!
           </p>
         </div>
       )}
 
-      <div class={styles.roomCard}>
-        <h2 class={styles.roomTitle}>
-          {drawingMode() === "draw" ? "Click and drag to draw a room" : "The Tent"}
-        </h2>
+      {/* Main content: Canvas + Sidebar */}
+      <div class={styles.mainContent}>
+        {/* Canvas area */}
+        <div class={styles.canvasWrapper}>
+          <h3 class={styles.canvasTitle}>
+            {drawingMode() === "draw" ? "Click and drag to draw a room" : "Spatial Audio Playground"}
+          </h3>
 
-        <div
-          class={`${styles.room} ${drawingMode() === "draw" ? styles.drawMode : ""}`}
-          ref={roomRef}
-          onClick={handleCanvasClick}
-          onMouseDown={handleCanvasMouseDown}
-          onMouseMove={handleCanvasMouseMove}
-          onMouseUp={handleCanvasMouseUp}
-          onMouseLeave={handleCanvasMouseUp}
-        >
-          {/* Grid overlay */}
-          <div class={styles.gridOverlay} />
+          <div
+            class={`${styles.canvas} ${drawingMode() === "select" ? styles.selectMode : ""}`}
+            ref={roomRef}
+            onClick={handleCanvasClick}
+            onMouseDown={handleCanvasMouseDown}
+            onMouseMove={handleCanvasMouseMove}
+            onMouseUp={handleCanvasMouseUp}
+            onMouseLeave={handleCanvasMouseUp}
+          >
+            {/* Grid overlay */}
+            <div class={styles.gridOverlay} />
 
-          {/* Drawing preview */}
-          <Show when={isDrawing() && drawStart()}>
-            <DrawingPreview start={drawStart} end={drawEnd} toPercent={toPercent} />
-          </Show>
+            {/* Drawing preview */}
+            <Show when={isDrawing() && drawStart()}>
+              <DrawingPreview start={drawStart} end={drawEnd} toPercent={toPercent} />
+            </Show>
 
-          {/* Room boundaries */}
-          <For each={rooms()}>
-            {(room) => {
-              const b = room.bounds;
-              const left = toPercent(b.x - b.width / 2);
-              const top = toPercent(b.y - b.height / 2);
-              const width = b.width * 20;
-              const height = b.height * 20;
+            {/* Room boundaries */}
+            <For each={rooms()}>
+              {(room) => {
+                const b = room.bounds;
+                const left = toPercent(b.x - b.width / 2);
+                const top = toPercent(b.y - b.height / 2);
+                const width = b.width * 20;
+                const height = b.height * 20;
 
-              return (
-                <>
-                  <div
-                    class={`${styles.roomArea} ${selectedRoomId() === room.id ? styles.selected : ""} ${drawingMode() === "draw" ? styles.drawModeRoom : ""}`}
-                    style={{
-                      left: `${left}%`,
-                      top: `${top}%`,
-                      width: `${width}%`,
-                      height: `${height}%`,
-                      "border-color": room.color,
-                      background: `${room.color}20`,
-                    }}
-                    onClick={handleRoomClick(room.id)}
-                  >
-                    <span class={styles.roomLabel}>{room.label}</span>
-                  </div>
-                  <For each={room.walls}>
-                    {(wall) => {
-                      const isVertical = wall.start.x === wall.end.x;
-                      const length = isVertical
-                        ? Math.abs(wall.end.y - wall.start.y)
-                        : Math.abs(wall.end.x - wall.start.x);
-
-                      return (
-                        <div
-                          class={`${styles.wall} ${isVertical ? styles.vertical : styles.horizontal}`}
-                          style={{
-                            left: `${toPercent(Math.min(wall.start.x, wall.end.x))}%`,
-                            top: `${toPercent(Math.min(wall.start.y, wall.end.y))}%`,
-                            [isVertical ? "height" : "width"]: `${length * 20}%`,
-                            background: room.color,
-                          }}
-                        />
-                      );
-                    }}
-                  </For>
-                </>
-              );
-            }}
-          </For>
-
-          {/* Sound path lines */}
-          <svg class={styles.pathSvg}>
-            <For each={speakers()}>
-              {(speaker) => {
-                const wallCount = getWallCount(speaker);
                 return (
-                  <line
-                    x1={`${toPercent(speaker.position.x)}%`}
-                    y1={`${toPercent(speaker.position.y)}%`}
-                    x2={`${toPercent(listenerPos().x)}%`}
-                    y2={`${toPercent(listenerPos().y)}%`}
-                    class={`${styles.pathLine} ${wallCount > 0 ? styles.blocked : ""}`}
-                    stroke-dasharray={wallCount > 0 ? "5,5" : "none"}
-                    opacity={selectedSpeaker() === speaker.id ? 1 : 0.3}
-                  />
+                  <>
+                    <div
+                      class={`${styles.roomArea} ${selectedRoomId() === room.id ? styles.selected : ""} ${drawingMode() === "draw" ? styles.drawModeRoom : ""}`}
+                      style={{
+                        left: `${left}%`,
+                        top: `${top}%`,
+                        width: `${width}%`,
+                        height: `${height}%`,
+                        "border-color": room.color,
+                        background: `${room.color}20`,
+                      }}
+                      onClick={handleRoomClick(room.id)}
+                    >
+                      <span class={styles.roomLabel}>{room.label}</span>
+                    </div>
+                    <For each={room.walls}>
+                      {(wall) => {
+                        const isVertical = wall.start.x === wall.end.x;
+                        const length = isVertical
+                          ? Math.abs(wall.end.y - wall.start.y)
+                          : Math.abs(wall.end.x - wall.start.x);
+
+                        return (
+                          <div
+                            class={`${styles.wall} ${isVertical ? styles.vertical : styles.horizontal}`}
+                            style={{
+                              left: `${toPercent(Math.min(wall.start.x, wall.end.x))}%`,
+                              top: `${toPercent(Math.min(wall.start.y, wall.end.y))}%`,
+                              [isVertical ? "height" : "width"]: `${length * 20}%`,
+                              background: room.color,
+                            }}
+                          />
+                        );
+                      }}
+                    </For>
+                  </>
                 );
               }}
             </For>
-          </svg>
 
-          {/* Speakers */}
-          <For each={speakers()}>
+            {/* Sound path lines */}
+            <svg class={styles.pathSvg}>
+              <For each={speakers()}>
+                {(speaker) => {
+                  const wallCount = getWallCount(speaker);
+                  return (
+                    <line
+                      x1={`${toPercent(speaker.position.x)}%`}
+                      y1={`${toPercent(speaker.position.y)}%`}
+                      x2={`${toPercent(listenerPos().x)}%`}
+                      y2={`${toPercent(listenerPos().y)}%`}
+                      class={`${styles.pathLine} ${wallCount > 0 ? styles.blocked : ""}`}
+                      stroke-dasharray={wallCount > 0 ? "5,5" : "none"}
+                      opacity={selectedSpeaker() === speaker.id ? 1 : 0.3}
+                    />
+                  );
+                }}
+              </For>
+            </svg>
+
+            {/* Speakers */}
+            <For each={speakers()}>
+              {(speaker) => (
+                <Speaker
+                  id={speaker.id}
+                  position={speaker.position}
+                  color={speaker.color}
+                  facing={speaker.facing}
+                  gain={calculateDisplayGain(speaker)}
+                  isSelected={selectedSpeaker() === speaker.id}
+                  isPlaying={isPlaying(speaker.id)}
+                  isMoving={isMovingSpeaker() === speaker.id}
+                  isRotating={isRotatingSpeaker() === speaker.id}
+                  onClick={() => {
+                    setSelectedSpeaker(speaker.id);
+                    togglePlayback(speaker.id);
+                  }}
+                  onMoveStart={handleSpeakerMoveStart(speaker.id)}
+                  onRotateStart={handleSpeakerRotateStart(speaker.id)}
+                  style={{
+                    left: `${toPercent(speaker.position.x)}%`,
+                    top: `${toPercent(speaker.position.y)}%`,
+                  }}
+                />
+              )}
+            </For>
+
+            {/* Listener */}
+            <Speaker
+              id="listener"
+              position={listenerPos()}
+              color="#3b82f6"
+              facing={listenerFacing()}
+              gain={1}
+              isSelected={false}
+              isPlaying={false}
+              isMoving={isDraggingListener()}
+              isRotating={isRotatingListener()}
+              icon="🎧"
+              onMoveStart={handleListenerMove}
+              onRotateStart={handleListenerRotate}
+              style={{
+                left: `${toPercent(listenerPos().x)}%`,
+                top: `${toPercent(listenerPos().y)}%`,
+              }}
+            />
+          </div>
+
+          <div class={styles.statusBar}>
+            <span>🎧 ({listenerPos().x.toFixed(1)}, {listenerPos().y.toFixed(1)})</span>
+            <span>{rooms().length} room{rooms().length !== 1 ? "s" : ""}</span>
+            <span>
+              {speakers().length} speaker{speakers().length !== 1 ? "s" : ""}
+              {playingSpeakers().size > 0 && ` (${playingSpeakers().size} playing)`}
+            </span>
+            <span class={styles.hint}>
+              {drawingMode() === "draw" ? "Click and drag to draw" : "Drag to move • Click to select"}
+            </span>
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div class={styles.sidebar}>
+          {/* Speaker Properties */}
+          <Show when={getSelectedSpeaker()}>
             {(speaker) => (
-              <Speaker
-                id={speaker.id}
-                position={speaker.position}
-                color={speaker.color}
-                facing={speaker.facing}
-                gain={calculateDisplayGain(speaker)}
-                isSelected={selectedSpeaker() === speaker.id}
-                isPlaying={isPlaying(speaker.id)}
-                isMoving={isMovingSpeaker() === speaker.id}
-                isRotating={isRotatingSpeaker() === speaker.id}
-                onClick={() => {
-                  setSelectedSpeaker(speaker.id);
-                  togglePlayback(speaker.id);
-                }}
-                onMoveStart={handleSpeakerMoveStart(speaker.id)}
-                onRotateStart={handleSpeakerRotateStart(speaker.id)}
-                style={{
-                  left: `${toPercent(speaker.position.x)}%`,
-                  top: `${toPercent(speaker.position.y)}%`,
-                }}
-              />
+              <div class={styles.panel}>
+                <h4 class={styles.panelTitle}>🎤 Speaker Properties</h4>
+
+                <div class={styles.propertyGroup}>
+                  <label class={styles.propertyLabel}>Pattern</label>
+                  <select
+                    class={styles.propertySelect}
+                    value={speaker().directivity}
+                    onChange={(e) => updateDirectivity(e.currentTarget.value as DirectivityPattern)}
+                  >
+                    <For each={directivityOptions}>
+                      {(opt) => <option value={opt.value}>{opt.label}</option>}
+                    </For>
+                  </select>
+                </div>
+
+                <div class={styles.propertyGroup}>
+                  <label class={styles.propertyLabel}>
+                    Frequency: {speaker().frequency} Hz
+                  </label>
+                  <input
+                    type="range"
+                    class={styles.propertySlider}
+                    min="220"
+                    max="880"
+                    step="10"
+                    value={speaker().frequency}
+                    onInput={(e) => updateFrequency(parseInt(e.currentTarget.value))}
+                  />
+                </div>
+
+                <div class={styles.propertyGroup}>
+                  <label class={styles.propertyLabel}>Color</label>
+                  <div class={styles.colorSwatches}>
+                    <For each={SPEAKER_COLORS}>
+                      {(color) => (
+                        <div
+                          class={`${styles.colorSwatch} ${speaker().color === color ? styles.selected : ""}`}
+                          style={{ background: color }}
+                          onClick={() => {
+                            setSpeakers((prev) =>
+                              prev.map((s) => (s.id === speaker().id ? { ...s, color } : s))
+                            );
+                          }}
+                        />
+                      )}
+                    </For>
+                  </div>
+                </div>
+
+                <div class={styles.propertyGroup}>
+                  <Button
+                    variant={isPlaying(speaker().id) ? "danger" : "success"}
+                    icon={isPlaying(speaker().id) ? "⏹️" : "▶️"}
+                    onClick={() => togglePlayback(speaker().id)}
+                  >
+                    {isPlaying(speaker().id) ? "Stop" : "Play"}
+                  </Button>
+                  <Show when={speakers().length > 1}>
+                    <Button variant="danger" icon="🗑️" onClick={deleteSelectedSpeaker}>
+                      Delete
+                    </Button>
+                  </Show>
+                </div>
+              </div>
             )}
-          </For>
+          </Show>
 
-          {/* Listener - uses same Speaker component style */}
-          <Speaker
-            id="listener"
-            position={listenerPos()}
-            color="#3b82f6"
-            facing={listenerFacing()}
-            gain={1}
-            isSelected={false}
-            isPlaying={false}
-            isMoving={isDraggingListener()}
-            isRotating={isRotatingListener()}
-            icon="🎧"
-            onMoveStart={handleListenerMove}
-            onRotateStart={handleListenerRotate}
-            style={{
-              left: `${toPercent(listenerPos().x)}%`,
-              top: `${toPercent(listenerPos().y)}%`,
-            }}
-          />
+          {/* Room Properties */}
+          <Show when={selectedRoom()}>
+            {(room) => (
+              <div class={styles.panel}>
+                <h4 class={styles.panelTitle}>🚪 Room Properties</h4>
+
+                <div class={styles.propertyGroup}>
+                  <label class={styles.propertyLabel}>Name</label>
+                  <input
+                    type="text"
+                    class={styles.propertyInput}
+                    value={room().label}
+                    onInput={(e) => updateRoomLabel(e.currentTarget.value)}
+                  />
+                </div>
+
+                <div class={styles.propertyGroup}>
+                  <label class={styles.propertyLabel}>Color</label>
+                  <div class={styles.colorSwatches}>
+                    <For each={ROOM_COLORS}>
+                      {(color) => (
+                        <div
+                          class={`${styles.colorSwatch} ${room().color === color ? styles.selected : ""}`}
+                          style={{ background: color }}
+                          onClick={() => updateRoomColor(color)}
+                        />
+                      )}
+                    </For>
+                  </div>
+                </div>
+
+                <div class={styles.propertyGroup}>
+                  <label class={styles.propertyLabel}>
+                    Wall Attenuation: {Math.round(room().attenuation * 100)}%
+                  </label>
+                  <input
+                    type="range"
+                    class={styles.propertySlider}
+                    min="0"
+                    max="100"
+                    value={room().attenuation * 100}
+                    onInput={(e) => updateRoomAttenuation(parseInt(e.currentTarget.value) / 100)}
+                  />
+                  <div class={styles.sliderLabels}>
+                    <span>Transparent</span>
+                    <span>Solid</span>
+                  </div>
+                </div>
+
+                <div class={styles.propertyGroup}>
+                  <Button variant="danger" icon="🗑️" onClick={deleteSelectedRoom}>
+                    Delete Room
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Show>
+
+          {/* Audio Settings */}
+          <div class={styles.panel}>
+            <h4 class={styles.panelTitle}>⚙️ Audio Settings</h4>
+
+            <div class={styles.propertyGroup}>
+              <label class={styles.propertyLabel}>Distance Model</label>
+              <select
+                class={styles.propertySelect}
+                value={distanceModel()}
+                onChange={(e) => setDistanceModel(e.currentTarget.value as DistanceModel)}
+              >
+                <For each={distanceModelOptions}>
+                  {(opt) => <option value={opt.value}>{opt.label}</option>}
+                </For>
+              </select>
+            </div>
+          </div>
+
+          {/* Speakers List */}
+          <div class={styles.panel}>
+            <h4 class={styles.panelTitle}>🎤 Speakers</h4>
+            <div class={styles.itemList}>
+              <For each={speakers()}>
+                {(speaker) => (
+                  <div
+                    class={`${styles.listItem} ${selectedSpeaker() === speaker.id ? styles.selected : ""}`}
+                    onClick={() => setSelectedSpeaker(speaker.id)}
+                  >
+                    <div class={styles.itemSwatch} style={{ background: speaker.color }} />
+                    <span class={styles.itemName}>
+                      {speaker.frequency} Hz
+                      {isPlaying(speaker.id) && " 🔊"}
+                    </span>
+                  </div>
+                )}
+              </For>
+            </div>
+          </div>
+
+          {/* Rooms List */}
+          <div class={styles.panel}>
+            <h4 class={styles.panelTitle}>🚪 Rooms</h4>
+            <Show
+              when={rooms().length > 0}
+              fallback={<div class={styles.emptyState}>No rooms yet. Draw one!</div>}
+            >
+              <div class={styles.itemList}>
+                <For each={rooms()}>
+                  {(room) => (
+                    <div
+                      class={`${styles.listItem} ${selectedRoomId() === room.id ? styles.selected : ""}`}
+                      onClick={() => setSelectedRoomId(room.id)}
+                    >
+                      <div class={styles.itemSwatch} style={{ background: room.color }} />
+                      <span class={styles.itemName}>{room.label}</span>
+                    </div>
+                  )}
+                </For>
+              </div>
+            </Show>
+          </div>
         </div>
-
-        <div class={styles.statusBar}>
-          <span>
-            Listener: ({listenerPos().x.toFixed(1)}, {listenerPos().y.toFixed(1)})
-          </span>
-          <span>{rooms().length} room{rooms().length !== 1 ? "s" : ""}</span>
-          <span>
-            {speakers().length} speaker{speakers().length !== 1 ? "s" : ""}
-            {playingSpeakers().size > 0 && ` (${playingSpeakers().size} playing)`}
-          </span>
-          <span class={styles.hint}>
-            {drawingMode() === "draw" ? "Click and drag to draw" : "Drag to move • Click rooms to select"}
-          </span>
-        </div>
-      </div>
-
-      <div class={styles.legend}>
-        <h4>Spatial Audio Playground</h4>
-        <p>
-          Draw rooms, place speakers, and experience <strong>listener-relative spatial audio</strong>.
-        </p>
-        <ul>
-          <li>
-            <strong>✏️ Draw Mode</strong>: Click and drag to create rooms with walls
-          </li>
-          <li>
-            <strong>👆 Select Mode</strong>: Click rooms to adjust attenuation, drag speakers/listener
-          </li>
-          <li>
-            <strong>🎧 Listener</strong>: Drag icon to move, drag cone to rotate facing
-          </li>
-          <li>
-            <strong>🎤 Speakers</strong>: Click to toggle sound, drag to move/rotate
-          </li>
-        </ul>
       </div>
     </div>
   );
