@@ -1,7 +1,7 @@
 /**
  * tent.spec.ts - E2E tests for The Tent page
  *
- * Tests the spatial audio playground functionality.
+ * Tests the spatial audio demo functionality.
  * The Tent is the home page at route "/"
  */
 import { test, expect } from "@playwright/test";
@@ -15,24 +15,6 @@ test.describe("The Tent Page", () => {
   test("should display The Tent heading", async ({ page }) => {
     // Use h1 specifically to avoid matching other headings
     await expect(page.locator("h1")).toContainText(/the tent/i);
-  });
-
-  test("should display tab navigation", async ({ page }) => {
-    // Check for the tablist and tabs (using role="tab" for accessibility)
-    await expect(page.getByRole("tablist")).toBeVisible();
-    await expect(page.getByRole("tab", { name: /full demo/i })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /listener/i })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /speaker/i })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /room/i })).toBeVisible();
-  });
-
-  test("should switch between tabs", async ({ page }) => {
-    // Click Speaker tab
-    await page.getByRole("tab", { name: /speaker/i }).click();
-
-    // Verify Speaker tab is now selected
-    const speakerTab = page.getByRole("tab", { name: /speaker/i });
-    await expect(speakerTab).toHaveAttribute("aria-selected", "true");
   });
 
   test("should display room visualization", async ({ page }) => {
