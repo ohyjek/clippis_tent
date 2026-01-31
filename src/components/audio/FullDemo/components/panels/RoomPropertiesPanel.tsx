@@ -3,7 +3,7 @@
  *
  * Allows changing room name, color, and wall attenuation.
  */
-import { Show } from "solid-js";
+import { Show, createEffect, createSignal } from "solid-js";
 import { Button, ColorSwatches, Panel } from "@/components/ui";
 import { useDemoContext } from "../../context";
 import { ROOM_COLORS } from "../../constants";
@@ -17,6 +17,27 @@ export function RoomPropertiesPanel() {
     updateRoomAttenuation,
     deleteSelectedRoom,
   } = useDemoContext();
+
+  // Local slider value to prevent race conditions when room selection changes
+  const [sliderValue, setSliderValue] = createSignal(70);
+
+  // Sync local slider value when selected room changes
+  createEffect(() => {
+    const room = selectedRoom();
+    if (room) {
+      setSliderValue(Math.round(room.attenuation * 100));
+    }
+  });
+
+  const handleSliderChange = (e: InputEvent & { currentTarget: HTMLInputElement }) => {
+    const newValue = parseInt(e.currentTarget.value);
+    const room = selectedRoom();
+    if (!room) return;
+
+    setSliderValue(newValue);
+    // Pass the room ID explicitly to prevent race conditions when selection changes
+    updateRoomAttenuation(newValue / 100, room.id);
+  };
 
   return (
     <Show when={selectedRoom()}>
@@ -44,17 +65,16 @@ export function RoomPropertiesPanel() {
 
           <div class={styles.propertyGroup}>
             <label class={styles.propertyLabel}>
-              Wall Attenuation: {Math.round(room().attenuation * 100)}%
+              Wall Attenuation: {sliderValue()}%
             </label>
             <input
               type="range"
               class={styles.propertySlider}
               min="0"
               max="100"
-              value={room().attenuation * 100}
-              onInput={(e) =>
-                updateRoomAttenuation(parseInt(e.currentTarget.value) / 100)
-              }
+              step="1"
+              value={sliderValue()}
+              onInput={handleSliderChange}
             />
             <div class={styles.sliderLabels}>
               <span>Transparent</span>

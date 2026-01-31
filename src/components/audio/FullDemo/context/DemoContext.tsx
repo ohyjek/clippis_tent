@@ -86,7 +86,7 @@ interface DemoContextValue {
   // Room actions
   addRoom: (start: Position, end: Position) => void;
   deleteSelectedRoom: () => void;
-  updateRoomAttenuation: (attenuation: number) => void;
+  updateRoomAttenuation: (attenuation: number, roomId?: string) => void;
   updateRoomLabel: (label: string) => void;
   updateRoomColor: (color: string) => void;
   handleRoomClick: (roomId: string) => (e: MouseEvent) => void;
@@ -264,8 +264,8 @@ export function DemoProvider(props: { children: JSX.Element }) {
     setSelectedRoomId(null);
   };
 
-  const updateRoomAttenuation = (attenuation: number) => {
-    const id = selectedRoomId();
+  const updateRoomAttenuation = (attenuation: number, roomId?: string) => {
+    const id = roomId ?? selectedRoomId();
     if (!id) return;
     setRooms((prev) => prev.map((r) => (r.id === id ? { ...r, attenuation } : r)));
   };
