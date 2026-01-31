@@ -1,3 +1,8 @@
+/**
+ * App.module.css - Styles for App layout shell
+ * Flexbox layout with sidebar on left, main content on right.
+ */
+
 .app {
   display: flex;
   min-height: 100vh;

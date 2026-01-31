@@ -1,8 +1,17 @@
 /**
- * Spatial Audio Utilities
+ * spatial-audio.ts - Core spatial audio math utilities
  *
- * This module provides functions for calculating spatial audio parameters
- * (volume and stereo panning) based on listener and sound source positions.
+ * Pure functions for calculating spatial audio parameters.
+ * No side effects, fully tested (see spatial-audio.test.ts).
+ *
+ * Features:
+ * - Distance-based volume attenuation (inverse square law)
+ * - Stereo panning based on horizontal position
+ * - Directional audio (cardioid speaking pattern)
+ * - Wall/room boundary attenuation
+ *
+ * Coordinate system: x = left/right, y = up/down
+ * Range: typically -2.5 to +2.5 in room coordinates
  */
 
 /** 2D position in the audio room */

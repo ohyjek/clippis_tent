@@ -1,3 +1,17 @@
+/**
+ * variables.css - CSS Custom Properties (Design Tokens)
+ *
+ * Central place for all design tokens used throughout the app.
+ * Import this before other CSS: @import "@/styles/variables.css"
+ *
+ * Categories:
+ * - Colors (backgrounds, text, accents, borders)
+ * - Spacing (xs through xl)
+ * - Border radius
+ * - Transitions
+ * - Layout dimensions
+ */
+
 /* Color Palette - Slate/Blue theme */
 :root {
   /* Background colors */

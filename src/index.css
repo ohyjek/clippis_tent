@@ -1,3 +1,16 @@
+/**
+ * index.css - Global styles and CSS reset
+ *
+ * Applied to the entire app. Includes:
+ * - Box-sizing reset
+ * - Body defaults (font, colors)
+ * - List and link resets
+ * - Focus styles for accessibility
+ * - Custom scrollbar styling
+ *
+ * Note: variables.css must be imported before this file.
+ */
+
 /* Global Reset & Base Styles */
 *,
 *::before,

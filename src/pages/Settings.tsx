@@ -1,3 +1,13 @@
+/**
+ * Settings.tsx - Audio settings page (/settings)
+ *
+ * Allows users to configure:
+ * - Input/output audio devices
+ * - Master volume
+ * - Audio processing (spatial audio, noise suppression, echo cancellation)
+ *
+ * Device enumeration requires microphone permission on first load.
+ */
 import { createSignal, onMount } from "solid-js";
 import { audioStore } from "@/stores/audio";
 import { Section, SelectField, Slider, Toggle } from "@/components/ui";

@@ -1,6 +1,16 @@
 /**
- * Renderer entry point
- * Sets up the SolidJS app with routing and App layout
+ * renderer.tsx - SolidJS app entry point (frontend)
+ *
+ * This is the "frontend" that runs in the Electron browser window.
+ * Sets up:
+ * - SolidJS Router with App layout as root
+ * - Lazy-loaded pages for code splitting
+ * - Global CSS imports
+ *
+ * Routes:
+ *   /         -> Tent (spatial audio demos)
+ *   /voice    -> VoiceRoom (coming soon)
+ *   /settings -> Settings page
  */
 import { render } from "solid-js/web";
 import { lazy } from "solid-js";

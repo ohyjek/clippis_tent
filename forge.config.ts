@@ -1,3 +1,16 @@
+/**
+ * forge.config.ts - Electron Forge configuration
+ *
+ * Configures app packaging and distribution:
+ * - Makers: Squirrel (Windows), ZIP (macOS), DEB/RPM (Linux)
+ * - Vite plugin for building main/preload/renderer
+ * - Fuses for security hardening
+ *
+ * Commands:
+ *   pnpm start   -> development
+ *   pnpm package -> create distributable
+ *   pnpm make    -> create installers
+ */
 import type { ForgeConfig } from "@electron-forge/shared-types";
 import { MakerSquirrel } from "@electron-forge/maker-squirrel";
 import { MakerZIP } from "@electron-forge/maker-zip";

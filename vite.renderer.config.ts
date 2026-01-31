@@ -1,8 +1,17 @@
+/**
+ * vite.renderer.config.ts - Vite config for the renderer (UI)
+ *
+ * Builds the SolidJS frontend that runs in the Electron browser window.
+ * Configures:
+ * - SolidJS JSX transform
+ * - @/ path alias to src/
+ * - Code splitting (vendor chunk for solid-js)
+ * - Dependency pre-bundling
+ */
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 import path from "path";
 
-// https://vitejs.dev/config
 export default defineConfig({
   plugins: [solidPlugin()],
   resolve: {

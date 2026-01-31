@@ -1,5 +1,15 @@
 /**
- * Audio Store - Global state management for audio functionality
+ * audio.ts - Global audio state store (SolidJS signals)
+ *
+ * Singleton store managing all audio-related state:
+ * - AudioContext initialization
+ * - Master volume
+ * - Listener position
+ * - Sound sources list
+ * - Device preferences (input/output)
+ * - Processing settings (spatial, noise suppression, echo cancellation)
+ *
+ * Usage: import { audioStore } from "@/stores/audio"
  */
 import { createSignal, createRoot } from "solid-js";
 import {

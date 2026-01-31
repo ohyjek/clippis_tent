@@ -1,3 +1,8 @@
+/**
+ * Tent.module.css - Styles for The Tent page
+ * Header styling and info section. Demo components have own styles.
+ */
+
 .page {
   max-width: 1200px;
   margin: 0 auto;

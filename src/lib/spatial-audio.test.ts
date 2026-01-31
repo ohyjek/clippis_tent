@@ -1,3 +1,16 @@
+/**
+ * spatial-audio.test.ts - Unit tests for spatial audio utilities
+ *
+ * Tests all functions in spatial-audio.ts:
+ * - Distance calculations
+ * - Volume attenuation
+ * - Stereo panning
+ * - Directional gain (cardioid pattern)
+ * - Wall intersection detection
+ * - Room creation
+ *
+ * Run with: pnpm test
+ */
 import { describe, it, expect } from "vitest";
 import {
   calculateDistance,

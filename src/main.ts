@@ -1,3 +1,13 @@
+/**
+ * main.ts - Electron main process entry point
+ *
+ * Runs in Node.js, responsible for:
+ * - Creating the browser window
+ * - Loading the renderer (index.html or dev server)
+ * - Handling app lifecycle events (ready, quit, activate)
+ *
+ * This is the "backend" of the Electron app.
+ */
 import { app, BrowserWindow } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";

@@ -1,8 +1,19 @@
+/**
+ * Tent.tsx - The Tent page (main spatial audio playground)
+ *
+ * Contains three tabbed demos:
+ * - Listener: Move around and hear how distance/panning affects sound
+ * - Speaker Direction: See how facing direction affects who hears you
+ * - Room Boundaries: See how walls attenuate sound between rooms
+ *
+ * This is the home page (/) of the app.
+ */
 import { createSignal, Match, Switch } from "solid-js";
 import { TentRoom, SpeakerDemo, RoomDemo } from "@/components/audio";
 import { Tabs } from "@/components/ui";
 import styles from "./Tent.module.css";
 
+/** Tab definitions for the demo switcher */
 const DEMO_TABS = [
   { id: "listener", label: "Listener", icon: "🎧" },
   { id: "speaker", label: "Speaker Direction", icon: "🎙️" },

@@ -1,3 +1,14 @@
+/**
+ * VoiceRoom.tsx - Voice chat page (/voice) - COMING SOON
+ *
+ * Placeholder for future real-time voice chat functionality.
+ * Will use WebRTC for peer-to-peer audio with spatial positioning.
+ *
+ * Planned features:
+ * - Create/join rooms
+ * - Spatial voice positioning
+ * - Push-to-talk or voice activation
+ */
 import { Button } from "@/components/ui";
 import styles from "./VoiceRoom.module.css";
 

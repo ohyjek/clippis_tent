@@ -1,3 +1,8 @@
+/**
+ * Sidebar.module.css - Styles for navigation sidebar
+ * Contains logo, nav links, and audio status indicator.
+ */
+
 .sidebar {
   width: var(--sidebar-width);
   background: var(--color-bg-secondary);
