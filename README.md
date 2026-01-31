@@ -11,7 +11,10 @@ Clippis demonstrates spatial audio positioning where sound sources have virtual 
 
 ## Features
 
-- **The Tent** — Interactive 2D visualization to test spatial audio with oscillator tones
+- **The Tent** — Interactive spatial audio playground with three tabbed demos:
+  - **Listener Demo** — Move around and hear how distance/panning affects sound
+  - **Speaker Direction** — Directional audio where facing affects who hears you
+  - **Room Boundaries** — Walls that attenuate sound between rooms
 - **Voice Room** — (Coming soon) Real-time voice chat with WebRTC
 - **Settings** — Configure audio devices, volume, and processing options
 - **Modern Architecture** — Lazy-loaded routes, global state, CSS Modules, `@/` path aliases
@@ -72,9 +75,12 @@ src/
 │   │   ├── Slider.tsx         # Range input with label and value display
 │   │   ├── Section.tsx        # Card container with title
 │   │   ├── SelectField.tsx    # Dropdown with label
+│   │   ├── Tabs.tsx           # Tab navigation component
 │   │   └── Toggle.tsx         # Checkbox with title and description
 │   ├── audio/                 # Audio-specific components
-│   │   ├── TentRoom.tsx       # Main spatial audio interface
+│   │   ├── TentRoom.tsx       # Listener demo - distance/panning
+│   │   ├── SpeakerDemo.tsx    # Speaking direction demo
+│   │   ├── RoomDemo.tsx       # Room boundaries demo
 │   │   ├── Listener.tsx       # The "you" icon in the room
 │   │   └── SoundSource.tsx    # Draggable sound source circles
 │   └── layout/                # Layout components
@@ -131,10 +137,13 @@ Pan    = clamp(dx / 3, -1, 1)
 ## Roadmap
 
 ### Phase 1: The Tent Enhancements
+- [x] Draggable sound sources
+- [x] Speaking direction (cardioid pattern)
+- [x] Room boundaries with wall attenuation
+- [x] Tabbed demo navigation
 - [ ] Waveform options (sine, square, sawtooth, triangle)
 - [ ] Looping/continuous sound sources
 - [ ] Keyboard controls for listener movement
-- [x] Draggable sound sources
 - [ ] Preset scenarios (surround test, stereo test)
 
 ### Phase 2: Voice Integration
@@ -146,6 +155,7 @@ Pan    = clamp(dx / 3, -1, 1)
 - [ ] WebRTC peer-to-peer connections
 - [ ] Signaling server for room coordination
 - [ ] Avatar/user representation in room
+- [ ] Speaking direction arrows on avatars
 
 ### Phase 4: Advanced Audio
 - [ ] HRTF (Head-Related Transfer Function) for true 3D audio

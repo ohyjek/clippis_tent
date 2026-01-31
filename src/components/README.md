@@ -106,6 +106,31 @@ import { SelectField } from "@/components/ui";
 
 ---
 
+### Tabs
+
+Horizontal tab navigation for switching views.
+
+```tsx
+import { Tabs } from "@/components/ui";
+
+<Tabs
+  tabs={[
+    { id: "a", label: "Tab A", icon: "🎧" },
+    { id: "b", label: "Tab B" },
+  ]}
+  activeTab={activeTab()}
+  onTabChange={setActiveTab}
+/>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `tabs` | `{ id: string, label: string, icon?: string }[]` | Tab definitions |
+| `activeTab` | `string` | Currently active tab ID |
+| `onTabChange` | `(id: string) => void` | Called when tab is clicked |
+
+---
+
 ### Toggle
 
 Checkbox with title and description, for boolean settings.
@@ -131,11 +156,11 @@ import { Toggle } from "@/components/ui";
 
 ## Audio Components (`audio/`)
 
-Components for the spatial audio visualization.
+Components for the spatial audio visualization. The Tent page uses tabs to switch between these demos.
 
 ### TentRoom
 
-Main spatial audio interface. Contains the 2D room, controls, and status bar.
+Listener demo — shows how distance and panning affect what you hear.
 
 ```tsx
 import { TentRoom } from "@/components/audio";
@@ -152,6 +177,44 @@ Uses `audioStore` internally for state management. No props required.
 - Play demo sequences
 - Test cardinal directions
 - Volume control
+
+---
+
+### SpeakerDemo
+
+Speaking direction demo — shows how a speaker's facing direction affects volume.
+
+```tsx
+import { SpeakerDemo } from "@/components/audio";
+
+<SpeakerDemo />
+```
+
+**Features:**
+- Multiple speakers with directional arrows
+- Click anywhere to face selected speaker toward that point
+- Cardioid audio pattern (louder when facing listener)
+- Gain indicator bars showing effective volume
+- Draggable listener position
+
+---
+
+### RoomDemo
+
+Room boundaries demo — shows how walls attenuate sound between rooms.
+
+```tsx
+import { RoomDemo } from "@/components/audio";
+
+<RoomDemo />
+```
+
+**Features:**
+- Two adjacent rooms with visible walls
+- Sound path visualization
+- Wall crossing count and attenuation display
+- Draggable speaker and listener
+- 70% volume reduction per wall crossed
 
 ---
 

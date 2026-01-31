@@ -7,8 +7,17 @@ import {
   randomPosition,
   randomFrequency,
   createSoundSource,
+  calculateAngleToPoint,
+  normalizeAngle,
+  calculateDirectionalGain,
+  lineIntersectsWall,
+  countWallsBetween,
+  calculateWallAttenuation,
+  createRectangularRoom,
+  createSpeaker,
   SOUND_FREQUENCIES,
   CARDINAL_DIRECTIONS,
+  SPEAKER_COLORS,
 } from "./spatial-audio";
 
 describe("spatial-audio utilities", () => {
@@ -254,6 +263,236 @@ describe("spatial-audio utilities", () => {
       for (let i = 1; i < SOUND_FREQUENCIES.length; i++) {
         expect(SOUND_FREQUENCIES[i]).toBeGreaterThan(SOUND_FREQUENCIES[i - 1]);
       }
+    });
+  });
+
+  describe("calculateAngleToPoint", () => {
+    it("returns 0 for point directly to the right", () => {
+      const from = { x: 0, y: 0 };
+      const to = { x: 1, y: 0 };
+      expect(calculateAngleToPoint(from, to)).toBeCloseTo(0);
+    });
+
+    it("returns PI/2 for point directly below", () => {
+      const from = { x: 0, y: 0 };
+      const to = { x: 0, y: 1 };
+      expect(calculateAngleToPoint(from, to)).toBeCloseTo(Math.PI / 2);
+    });
+
+    it("returns PI for point directly to the left", () => {
+      const from = { x: 0, y: 0 };
+      const to = { x: -1, y: 0 };
+      expect(Math.abs(calculateAngleToPoint(from, to))).toBeCloseTo(Math.PI);
+    });
+
+    it("returns -PI/2 for point directly above", () => {
+      const from = { x: 0, y: 0 };
+      const to = { x: 0, y: -1 };
+      expect(calculateAngleToPoint(from, to)).toBeCloseTo(-Math.PI / 2);
+    });
+
+    it("returns PI/4 for diagonal (down-right)", () => {
+      const from = { x: 0, y: 0 };
+      const to = { x: 1, y: 1 };
+      expect(calculateAngleToPoint(from, to)).toBeCloseTo(Math.PI / 4);
+    });
+  });
+
+  describe("normalizeAngle", () => {
+    it("returns same angle for values within range", () => {
+      expect(normalizeAngle(0)).toBeCloseTo(0);
+      expect(normalizeAngle(Math.PI / 2)).toBeCloseTo(Math.PI / 2);
+      expect(normalizeAngle(-Math.PI / 2)).toBeCloseTo(-Math.PI / 2);
+    });
+
+    it("normalizes angles greater than PI", () => {
+      expect(normalizeAngle(3 * Math.PI)).toBeCloseTo(Math.PI);
+      expect(normalizeAngle(2.5 * Math.PI)).toBeCloseTo(0.5 * Math.PI);
+    });
+
+    it("normalizes angles less than -PI", () => {
+      expect(normalizeAngle(-3 * Math.PI)).toBeCloseTo(-Math.PI);
+      expect(normalizeAngle(-2.5 * Math.PI)).toBeCloseTo(-0.5 * Math.PI);
+    });
+  });
+
+  describe("calculateDirectionalGain", () => {
+    it("returns 1.0 when facing directly toward listener", () => {
+      const speakerPos = { x: 0, y: 0 };
+      const listenerPos = { x: 1, y: 0 };
+      const facing = 0; // Facing right, toward listener
+      expect(calculateDirectionalGain(facing, speakerPos, listenerPos)).toBeCloseTo(1.0);
+    });
+
+    it("returns ~0 when facing directly away from listener", () => {
+      const speakerPos = { x: 0, y: 0 };
+      const listenerPos = { x: 1, y: 0 };
+      const facing = Math.PI; // Facing left, away from listener
+      expect(calculateDirectionalGain(facing, speakerPos, listenerPos)).toBeCloseTo(0);
+    });
+
+    it("returns 0.5 when facing perpendicular to listener", () => {
+      const speakerPos = { x: 0, y: 0 };
+      const listenerPos = { x: 1, y: 0 };
+      const facing = Math.PI / 2; // Facing down, perpendicular
+      expect(calculateDirectionalGain(facing, speakerPos, listenerPos)).toBeCloseTo(0.5);
+    });
+
+    it("returns values between 0 and 1", () => {
+      const speakerPos = { x: 0, y: 0 };
+      const listenerPos = { x: 1, y: 1 };
+      
+      for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 8) {
+        const gain = calculateDirectionalGain(angle, speakerPos, listenerPos);
+        expect(gain).toBeGreaterThanOrEqual(0);
+        expect(gain).toBeLessThanOrEqual(1);
+      }
+    });
+  });
+
+  describe("lineIntersectsWall", () => {
+    const horizontalWall = { start: { x: -1, y: 0 }, end: { x: 1, y: 0 } };
+    const verticalWall = { start: { x: 0, y: -1 }, end: { x: 0, y: 1 } };
+
+    it("returns true when line crosses horizontal wall", () => {
+      const p1 = { x: 0, y: -1 };
+      const p2 = { x: 0, y: 1 };
+      expect(lineIntersectsWall(p1, p2, horizontalWall)).toBe(true);
+    });
+
+    it("returns true when line crosses vertical wall", () => {
+      const p1 = { x: -1, y: 0 };
+      const p2 = { x: 1, y: 0 };
+      expect(lineIntersectsWall(p1, p2, verticalWall)).toBe(true);
+    });
+
+    it("returns false when line does not cross wall", () => {
+      const p1 = { x: 2, y: 2 };
+      const p2 = { x: 3, y: 3 };
+      expect(lineIntersectsWall(p1, p2, horizontalWall)).toBe(false);
+    });
+
+    it("returns false when line is parallel to wall", () => {
+      const p1 = { x: -2, y: 1 };
+      const p2 = { x: 2, y: 1 };
+      expect(lineIntersectsWall(p1, p2, horizontalWall)).toBe(false);
+    });
+  });
+
+  describe("countWallsBetween", () => {
+    it("returns 0 when no walls between points", () => {
+      const walls = [{ start: { x: 10, y: 10 }, end: { x: 11, y: 10 } }];
+      expect(countWallsBetween({ x: 0, y: 0 }, { x: 1, y: 1 }, walls)).toBe(0);
+    });
+
+    it("returns 1 when one wall between points", () => {
+      const walls = [{ start: { x: 0.5, y: -1 }, end: { x: 0.5, y: 1 } }];
+      expect(countWallsBetween({ x: 0, y: 0 }, { x: 1, y: 0 }, walls)).toBe(1);
+    });
+
+    it("returns correct count for multiple walls", () => {
+      const walls = [
+        { start: { x: 1, y: -1 }, end: { x: 1, y: 1 } },
+        { start: { x: 2, y: -1 }, end: { x: 2, y: 1 } },
+        { start: { x: 3, y: -1 }, end: { x: 3, y: 1 } },
+      ];
+      expect(countWallsBetween({ x: 0, y: 0 }, { x: 4, y: 0 }, walls)).toBe(3);
+    });
+  });
+
+  describe("calculateWallAttenuation", () => {
+    it("returns 1.0 for 0 walls", () => {
+      expect(calculateWallAttenuation(0)).toBe(1);
+    });
+
+    it("returns 0.3 for 1 wall with default attenuation", () => {
+      expect(calculateWallAttenuation(1)).toBeCloseTo(0.3);
+    });
+
+    it("returns 0.09 for 2 walls with default attenuation", () => {
+      expect(calculateWallAttenuation(2)).toBeCloseTo(0.09);
+    });
+
+    it("respects custom attenuation factor", () => {
+      expect(calculateWallAttenuation(1, 0.5)).toBeCloseTo(0.5);
+      expect(calculateWallAttenuation(2, 0.5)).toBeCloseTo(0.25);
+    });
+  });
+
+  describe("createRectangularRoom", () => {
+    it("creates a room with 4 walls", () => {
+      const room = createRectangularRoom({ x: 0, y: 0 }, 2, 2, "test-room");
+      expect(room.walls).toHaveLength(4);
+    });
+
+    it("creates walls at correct positions", () => {
+      const room = createRectangularRoom({ x: 0, y: 0 }, 2, 2, "test-room");
+      
+      // Check that walls form a closed rectangle
+      const wallEnds = room.walls.flatMap(w => [w.start, w.end]);
+      const corners = [
+        { x: -1, y: -1 },
+        { x: 1, y: -1 },
+        { x: 1, y: 1 },
+        { x: -1, y: 1 },
+      ];
+      
+      corners.forEach(corner => {
+        const hasCorner = wallEnds.some(
+          p => Math.abs(p.x - corner.x) < 0.01 && Math.abs(p.y - corner.y) < 0.01
+        );
+        expect(hasCorner).toBe(true);
+      });
+    });
+
+    it("stores room id and label", () => {
+      const room = createRectangularRoom({ x: 0, y: 0 }, 2, 2, "my-room", "My Room");
+      expect(room.id).toBe("my-room");
+      expect(room.label).toBe("My Room");
+    });
+  });
+
+  describe("createSpeaker", () => {
+    it("creates a speaker with valid properties", () => {
+      const speaker = createSpeaker();
+      expect(speaker).toHaveProperty("id");
+      expect(speaker).toHaveProperty("position");
+      expect(speaker).toHaveProperty("facing");
+      expect(speaker).toHaveProperty("color");
+    });
+
+    it("uses provided id", () => {
+      const speaker = createSpeaker("custom-speaker");
+      expect(speaker.id).toBe("custom-speaker");
+    });
+
+    it("assigns colors based on index", () => {
+      const speaker0 = createSpeaker(undefined, 0);
+      const speaker1 = createSpeaker(undefined, 1);
+      expect(speaker0.color).toBe(SPEAKER_COLORS[0]);
+      expect(speaker1.color).toBe(SPEAKER_COLORS[1]);
+    });
+
+    it("wraps color index for large values", () => {
+      const speaker = createSpeaker(undefined, SPEAKER_COLORS.length);
+      expect(speaker.color).toBe(SPEAKER_COLORS[0]);
+    });
+
+    it("initializes facing to 0 (right)", () => {
+      const speaker = createSpeaker();
+      expect(speaker.facing).toBe(0);
+    });
+  });
+
+  describe("SPEAKER_COLORS", () => {
+    it("has at least 4 colors", () => {
+      expect(SPEAKER_COLORS.length).toBeGreaterThanOrEqual(4);
+    });
+
+    it("contains valid hex color strings", () => {
+      SPEAKER_COLORS.forEach(color => {
+        expect(color).toMatch(/^#[0-9a-f]{6}$/i);
+      });
     });
   });
 });

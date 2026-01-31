@@ -1,27 +1,43 @@
-import { TentRoom } from "@/components/audio";
+import { createSignal, Match, Switch } from "solid-js";
+import { TentRoom, SpeakerDemo, RoomDemo } from "@/components/audio";
+import { Tabs } from "@/components/ui";
 import styles from "./Tent.module.css";
 
+const DEMO_TABS = [
+  { id: "listener", label: "Listener", icon: "🎧" },
+  { id: "speaker", label: "Speaker Direction", icon: "🎙️" },
+  { id: "rooms", label: "Room Boundaries", icon: "🚪" },
+];
+
 export function Tent() {
+  const [activeTab, setActiveTab] = createSignal("listener");
+
   return (
     <div class={styles.page}>
       <header class={styles.header}>
         <h1 class={styles.title}>The Tent</h1>
         <p class={styles.subtitle}>
-          Experience spatial audio positioning — sounds change based on distance and direction
+          Explore spatial audio concepts through interactive demos
         </p>
       </header>
 
-      <TentRoom />
+      <Tabs
+        tabs={DEMO_TABS}
+        activeTab={activeTab()}
+        onTabChange={setActiveTab}
+      />
 
-      <section class={styles.info}>
-        <h3>How it works</h3>
-        <ul>
-          <li><strong>Click the room</strong> to move your listener position</li>
-          <li><strong>Drag numbered sources</strong> to reposition them</li>
-          <li><strong>Volume</strong> decreases with distance (inverse square law)</li>
-          <li><strong>Stereo panning</strong> shifts based on horizontal position</li>
-        </ul>
-      </section>
+      <Switch>
+        <Match when={activeTab() === "listener"}>
+          <TentRoom />
+        </Match>
+        <Match when={activeTab() === "speaker"}>
+          <SpeakerDemo />
+        </Match>
+        <Match when={activeTab() === "rooms"}>
+          <RoomDemo />
+        </Match>
+      </Switch>
     </div>
   );
 }
