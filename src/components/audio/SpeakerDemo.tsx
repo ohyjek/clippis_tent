@@ -1,3 +1,16 @@
+/**
+ * SpeakerDemo.tsx - Speaking Direction Demo (Tab 2 of The Tent)
+ *
+ * Demonstrates directional audio using a cardioid pattern:
+ * - Each speaker has a facing direction (shown as a cone/arrow)
+ * - Sound is loudest when facing the listener, quietest when facing away
+ * - Click anywhere to make the selected speaker face that point
+ *
+ * This simulates how Dolby Axon let users "face" different directions
+ * to control who heard them best.
+ *
+ * Audio model: gain = 0.5 + 0.5 * cos(angle_difference)
+ */
 import { createSignal, For } from "solid-js";
 import {
   Speaker,
@@ -7,18 +20,11 @@ import {
   calculateDistance,
   calculatePan,
   createSpeaker,
-  SPEAKER_COLORS,
 } from "@/lib/spatial-audio";
 import { audioStore } from "@/stores/audio";
 import { Button, Slider } from "@/components/ui";
 import styles from "./SpeakerDemo.module.css";
 
-/**
- * SpeakerDemo - Demonstrates speaking direction and directional audio
- * 
- * Shows how a speaker's facing direction affects who hears them loudest.
- * Click anywhere to make the selected speaker face that direction.
- */
 export function SpeakerDemo() {
   let roomRef: HTMLDivElement | undefined;
   

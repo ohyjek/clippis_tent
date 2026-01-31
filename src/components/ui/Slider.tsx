@@ -1,9 +1,21 @@
+/**
+ * Slider.tsx - Range input with optional label and value display
+ *
+ * Wraps a native range input with consistent styling.
+ * Can show the current value formatted as percentage or custom format.
+ *
+ * @example
+ * <Slider label="Volume" min={0} max={1} step={0.01} value={0.5} showValue />
+ */
 import { JSX, splitProps } from "solid-js";
 import styles from "./Slider.module.css";
 
 interface SliderProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "type"> {
+  /** Label text shown before the slider */
   label?: string;
+  /** Whether to display the current value */
   showValue?: boolean;
+  /** Custom formatter for the displayed value (default: percentage) */
   formatValue?: (value: number) => string;
 }
 

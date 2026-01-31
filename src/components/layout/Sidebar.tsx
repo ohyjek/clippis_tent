@@ -1,3 +1,14 @@
+/**
+ * Sidebar.tsx - Left navigation sidebar
+ *
+ * Shows the app logo, navigation links, and audio status indicator.
+ * Highlights the currently active route.
+ *
+ * Routes:
+ *   /         -> The Tent (spatial audio demos)
+ *   /voice    -> Voice Room (coming soon)
+ *   /settings -> Settings page
+ */
 import { A, useLocation } from "@solidjs/router";
 import { audioStore } from "@/stores/audio";
 import styles from "./Sidebar.module.css";
@@ -8,6 +19,7 @@ interface NavItem {
   icon: string;
 }
 
+/** Navigation items shown in the sidebar */
 const navItems: NavItem[] = [
   { path: "/", label: "The Tent", icon: "🎪" },
   { path: "/voice", label: "Voice Room", icon: "🎙️" },

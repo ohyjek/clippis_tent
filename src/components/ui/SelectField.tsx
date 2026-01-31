@@ -1,3 +1,16 @@
+/**
+ * SelectField.tsx - Labeled dropdown select input
+ *
+ * Renders a <select> element with a label above it.
+ * Used for choosing audio devices, presets, etc.
+ *
+ * @example
+ * <SelectField
+ *   label="Output Device"
+ *   options={[{ value: "default", label: "Speakers" }]}
+ *   placeholder="Select..."
+ * />
+ */
 import { JSX, For, splitProps } from "solid-js";
 import styles from "./SelectField.module.css";
 
@@ -7,8 +20,11 @@ interface SelectOption {
 }
 
 interface SelectFieldProps extends Omit<JSX.SelectHTMLAttributes<HTMLSelectElement>, "children"> {
+  /** Label text shown above the select */
   label: string;
+  /** Array of options to display */
   options: SelectOption[];
+  /** Optional placeholder shown as first disabled option */
   placeholder?: string;
 }
 

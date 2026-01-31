@@ -1,3 +1,16 @@
+/**
+ * Tabs.tsx - Horizontal tab navigation for switching views
+ *
+ * Used on The Tent page to switch between demo types.
+ * Each tab can have an optional icon (emoji).
+ *
+ * @example
+ * <Tabs
+ *   tabs={[{ id: "a", label: "Tab A", icon: "🎧" }]}
+ *   activeTab={activeTab()}
+ *   onTabChange={setActiveTab}
+ * />
+ */
 import { For } from "solid-js";
 import styles from "./Tabs.module.css";
 
@@ -8,16 +21,14 @@ interface Tab {
 }
 
 interface TabsProps {
+  /** Array of tab definitions */
   tabs: Tab[];
+  /** ID of the currently active tab */
   activeTab: string;
+  /** Called when a tab is clicked */
   onTabChange: (id: string) => void;
 }
 
-/**
- * Tabs - Horizontal tab navigation component
- * 
- * Used for switching between different views or demos within a page.
- */
 export function Tabs(props: TabsProps) {
   return (
     <div class={styles.tabs}>

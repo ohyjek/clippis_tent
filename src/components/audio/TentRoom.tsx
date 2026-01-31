@@ -1,3 +1,14 @@
+/**
+ * TentRoom.tsx - Listener Demo (Tab 1 of The Tent)
+ *
+ * Interactive spatial audio demonstration where users can:
+ * - Click the room to move their listener position
+ * - Add and drag sound sources around
+ * - Hear how distance affects volume (inverse square law)
+ * - Hear how horizontal position affects stereo panning
+ *
+ * This is the original/primary demo showing basic spatial audio concepts.
+ */
 import { For } from "solid-js";
 import { audioStore } from "@/stores/audio";
 import { calculateSpatialParams, CARDINAL_DIRECTIONS, Position } from "@/lib/spatial-audio";
@@ -6,13 +17,6 @@ import { Listener } from "./Listener";
 import { SoundSource } from "./SoundSource";
 import styles from "./TentRoom.module.css";
 
-/**
- * TentRoom - Interactive spatial audio demonstration
- * 
- * This component provides a visual demonstration of spatial audio positioning.
- * Users can add sound sources, move the listener, and hear how audio changes
- * based on position (volume attenuation and stereo panning).
- */
 export function TentRoom() {
   let roomRef: HTMLDivElement | undefined;
 

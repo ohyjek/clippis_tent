@@ -110,8 +110,6 @@ import { Button } from "../../components/ui";
 import { Button } from "@/components/ui";
 ```
 
-See [`src/components/README.md`](src/components/README.md) for component documentation.
-
 ### Spatial Audio Model
 
 The spatial audio system uses a simplified 2D model:
