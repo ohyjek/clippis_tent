@@ -105,7 +105,7 @@ export function Speaker(props: SpeakerProps) {
           class={styles.soundCone}
           style={{
             transform: `rotate(${facingDegrees()}deg)`,
-            opacity: props.isSelected ? 0.5 : 0.25,
+            opacity: props.isSelected ? 0.7 : 0.4,
           }}
           onMouseDown={handleConeMouseDown}
           title={`Drag to rotate • ${facingDegrees().toFixed(0)}°`}

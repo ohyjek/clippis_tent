@@ -148,24 +148,43 @@ export function FullDemo() {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  // Listener rotation handling
+  // Listener rotation handling (with continuous angle tracking)
   const handleListenerRotate = (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     audioStore.initializeAudio();
     setIsRotatingListener(true);
 
+    // Track cumulative angle to avoid flicker at ±π boundary
+    let currentAngle = listenerFacing();
+    let prevRawAngle = Math.atan2(
+      e.clientY - getScreenPosition(listenerPos()).y,
+      e.clientX - getScreenPosition(listenerPos()).x
+    );
+
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const listenerScreen = getScreenPosition(listenerPos());
-      const angle = Math.atan2(
+      const rawAngle = Math.atan2(
         moveEvent.clientY - listenerScreen.y,
         moveEvent.clientX - listenerScreen.x
       );
-      setListenerFacing(angle);
+
+      // Calculate delta, handling wrap-around
+      let delta = rawAngle - prevRawAngle;
+      if (delta > Math.PI) delta -= 2 * Math.PI;
+      if (delta < -Math.PI) delta += 2 * Math.PI;
+
+      currentAngle += delta;
+      prevRawAngle = rawAngle;
+
+      setListenerFacing(currentAngle);
     };
 
     const handleMouseUp = () => {
       setIsRotatingListener(false);
+      // Normalize angle to [-π, π] when done
+      const normalized = Math.atan2(Math.sin(currentAngle), Math.cos(currentAngle));
+      setListenerFacing(normalized);
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
@@ -199,7 +218,7 @@ export function FullDemo() {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  // Speaker rotate handling
+  // Speaker rotate handling (with continuous angle tracking)
   const handleSpeakerRotateStart = (speakerId: string) => (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -207,23 +226,47 @@ export function FullDemo() {
     setSelectedSpeaker(speakerId);
     setIsRotatingSpeaker(speakerId);
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const speaker = speakers().find((s) => s.id === speakerId);
-      if (!speaker) return;
+    const speaker = speakers().find((s) => s.id === speakerId);
+    if (!speaker) return;
 
-      const speakerScreen = getScreenPosition(speaker.position);
-      const angle = Math.atan2(
-        moveEvent.clientY - speakerScreen.y,
-        moveEvent.clientX - speakerScreen.x
+    // Track cumulative angle to avoid flicker at ±π boundary
+    let currentAngle = speaker.facing;
+    const speakerScreen = getScreenPosition(speaker.position);
+    let prevRawAngle = Math.atan2(
+      e.clientY - speakerScreen.y,
+      e.clientX - speakerScreen.x
+    );
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const currentSpeaker = speakers().find((s) => s.id === speakerId);
+      if (!currentSpeaker) return;
+
+      const currentScreen = getScreenPosition(currentSpeaker.position);
+      const rawAngle = Math.atan2(
+        moveEvent.clientY - currentScreen.y,
+        moveEvent.clientX - currentScreen.x
       );
 
+      // Calculate delta, handling wrap-around
+      let delta = rawAngle - prevRawAngle;
+      if (delta > Math.PI) delta -= 2 * Math.PI;
+      if (delta < -Math.PI) delta += 2 * Math.PI;
+
+      currentAngle += delta;
+      prevRawAngle = rawAngle;
+
       setSpeakers((prev) =>
-        prev.map((s) => (s.id === speakerId ? { ...s, facing: angle } : s))
+        prev.map((s) => (s.id === speakerId ? { ...s, facing: currentAngle } : s))
       );
     };
 
     const handleMouseUp = () => {
       setIsRotatingSpeaker(null);
+      // Normalize angle to [-π, π] when done
+      const normalized = Math.atan2(Math.sin(currentAngle), Math.cos(currentAngle));
+      setSpeakers((prev) =>
+        prev.map((s) => (s.id === speakerId ? { ...s, facing: normalized } : s))
+      );
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };

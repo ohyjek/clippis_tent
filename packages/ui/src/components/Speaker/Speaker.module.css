@@ -69,23 +69,31 @@
 /* Sound cone - triangular shape showing direction of audio projection */
 .soundCone {
   position: absolute;
-  width: 140px;
-  height: 140px;
-  /* Cone spans ~90 degrees, pointing right (0deg), rotated by JS */
-  clip-path: polygon(50% 50%, 100% 25%, 100% 75%);
+  width: 180px;
+  height: 180px;
+  /* Cone spans ~60 degrees, pointing right (0deg), rotated by JS */
+  clip-path: polygon(50% 50%, 100% 30%, 100% 70%);
   background: linear-gradient(
     to right,
     var(--speaker-color) 0%,
-    transparent 90%
+    color-mix(in srgb, var(--speaker-color) 50%, transparent) 60%,
+    transparent 100%
   );
   transform-origin: 50% 50%;
-  transition: transform 0.1s ease-out, opacity var(--transition-fast, 0.15s ease);
+  /* No transition during rotation to prevent flicker at angle wrap */
   cursor: crosshair;
   pointer-events: auto;
+  border: 2px solid transparent;
 }
 
 .soundCone:hover {
-  opacity: 0.6 !important;
+  opacity: 0.8 !important;
+  border-color: var(--speaker-color);
+}
+
+/* When rotating, show a ring to indicate the rotation handle */
+.speaker.rotating .soundCone {
+  border-color: var(--speaker-color);
 }
 
 /* Speaker icon - click to play, drag to move */
