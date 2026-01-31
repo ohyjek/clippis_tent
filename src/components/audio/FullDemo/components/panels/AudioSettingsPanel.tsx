@@ -5,6 +5,7 @@
  */
 import { For } from "solid-js";
 import type { DistanceModel } from "@/lib/spatial-audio-engine";
+import { Panel } from "@/components/ui";
 import { useDemoContext } from "../../context";
 import { DISTANCE_MODEL_OPTIONS } from "../../constants";
 import styles from "./panels.module.css";
@@ -13,9 +14,7 @@ export function AudioSettingsPanel() {
   const { distanceModel, setDistanceModel } = useDemoContext();
 
   return (
-    <div class={styles.panel}>
-      <h4 class={styles.panelTitle}>⚙️ Audio Settings</h4>
-
+    <Panel title="Audio Settings" icon="⚙️">
       <div class={styles.propertyGroup}>
         <label class={styles.propertyLabel}>Distance Model</label>
         <select
@@ -30,6 +29,6 @@ export function AudioSettingsPanel() {
           </For>
         </select>
       </div>
-    </div>
+    </Panel>
   );
 }

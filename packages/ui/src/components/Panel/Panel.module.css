@@ -1,0 +1,16 @@
+/**
+ * Panel.module.css - Styles for the sidebar panel container
+ */
+
+.panel {
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+}
+
+.title {
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}

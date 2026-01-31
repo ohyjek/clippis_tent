@@ -6,7 +6,7 @@
 import { Show, For } from "solid-js";
 import { SPEAKER_COLORS } from "@/lib/spatial-audio";
 import type { DirectivityPattern } from "@/lib/spatial-audio-engine";
-import { Button } from "@/components/ui";
+import { Button, ColorSwatches, Panel } from "@/components/ui";
 import { useDemoContext } from "../../context";
 import { DIRECTIVITY_OPTIONS } from "../../constants";
 import { getNoteName } from "../../utils";
@@ -27,9 +27,7 @@ export function SpeakerPropertiesPanel() {
   return (
     <Show when={getSelectedSpeaker()}>
       {(speaker) => (
-        <div class={styles.panel}>
-          <h4 class={styles.panelTitle}>🎤 Speaker Properties</h4>
-
+        <Panel title="Speaker Properties" icon="🎤">
           <div class={styles.propertyGroup}>
             <label class={styles.propertyLabel}>Pattern</label>
             <select
@@ -66,17 +64,12 @@ export function SpeakerPropertiesPanel() {
 
           <div class={styles.propertyGroup}>
             <label class={styles.propertyLabel}>Color</label>
-            <div class={styles.colorSwatches}>
-              <For each={SPEAKER_COLORS}>
-                {(color) => (
-                  <div
-                    class={`${styles.colorSwatch} ${speaker().color === color ? styles.selected : ""}`}
-                    style={{ background: color }}
-                    onClick={() => updateSpeakerColor(color)}
-                  />
-                )}
-              </For>
-            </div>
+            <ColorSwatches
+              colors={SPEAKER_COLORS}
+              selected={speaker().color}
+              onSelect={updateSpeakerColor}
+              label="Speaker color"
+            />
           </div>
 
           <div class={`${styles.propertyGroup} ${styles.buttonRow}`}>
@@ -97,7 +90,7 @@ export function SpeakerPropertiesPanel() {
               </Button>
             </Show>
           </div>
-        </div>
+        </Panel>
       )}
     </Show>
   );

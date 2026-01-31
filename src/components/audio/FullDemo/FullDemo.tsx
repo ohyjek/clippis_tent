@@ -46,9 +46,9 @@ function CanvasTitle() {
 function DemoContent() {
   return (
     <div class={styles.container}>
-      <Toolbar />
-
       {!audioStore.audioInitialized() && <AudioBanner />}
+
+      <Toolbar />
 
       <div class={styles.mainContent}>
         <div class={styles.canvasWrapper}>

@@ -1,0 +1,43 @@
+/**
+ * ColorSwatches.module.css - Styles for the color swatch picker
+ */
+
+.swatches {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 2px solid transparent;
+  padding: 0;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.swatch:hover {
+  transform: scale(1.1);
+}
+
+.swatch:focus-visible {
+  outline: 2px solid var(--color-accent-blue);
+  outline-offset: 2px;
+}
+
+.swatch.selected {
+  border-color: var(--color-text-primary);
+}
+
+/* Size variants */
+.small .swatch {
+  width: 18px;
+  height: 18px;
+}
+
+.large .swatch {
+  width: 32px;
+  height: 32px;
+}

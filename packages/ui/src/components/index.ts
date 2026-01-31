@@ -2,7 +2,10 @@
  * components/index.ts - Barrel export for all UI components
  */
 export { Button, type ButtonVariant } from "./Button";
+export { ColorSwatches, type ColorSwatchesProps } from "./ColorSwatches";
 export { ErrorBoundary } from "./ErrorBoundary";
+export { ItemList, type ItemListItem, type ItemListProps } from "./ItemList";
+export { Panel, type PanelProps } from "./Panel";
 export { Section } from "./Section";
 export { SelectField, type SelectOption } from "./SelectField";
 export { Slider } from "./Slider";
