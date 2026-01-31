@@ -20,7 +20,7 @@ import styles from "./Sidebar.module.css";
 
 interface NavItem {
   path: string;
-  labelKey: "nav.tent" | "nav.scenarios" | "nav.voiceRoom" | "nav.settings";
+  labelKey: "nav.tent" | "nav.scenarios" | "nav.builder" | "nav.voiceRoom" | "nav.settings";
   icon: string;
 }
 
@@ -28,6 +28,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { path: "/", labelKey: "nav.tent", icon: "🎪" },
   { path: "/scenarios", labelKey: "nav.scenarios", icon: "🎬" },
+  { path: "/builder", labelKey: "nav.builder", icon: "🏗️" },
   { path: "/voice", labelKey: "nav.voiceRoom", icon: "🎙️" },
   { path: "/settings", labelKey: "nav.settings", icon: "⚙️" },
 ];

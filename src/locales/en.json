@@ -6,6 +6,7 @@
   "nav": {
     "tent": "The Tent",
     "scenarios": "Scenarios",
+    "builder": "Room Builder",
     "voiceRoom": "Voice Room",
     "settings": "Settings"
   },
