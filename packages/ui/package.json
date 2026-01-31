@@ -10,13 +10,22 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build"
   },
   "peerDependencies": {
     "solid-js": "^1.9.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.3",
-    "vitest": "^4.0.18"
+    "@solidjs/testing-library": "^0.8.10",
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/blocks": "^8.6.14",
+    "@testing-library/jest-dom": "^6.9.1",
+    "jsdom": "^27.4.0",
+    "storybook": "^10.2.3",
+    "storybook-solidjs": "1.0.0-beta.7",
+    "storybook-solidjs-vite": "^10.0.9",
+    "typescript": "^5.7.3"
   }
 }

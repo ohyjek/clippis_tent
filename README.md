@@ -29,8 +29,8 @@ Clippis demonstrates spatial audio positioning where sound sources have virtual 
 | UI Framework      | SolidJS + @solidjs/router (lazy loading)   |
 | Styling           | CSS Modules + CSS Custom Properties        |
 | Audio             | Web Audio API (oscillators, stereo panner) |
-| Testing           | Vitest                                     |
-| Package Manager   | pnpm                                       |
+| Testing           | Vitest + @solidjs/testing-library          |
+| Package Manager   | pnpm (workspace monorepo)                  |
 
 ## Getting Started
 
@@ -55,49 +55,88 @@ pnpm start
 
 ### Scripts
 
-| Command        | Description                             |
-| -------------- | --------------------------------------- |
-| `pnpm start`   | Run in development mode with hot reload |
-| `pnpm package` | Package the app for distribution        |
-| `pnpm make`    | Build platform-specific installers      |
-| `pnpm lint`    | Run ESLint                              |
-| `pnpm test`    | Run unit tests                          |
+| Command              | Description                             |
+| -------------------- | --------------------------------------- |
+| `pnpm dev`           | Run in development mode with hot reload |
+| `pnpm build`         | Package the app for distribution        |
+| `pnpm make`          | Build platform-specific installers      |
+| `pnpm lint`          | Run ESLint                              |
+| `pnpm lint:fix`      | Run ESLint with auto-fix                |
+| `pnpm typecheck`     | TypeScript type checking                |
+| `pnpm check`         | Run both typecheck and lint             |
+| `pnpm test`          | Run all unit tests (129 tests)          |
+| `pnpm test:watch`    | Run tests in watch mode                 |
+| `pnpm test:ui`       | Run UI component tests only             |
+| `pnpm test:all`      | Run unit tests + E2E tests              |
+| `pnpm e2e`           | Run Playwright E2E tests                |
+| `pnpm e2e:ui`        | Run E2E tests with interactive UI       |
+| `pnpm e2e:headed`    | Run E2E tests with visible browser      |
+| `pnpm storybook`     | Launch Storybook component explorer     |
+| `pnpm clean`         | Remove build artifacts                  |
+
+### Testing
+
+The project has **129 unit tests** covering:
+
+- **Spatial audio library** (`src/lib/spatial-audio.ts`) — 67 tests for distance, panning, and wall attenuation calculations
+- **UI components** (`packages/ui/`) — 62 tests for all 8 components using `@solidjs/testing-library`
+
+```bash
+# Run all tests
+pnpm test
+
+# Run tests with watch mode
+pnpm test:watch
+```
 
 ## Architecture
 
+This is a **pnpm workspace monorepo** with the UI components extracted into a separate package.
+
 ```
-src/
-├── main.ts                    # Electron main process
-├── preload.ts                 # Preload script for IPC
-├── renderer.tsx               # App entry with lazy-loaded routes
-├── components/
-│   ├── ui/                    # Reusable UI components
-│   │   ├── Button.tsx         # Button with variants (primary, success, danger, etc.)
-│   │   ├── Slider.tsx         # Range input with label and value display
-│   │   ├── Section.tsx        # Card container with title
-│   │   ├── SelectField.tsx    # Dropdown with label
-│   │   ├── Tabs.tsx           # Tab navigation component
-│   │   └── Toggle.tsx         # Checkbox with title and description
-│   ├── audio/                 # Audio-specific components
-│   │   ├── TentRoom.tsx       # Listener demo - distance/panning
-│   │   ├── SpeakerDemo.tsx    # Speaking direction demo
-│   │   ├── RoomDemo.tsx       # Room boundaries demo
-│   │   ├── Listener.tsx       # The "you" icon in the room
-│   │   └── SoundSource.tsx    # Draggable sound source circles
-│   └── layout/                # Layout components
-│       ├── App.tsx            # App layout with sidebar + main content
-│       └── Sidebar.tsx        # Navigation sidebar
-├── pages/                     # Route pages (lazy-loaded)
-│   ├── Tent.tsx               # The Tent - spatial audio playground
-│   ├── Scenarios.tsx          # Preset spatial audio configurations
-│   ├── VoiceRoom.tsx          # Voice chat page (placeholder)
-│   └── Settings.tsx           # Audio settings page
-├── stores/
-│   └── audio.ts               # Global audio state (SolidJS signals)
-├── lib/
-│   └── spatial-audio.ts       # Spatial audio math utilities (tested)
-└── styles/
-    └── variables.css          # CSS custom properties (colors, spacing, etc.)
+clippis_tent/
+├── packages/
+│   └── ui/                        # @clippis/ui - Reusable UI component library
+│       ├── src/components/
+│       │   ├── Button/            # Button with variants (primary, success, danger)
+│       │   ├── Slider/            # Range input with label and value display
+│       │   ├── Section/           # Card container with title
+│       │   ├── SelectField/       # Dropdown with label
+│       │   ├── Tabs/              # Tab navigation component
+│       │   ├── Toggle/            # Checkbox with title and description
+│       │   ├── Toast/             # Toast notifications
+│       │   └── ErrorBoundary/     # Error boundary with fallback UI
+│       └── test/                  # Component test setup
+├── src/
+│   ├── main.ts                    # Electron main process
+│   ├── preload.ts                 # Preload script for IPC
+│   ├── renderer.tsx               # App entry with lazy-loaded routes
+│   ├── components/
+│   │   ├── ui/                    # App-specific UI wrappers (logging integration)
+│   │   ├── audio/                 # Audio-specific components
+│   │   │   ├── TentRoom.tsx       # Listener demo - distance/panning
+│   │   │   ├── SpeakerDemo.tsx    # Speaking direction demo
+│   │   │   ├── RoomDemo.tsx       # Room boundaries demo
+│   │   │   ├── Listener.tsx       # The "you" icon in the room
+│   │   │   └── SoundSource.tsx    # Draggable sound source circles
+│   │   └── layout/                # Layout components
+│   │       ├── App.tsx            # App layout with sidebar + main content
+│   │       └── Sidebar.tsx        # Navigation sidebar
+│   ├── pages/                     # Route pages (lazy-loaded)
+│   │   ├── Tent.tsx               # The Tent - spatial audio playground
+│   │   ├── Scenarios.tsx          # Preset spatial audio configurations
+│   │   ├── VoiceRoom.tsx          # Voice chat page (placeholder)
+│   │   └── Settings.tsx           # Audio settings page
+│   ├── stores/
+│   │   ├── audio.ts               # Global audio state (SolidJS signals)
+│   │   └── toast.ts               # Toast notification state
+│   └── lib/
+│       ├── spatial-audio.ts       # Spatial audio math utilities
+│       ├── logger.ts              # Renderer process logging
+│       ├── logger.main.ts         # Main process logging
+│       └── perf.ts                # Performance monitoring
+└── docs/
+    └── TECHNICAL_ROADMAP.md       # Development roadmap
 ```
 
 ### Import Aliases
@@ -135,6 +174,12 @@ Pan    = clamp(dx / 3, -1, 1)
 ```
 
 ## Roadmap
+
+### Technical Infrastructure (Completed)
+- [x] Logging and monitoring with `electron-log`
+- [x] Error handling with ErrorBoundary and Toast notifications
+- [x] UI library extraction to `@clippis/ui` package
+- [x] Unit tests for spatial audio and UI components (129 tests)
 
 ### Phase 1: The Tent Enhancements
 - [x] Draggable sound sources

@@ -1,14 +1,23 @@
 # Technical Roadmap
 
-A phased technical roadmap covering logging/monitoring, UI library extraction with full test coverage, error handling, and future auth - prioritized for a team of up to 5 developers.
+A phased technical roadmap covering infrastructure (logging, error handling, testing), user experience (themes, localization), and future features (auth) - prioritized for a team of up to 5 developers.
 
 This roadmap is organized into phases that can be worked on incrementally. Each phase builds on the previous.
 
+**Status Overview**:
+- ✅ Phase 1-4: Infrastructure complete (logging, errors, UI library, testing)
+- 🔲 Phase 5: CI/CD & versioning planned
+- 🔲 Phase 6-7: UX enhancements planned (themes, i18n)
+- 🔲 Phase 8: Auth foundation planned
+- 🔲 Phase 9: Analytics planned (late)
+
 ---
 
-## Phase 1: Logging and Monitoring Foundation
+## Phase 1: Logging and Monitoring Foundation ✅ COMPLETED
 
 **Goal**: Establish structured logging before adding more complexity.
+
+**Status**: Implemented in `src/lib/logger.ts`, `src/lib/logger.main.ts`, and `src/lib/perf.ts`.
 
 ### 1.1 Logging Library
 
@@ -63,9 +72,11 @@ export const perf = {
 
 ---
 
-## Phase 2: Error Handling and Resilience
+## Phase 2: Error Handling and Resilience ✅ COMPLETED
 
 **Goal**: Graceful error handling with user feedback.
+
+**Status**: Implemented with `ErrorBoundary`, `ToastContainer`, global error handlers in `renderer.tsx`, and audio error handling in `stores/audio.ts`.
 
 ### 2.1 SolidJS Error Boundary
 
@@ -132,17 +143,19 @@ const initializeAudio = () => {
 
 ---
 
-## Phase 3: UI Library Extraction (pnpm Workspace)
+## Phase 3: UI Library Extraction (pnpm Workspace) ✅ COMPLETED
 
 **Goal**: Decouple UI components with their own test suite.
 
-### 3.1 Workspace Structure
+**Status**: Implemented with `@clippis/ui` package containing 8 components (Button, Section, SelectField, Slider, Tabs, Toggle, ErrorBoundary, Toast).
+
+### 3.1 Workspace Structure (Actual)
 
 ```
 clippis_tent/
 ├── pnpm-workspace.yaml
 ├── packages/
-│   └── ui/                      # UI Library
+│   └── ui/                      # @clippis/ui Library
 │       ├── package.json
 │       ├── tsconfig.json
 │       ├── vitest.config.ts
@@ -152,25 +165,25 @@ clippis_tent/
 │       │   │   │   ├── Button.tsx
 │       │   │   │   ├── Button.module.css
 │       │   │   │   ├── Button.test.tsx
-│       │   │   │   └── Button.stories.tsx  # Later
-│       │   │   └── ...
-│       │   ├── hooks/           # Shared hooks
-│       │   ├── utils/           # UI utilities
+│       │   │   │   └── index.ts
+│       │   │   └── ... (7 more components)
 │       │   └── index.ts         # Public API
-│       └── mocks/               # Test mocks and fixtures
-└── apps/
-    └── desktop/                 # Current app (moved)
-        └── ...
+│       └── test/
+│           ├── setup.ts         # Test setup with CSS vars
+│           └── vitest.d.ts      # jest-dom type definitions
+├── src/                         # Main Electron app (kept in place)
+│   └── ...
+└── docs/
+    └── TECHNICAL_ROADMAP.md
 ```
 
 ### 3.2 pnpm Workspace Config
 
-Create `pnpm-workspace.yaml`:
+`pnpm-workspace.yaml`:
 
 ```yaml
 packages:
   - "packages/*"
-  - "apps/*"
 ```
 
 ### 3.3 UI Package Dependencies
@@ -237,9 +250,14 @@ mocks/
 
 ---
 
-## Phase 4: Comprehensive Testing Strategy
+## Phase 4: Comprehensive Testing Strategy ✅ COMPLETED
 
 **Goal**: Layered testing for confidence in agent-assisted development.
+
+**Status**: 
+- Unit tests: 129 tests (67 spatial-audio + 62 UI components)
+- Storybook: Configured with stories for all 8 UI components
+- E2E tests: Playwright setup with 4 test suites (navigation, scenarios, settings, tent)
 
 ### Testing Pyramid
 
@@ -359,11 +377,301 @@ test("can play scenario audio", async ({ electronApp }) => {
 
 ---
 
-## Phase 5: Auth Foundation (Later)
+## Phase 5: CI/CD Pipeline & Versioning 🔲 PLANNED
+
+**Goal**: Automated quality gates, deployment pipeline, and semantic versioning.
+
+### 5.1 GitHub Actions Workflow
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
+      - run: pnpm e2e
+      
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+```
+
+### 5.2 Quality Gates
+
+| Check          | When                | Blocking |
+| -------------- | ------------------- | -------- |
+| TypeScript     | Every PR            | Yes      |
+| ESLint         | Every PR            | Yes      |
+| Unit Tests     | Every PR            | Yes      |
+| E2E Tests      | Every PR            | Yes      |
+| Build          | Every PR to main    | Yes      |
+
+### 5.3 Branch Protection Rules
+
+- Require PR reviews before merging
+- Require status checks to pass (CI workflow)
+- Require branches to be up to date before merging
+- No direct pushes to `main`
+
+### 5.4 Optional Enhancements
+
+- **Dependabot**: Automated dependency updates
+- **CodeQL**: Security scanning
+- **Chromatic**: Visual regression testing for Storybook
+- **Release Please**: Automated changelog and versioning
+
+### 5.5 Versioning Strategy
+
+Use **Semantic Versioning** (SemVer) with automated changelog generation.
+
+**Version Format**: `MAJOR.MINOR.PATCH`
+- **MAJOR**: Breaking changes (API changes, major UX overhauls)
+- **MINOR**: New features (backward compatible)
+- **PATCH**: Bug fixes, performance improvements
+
+**Tooling Options**:
+
+| Tool              | Pros                                    | Cons                   |
+| ----------------- | --------------------------------------- | ---------------------- |
+| **Release Please**| Google-maintained, conventional commits | Requires commit format |
+| **Changesets**    | Monorepo-friendly, manual control       | More manual work       |
+| **Standard Version** | Simple, works with npm version       | Less automated         |
+
+**Recommendation**: Release Please for automation with conventional commits.
+
+**Conventional Commit Format**:
+```
+feat: add spatial audio direction indicator
+fix: resolve audio crackling on Windows
+chore: update dependencies
+docs: add versioning strategy to roadmap
+BREAKING CHANGE: rename AudioContext API
+```
+
+**Automated Workflow**:
+1. PRs merged to `main` with conventional commits
+2. Release Please creates/updates a release PR
+3. Merging release PR triggers:
+   - Version bump in `package.json`
+   - Changelog generation
+   - Git tag creation
+   - GitHub release with notes
+
+### 5.6 Build & Release Pipeline (Future)
+
+```yaml
+# .github/workflows/release.yml (future)
+# Triggered on version tags (v*)
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm make
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.os }}
+          path: out/make/**/*
+```
+
+---
+
+## Phase 6: Theme System 🔲 PLANNED
+
+**Goal**: Support light/dark themes and custom color schemes.
+
+### 5.1 Theme Architecture
+
+```typescript
+// src/lib/theme/types.ts
+export type ThemeMode = "light" | "dark" | "system";
+
+export interface Theme {
+  mode: ThemeMode;
+  colors: {
+    bgPrimary: string;
+    bgSecondary: string;
+    bgTertiary: string;
+    textPrimary: string;
+    textSecondary: string;
+    textMuted: string;
+    border: string;
+    accentBlue: string;
+    accentGreen: string;
+    accentPurple: string;
+    accentRed: string;
+  };
+}
+```
+
+### 5.2 Implementation Plan
+
+1. **CSS Custom Properties** (already using)
+   - Extend `src/styles/variables.css` with light/dark variants
+   - Use `[data-theme="dark"]` / `[data-theme="light"]` selectors
+
+2. **Theme Store**
+   ```typescript
+   // src/stores/theme.ts
+   const [theme, setTheme] = createSignal<ThemeMode>("system");
+   
+   createEffect(() => {
+     const resolved = theme() === "system" 
+       ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+       : theme();
+     document.documentElement.dataset.theme = resolved;
+   });
+   ```
+
+3. **System Preference Detection**
+   - Listen to `prefers-color-scheme` media query
+   - Sync with OS theme when set to "system"
+
+4. **Persistence**
+   - Store preference in `electron-store` or localStorage
+   - Apply before first render to prevent flash
+
+### 5.3 UI Updates
+
+- Add theme toggle to Settings page
+- Update all CSS modules to use theme-aware variables
+- Ensure sufficient contrast in both modes
+
+---
+
+## Phase 7: Localization (i18n) 🔲 PLANNED
+
+**Goal**: Support multiple languages for global accessibility.
+
+### 6.1 Library Options
+
+| Library              | Pros                                   | Cons                    |
+| -------------------- | -------------------------------------- | ----------------------- |
+| **@solid-primitives/i18n** | SolidJS native, reactive, lightweight | Less ecosystem          |
+| **i18next**          | Mature, huge ecosystem, pluralization  | Heavier, React-focused  |
+| **Paraglide**        | Compile-time, type-safe, tiny runtime  | Newer                   |
+
+**Recommendation**: `@solid-primitives/i18n` for SolidJS-native reactivity, or Paraglide for type-safety.
+
+### 6.2 Translation Structure
+
+```
+src/
+├── locales/
+│   ├── en.json          # English (default)
+│   ├── es.json          # Spanish
+│   ├── ja.json          # Japanese
+│   └── index.ts         # Loader and types
+└── lib/
+    └── i18n.ts          # i18n setup and hooks
+```
+
+### 6.3 Translation File Format
+
+```json
+// src/locales/en.json
+{
+  "nav": {
+    "tent": "The Tent",
+    "scenarios": "Scenarios",
+    "voiceRoom": "Voice Room",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "audioDevices": "Audio Devices",
+    "outputDevice": "Output Device",
+    "inputDevice": "Input Device",
+    "audioProcessing": "Audio Processing",
+    "spatialAudio": "Spatial Audio",
+    "noiseSuppression": "Noise Suppression"
+  },
+  "common": {
+    "play": "Play",
+    "stop": "Stop",
+    "save": "Save",
+    "cancel": "Cancel"
+  }
+}
+```
+
+### 6.4 Usage Pattern
+
+```typescript
+// With @solid-primitives/i18n
+import { useI18n } from "@/lib/i18n";
+
+function Settings() {
+  const [t] = useI18n();
+  
+  return (
+    <Section title={t("settings.audioDevices")}>
+      <SelectField label={t("settings.outputDevice")} ... />
+    </Section>
+  );
+}
+```
+
+### 6.5 Implementation Steps
+
+1. Install i18n library
+2. Create translation files for English (extract all strings)
+3. Add language selector to Settings
+4. Persist language preference
+5. Add additional languages incrementally
+
+---
+
+## Phase 8: Auth Foundation 🔲 PLANNED
 
 **Goal**: Prepare architecture for auth without implementing yet.
 
-### 5.1 Auth-Ready Architecture
+### 7.1 Auth-Ready Architecture
 
 Create placeholder interfaces now:
 
@@ -373,6 +681,7 @@ export interface User {
   id: string;
   displayName: string;
   avatar?: string;
+  locale?: string;
 }
 
 export interface AuthState {
@@ -382,7 +691,7 @@ export interface AuthState {
 }
 ```
 
-### 5.2 Future Options
+### 7.2 Future Options
 
 | Provider        | Pros                              | Cons               |
 | --------------- | --------------------------------- | ------------------ |
@@ -392,6 +701,78 @@ export interface AuthState {
 | **Self-hosted** | Full control                      | More work          |
 
 **Recommendation**: Supabase for MVP (free tier, good Electron support).
+
+---
+
+## Phase 9: Analytics & Telemetry 🔲 PLANNED (LATE)
+
+**Goal**: Understand usage patterns to improve the product (privacy-respecting).
+
+**Important**: This phase is intentionally late - focus on building a great product first.
+
+### 9.1 Privacy-First Principles
+
+- **Opt-in only**: Users must explicitly consent
+- **Anonymized**: No PII, no user-identifying data
+- **Transparent**: Clear explanation of what's collected
+- **Local-first**: Aggregate locally when possible
+- **Minimal**: Only collect what's actionable
+
+### 9.2 What to Track
+
+**Usage Metrics** (anonymous):
+- Feature usage frequency (which demos, scenarios used)
+- Session duration
+- Error rates and types
+- Performance metrics (audio latency, frame drops)
+
+**Do NOT Track**:
+- Conversation content
+- User locations
+- Personal identifiers
+- Microphone/audio content
+
+### 9.3 Implementation Options
+
+| Provider          | Pros                                | Cons                    |
+| ----------------- | ----------------------------------- | ----------------------- |
+| **PostHog**       | Self-hostable, open source, free tier | Setup complexity      |
+| **Plausible**     | Privacy-focused, simple             | Limited features        |
+| **Aptabase**      | Built for desktop apps, privacy-first | Newer                 |
+| **Custom**        | Full control                        | Build & maintain        |
+
+**Recommendation**: Aptabase for Electron apps, or self-hosted PostHog for full control.
+
+### 9.4 Electron-Specific Considerations
+
+```typescript
+// src/lib/analytics.ts (future)
+import { analytics } from "@aptabase/electron";
+
+// Initialize only if user consented
+export function initAnalytics() {
+  const consent = store.get("analyticsConsent");
+  if (!consent) return;
+
+  analytics.init("APP_KEY", {
+    // Disable in development
+    enabled: !import.meta.env.DEV,
+  });
+}
+
+// Track feature usage
+export function trackEvent(name: string, props?: Record<string, unknown>) {
+  analytics.trackEvent(name, props);
+}
+```
+
+### 9.5 Consent UI
+
+Add to Settings page:
+- Clear explanation of what's collected
+- Toggle to enable/disable
+- Link to privacy policy
+- Option to view/delete collected data
 
 ---
 
@@ -420,4 +801,9 @@ export interface AuthState {
 - **Error Handling**: Zero unhandled exceptions in production, user-facing error messages
 - **UI Library**: 80%+ test coverage, Storybook docs for all components
 - **E2E**: Critical paths covered, < 2min total runtime
+- **CI/CD**: All PRs pass quality gates, automated releases
+- **Versioning**: Semantic versions, automated changelog, conventional commits
+- **Themes**: Light/dark modes, system preference sync, no flash on load
+- **Localization**: Type-safe translations, 2+ languages, persisted preference
 - **Auth**: (Future) Login flow, session persistence
+- **Analytics**: (Future) Privacy-first, opt-in, actionable insights
