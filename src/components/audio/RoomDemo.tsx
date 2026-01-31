@@ -1,3 +1,16 @@
+/**
+ * RoomDemo.tsx - Room Boundaries Demo (Tab 3 of The Tent)
+ *
+ * Demonstrates how walls/boundaries attenuate sound:
+ * - Two adjacent rooms with visible walls
+ * - Sound passing through walls is reduced by 70% per wall
+ * - Visual line shows the sound path (green = clear, red = blocked)
+ *
+ * This simulates Dolby Axon's room system where users in different
+ * areas couldn't hear each other clearly.
+ *
+ * Audio model: attenuation = 0.3 ^ wallCount
+ */
 import { createSignal, For } from "solid-js";
 import {
   Position,
@@ -13,12 +26,6 @@ import { audioStore } from "@/stores/audio";
 import { Button, Slider } from "@/components/ui";
 import styles from "./RoomDemo.module.css";
 
-/**
- * RoomDemo - Demonstrates room boundaries and wall attenuation
- * 
- * Shows how walls between a speaker and listener reduce sound volume.
- * Like Dolby Axon's room system where different areas are acoustically separated.
- */
 export function RoomDemo() {
   let roomRef: HTMLDivElement | undefined;
 

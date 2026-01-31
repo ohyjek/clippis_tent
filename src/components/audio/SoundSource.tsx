@@ -1,24 +1,29 @@
+/**
+ * SoundSource.tsx - Draggable numbered sound source circle
+ *
+ * Renders a colored circle with a number that can be dragged around the room.
+ * Each source has a unique color based on its index (hue rotation).
+ * Plays a tone when drag ends to demonstrate spatial audio at new position.
+ *
+ * Used by TentRoom for the listener demo.
+ */
 import { createSignal } from "solid-js";
 import { SoundSource as SoundSourceType, Position } from "@/lib/spatial-audio";
 import styles from "./SoundSource.module.css";
 
 interface SoundSourceProps {
+  /** Sound source data (id, position, frequency) */
   sound: SoundSourceType;
+  /** Index for display number and color calculation */
   index: number;
   /** Callback to convert mouse event to room coordinates */
   getPositionFromEvent: (e: MouseEvent) => Position;
-  /** Called when position changes during drag */
+  /** Called continuously during drag with new position */
   onPositionChange: (position: Position) => void;
-  /** Called when drag ends */
+  /** Called when drag ends (mouse up) */
   onDragEnd: () => void;
 }
 
-/**
- * SoundSource - A draggable sound source in the audio room
- * 
- * Displays as a numbered circle that can be dragged to reposition.
- * Position updates are streamed during drag for real-time feedback.
- */
 export function SoundSource(props: SoundSourceProps) {
   const [isDragging, setIsDragging] = createSignal(false);
 

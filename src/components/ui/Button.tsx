@@ -1,10 +1,21 @@
+/**
+ * Button.tsx - Reusable button component with style variants
+ *
+ * Variants: primary (blue), success (green), purple, danger (red), outline
+ * Supports optional emoji/icon prefix via the `icon` prop.
+ *
+ * @example
+ * <Button variant="success" icon="🔊" onClick={play}>Play</Button>
+ */
 import { JSX, splitProps } from "solid-js";
 import styles from "./Button.module.css";
 
 export type ButtonVariant = "primary" | "success" | "purple" | "danger" | "outline";
 
 interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Visual style variant */
   variant?: ButtonVariant;
+  /** Optional emoji or icon to show before the label */
   icon?: string;
 }
 
