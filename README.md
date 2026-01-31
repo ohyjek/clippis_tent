@@ -11,12 +11,11 @@ Clippis Tent demonstrates spatial audio positioning where sound sources have vir
 
 ## Features
 
-- Interactive 2D audio room visualization
-- Click-to-move listener positioning
-- Multiple sound sources with unique frequencies
-- Real-time spatial audio processing via Web Audio API
-- Master volume control
-- Demo modes for testing directional audio
+- **Spatial Audio Room** - Interactive 2D visualization with moveable listener and sound sources
+- **Real-time Audio Processing** - Web Audio API with distance attenuation and stereo panning
+- **Settings Page** - Configure audio devices, volume, and processing options
+- **Modern UI** - Sidebar navigation, CSS Modules, design tokens
+- **Production Architecture** - Component-based structure with global state management
 
 ## Tech Stack
 
@@ -24,8 +23,10 @@ Clippis Tent demonstrates spatial audio positioning where sound sources have vir
 | ----------------- | ------------------------------------------ |
 | Desktop Framework | Electron 40                                |
 | Build System      | Vite + Electron Forge                      |
-| UI Framework      | SolidJS                                    |
+| UI Framework      | SolidJS + @solidjs/router                  |
+| Styling           | CSS Modules + CSS Custom Properties        |
 | Audio             | Web Audio API (oscillators, stereo panner) |
+| Testing           | Vitest                                     |
 | Package Manager   | pnpm                                       |
 
 ## Getting Started
@@ -63,14 +64,29 @@ pnpm start
 
 ```
 src/
-├── main.ts              # Electron main process
-├── preload.ts           # Preload script for IPC
-├── renderer.tsx         # SolidJS app entry point
+├── main.ts                    # Electron main process
+├── preload.ts                 # Preload script for IPC
+├── renderer.tsx               # App entry with routing
 ├── components/
-│   └── App.tsx          # Main UI component
+│   ├── ui/                    # Reusable UI components
+│   │   ├── Button.tsx
+│   │   └── Slider.tsx
+│   ├── audio/                 # Audio-specific components
+│   │   ├── AudioRoom.tsx
+│   │   ├── Listener.tsx
+│   │   └── SoundSource.tsx
+│   └── layout/                # Layout components
+│       ├── Shell.tsx
+│       └── Sidebar.tsx
+├── pages/                     # Page components
+│   ├── Home.tsx               # Main audio room page
+│   └── Settings.tsx           # Audio settings page
+├── stores/
+│   └── audio.ts               # Global audio state
 ├── lib/
-│   └── spatial-audio.ts # Spatial audio utilities
-└── index.css            # Global styles
+│   └── spatial-audio.ts       # Spatial audio utilities
+└── styles/
+    └── variables.css          # CSS custom properties
 ```
 
 ### Spatial Audio Model

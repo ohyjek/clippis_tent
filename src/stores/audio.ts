@@ -1,0 +1,121 @@
+/**
+ * Audio Store - Global state management for audio functionality
+ */
+import { createSignal, createRoot } from "solid-js";
+import {
+  type SoundSource,
+  type Position,
+  createSoundSource,
+  randomPosition,
+} from "../lib/spatial-audio";
+
+// Store AudioContext outside of Howler since we're using Web Audio API directly
+let audioContext: AudioContext | null = null;
+
+function createAudioStore() {
+  // Audio state
+  const [audioInitialized, setAudioInitialized] = createSignal(false);
+  const [masterVolume, setMasterVolume] = createSignal(0.5);
+  
+  // Spatial audio state
+  const [listenerPos, setListenerPos] = createSignal<Position>({ x: 0, y: 0 });
+  const [sounds, setSounds] = createSignal<SoundSource[]>([]);
+
+  // Settings
+  const [audioInputDevice, setAudioInputDevice] = createSignal<string>("");
+  const [audioOutputDevice, setAudioOutputDevice] = createSignal<string>("");
+  const [spatialAudioEnabled, setSpatialAudioEnabled] = createSignal(true);
+  const [noiseSuppressionEnabled, setNoiseSuppressionEnabled] = createSignal(true);
+  const [echoCancellationEnabled, setEchoCancellationEnabled] = createSignal(true);
+
+  // Initialize audio context
+  const initializeAudio = () => {
+    if (!audioInitialized()) {
+      audioContext = new AudioContext();
+      console.log("Audio context initialized");
+      setAudioInitialized(true);
+      return true;
+    }
+    return false;
+  };
+
+  // Update master volume
+  const updateMasterVolume = (value: number) => {
+    setMasterVolume(value);
+  };
+
+  // Add a new sound source
+  const addSound = () => {
+    initializeAudio();
+    const newSound = createSoundSource();
+    setSounds((prev) => [...prev, newSound]);
+    return newSound;
+  };
+
+  // Move a sound source to a new random position
+  const moveSound = (soundId: string) => {
+    let movedSound: SoundSource | undefined;
+    
+    setSounds((prev) =>
+      prev.map((s) => {
+        if (s.id === soundId) {
+          movedSound = { ...s, position: randomPosition() };
+          return movedSound;
+        }
+        return s;
+      })
+    );
+
+    return movedSound;
+  };
+
+  // Remove all sounds
+  const clearSounds = () => {
+    setSounds([]);
+  };
+
+  // Reset listener position
+  const resetListenerPosition = () => {
+    setListenerPos({ x: 0, y: 0 });
+  };
+
+  // Get audio context
+  const getAudioContext = (): AudioContext | null => {
+    return audioContext;
+  };
+
+  return {
+    // State (read-only signals)
+    audioInitialized,
+    masterVolume,
+    listenerPos,
+    sounds,
+    
+    // Settings
+    audioInputDevice,
+    audioOutputDevice,
+    spatialAudioEnabled,
+    echoCancellationEnabled,
+    noiseSuppressionEnabled,
+
+    // Actions
+    initializeAudio,
+    updateMasterVolume,
+    setListenerPos,
+    addSound,
+    moveSound,
+    clearSounds,
+    resetListenerPosition,
+    getAudioContext,
+
+    // Settings actions
+    setAudioInputDevice,
+    setAudioOutputDevice,
+    setSpatialAudioEnabled,
+    setEchoCancellationEnabled,
+    setNoiseSuppressionEnabled,
+  };
+}
+
+// Create singleton store
+export const audioStore = createRoot(createAudioStore);

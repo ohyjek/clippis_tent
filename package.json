@@ -48,6 +48,7 @@
     "vitest": "^4.0.18"
   },
   "dependencies": {
+    "@solidjs/router": "^0.15.4",
     "electron-squirrel-startup": "^1.0.1",
     "howler": "^2.2.4",
     "solid-js": "^1.9.10",

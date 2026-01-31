@@ -1,33 +1,13 @@
 /**
- * This file will automatically be loaded by vite and run in the "renderer" context.
- * To learn more about the differences between the "main" and the "renderer" context in
- * Electron, visit:
- *
- * https://electronjs.org/docs/tutorial/process-model
- *
- * By default, Node.js integration in this file is disabled. When enabling Node.js integration
- * in a renderer process, please be aware of potential security implications. You can read
- * more about security risks here:
- *
- * https://electronjs.org/docs/tutorial/security
- *
- * To enable Node.js integration in this file, open up `main.ts` and enable the `nodeIntegration`
- * flag:
- *
- * ```
- *  // Create the browser window.
- *  mainWindow = new BrowserWindow({
- *    width: 800,
- *    height: 600,
- *    webPreferences: {
- *      nodeIntegration: true
- *    }
- *  });
- * ```
+ * Renderer entry point
+ * Sets up the SolidJS app with routing and layout shell
  */
 import { render } from "solid-js/web";
-import App from "./components/App";
+import { Router, Route } from "@solidjs/router";
+import { Shell } from "./components/layout";
+import { Home, Settings } from "./pages";
 
+import "./styles/variables.css";
 import "./index.css";
 
 const root = document.getElementById("root");
@@ -38,5 +18,12 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-render(() => <App />, root!);
+render(
+  () => (
+    <Router root={Shell}>
+      <Route path="/" component={Home} />
+      <Route path="/settings" component={Settings} />
+    </Router>
+  ),
+  root!
+);
