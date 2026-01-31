@@ -14,7 +14,7 @@
 import { JSX, For, splitProps } from "solid-js";
 import styles from "./SelectField.module.css";
 
-interface SelectOption {
+export interface SelectOption {
   value: string;
   label: string;
 }

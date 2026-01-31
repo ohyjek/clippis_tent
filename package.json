@@ -60,6 +60,7 @@
     "vitest": "^4.0.18"
   },
   "dependencies": {
+    "@clippis/ui": "workspace:*",
     "@solidjs/router": "^0.15.4",
     "electron-log": "^5.4.3",
     "electron-squirrel-startup": "^1.0.1",
