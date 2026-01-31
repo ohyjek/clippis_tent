@@ -42,7 +42,7 @@
   background: var(--color-bg-primary);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-md);
-  cursor: crosshair;
+  cursor: default;
   overflow: hidden;
 }
 
@@ -103,9 +103,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: grab;
   z-index: 5;
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast);
+}
+
+.speaker:hover {
+  transform: translate(-50%, -50%) scale(1.05);
 }
 
 .speaker.selected {
@@ -121,24 +125,31 @@
   animation: pulse 1.5s ease-in-out infinite;
 }
 
+.speaker.dragging {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 0.5; }
   50% { opacity: 1; }
 }
 
-.arrow {
+/* Sound cone - triangular shape showing direction of audio projection */
+.soundCone {
   position: absolute;
-  width: 50px;
-  height: 50px;
-  border-radius: var(--radius-full);
-  background: conic-gradient(
-    from -30deg,
-    var(--speaker-color) 0deg,
-    var(--speaker-color) 60deg,
-    transparent 60deg,
-    transparent 360deg
+  width: 140px;
+  height: 140px;
+  /* Cone spans ~90 degrees, pointing right (0deg), will be rotated by JS */
+  clip-path: polygon(50% 50%, 100% 25%, 100% 75%);
+  background: linear-gradient(
+    to right,
+    var(--speaker-color) 0%,
+    transparent 90%
   );
-  transition: transform var(--transition-fast), opacity var(--transition-fast);
+  transform-origin: 50% 50%;
+  transition: transform 0.1s ease-out, opacity var(--transition-fast);
+  pointer-events: none;
 }
 
 .speakerIcon {
