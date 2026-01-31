@@ -19,8 +19,7 @@ test.describe("Navigation", () => {
     // Check navigation links (specifically in the nav element)
     const nav = page.locator("nav");
     await expect(nav.getByText("The Tent")).toBeVisible();
-    await expect(nav.getByText("Scenarios")).toBeVisible();
-    await expect(nav.getByText("Voice Room")).toBeVisible();
+    await expect(nav.getByText("Room Builder")).toBeVisible();
     await expect(nav.getByText("Settings")).toBeVisible();
   });
 
@@ -32,11 +31,11 @@ test.describe("Navigation", () => {
     await expect(page.locator("h1")).toContainText(/the tent/i);
   });
 
-  test("should navigate to Scenarios page", async ({ page }) => {
-    await page.click("text=Scenarios");
-    await expect(page).toHaveURL(/.*scenarios/i);
-    // Check for scenario dropdown
-    await expect(page.getByRole("combobox")).toBeVisible();
+  test("should navigate to Room Builder page", async ({ page }) => {
+    await page.click("text=Room Builder");
+    await expect(page).toHaveURL(/.*builder/i);
+    // Check for builder-specific content (h1 heading)
+    await expect(page.locator("h1")).toContainText(/room builder/i);
   });
 
   test("should navigate to Settings page", async ({ page }) => {
@@ -44,12 +43,5 @@ test.describe("Navigation", () => {
     await expect(page).toHaveURL(/.*settings/i);
     // Check for settings sections
     await expect(page.getByRole("heading", { name: /settings/i })).toBeVisible();
-  });
-
-  test("should navigate to Voice Room page", async ({ page }) => {
-    await page.click("text=Voice Room");
-    await expect(page).toHaveURL(/.*voice/i);
-    // Voice room is a placeholder, check for h1 heading
-    await expect(page.locator("h1")).toContainText(/voice room/i);
   });
 });

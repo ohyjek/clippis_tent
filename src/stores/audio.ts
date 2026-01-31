@@ -52,7 +52,11 @@ function createAudioStore() {
         return true;
       } catch (err) {
         logger.audio.error("Failed to initialize audio context:", err);
-        showToast({ type: "error", message: "Could not initialize audio. Please check your audio settings." });
+        showToast({
+          type: "error",
+          message:
+            "Could not initialize audio. Please check your audio settings.",
+        });
         return false;
       }
     }

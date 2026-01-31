@@ -8,10 +8,9 @@
  * - Live region for audio status
  *
  * Routes:
- *   /          -> The Tent (spatial audio demos)
- *   /scenarios -> Scenarios (preset audio configs)
- *   /voice     -> Voice Room (coming soon)
- *   /settings  -> Settings page
+ *   /         -> The Tent (spatial audio demo)
+ *   /builder  -> Room Builder (room building tool)
+ *   /settings -> Settings page
  */
 import { A, useLocation } from "@solidjs/router";
 import { audioStore } from "@/stores/audio";
@@ -20,16 +19,14 @@ import styles from "./Sidebar.module.css";
 
 interface NavItem {
   path: string;
-  labelKey: "nav.tent" | "nav.scenarios" | "nav.builder" | "nav.voiceRoom" | "nav.settings";
+  labelKey: "nav.tent" | "nav.builder" | "nav.settings";
   icon: string;
 }
 
 /** Navigation items shown in the sidebar */
 const navItems: NavItem[] = [
   { path: "/", labelKey: "nav.tent", icon: "🎪" },
-  { path: "/scenarios", labelKey: "nav.scenarios", icon: "🎬" },
   { path: "/builder", labelKey: "nav.builder", icon: "🏗️" },
-  { path: "/voice", labelKey: "nav.voiceRoom", icon: "🎙️" },
   { path: "/settings", labelKey: "nav.settings", icon: "⚙️" },
 ];
 

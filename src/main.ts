@@ -19,15 +19,18 @@ if (started) {
   app.quit();
 }
 
-logger.app.info("App starting", { version: app.getVersion(), platform: process.platform });
+logger.app.info("App starting", {
+  version: app.getVersion(),
+  platform: process.platform,
+});
 
 const createWindow = () => {
   logger.window.info("Creating main window");
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 2048,
+    height: 2048,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
@@ -35,10 +38,15 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    logger.window.debug("Loading dev server URL", { url: MAIN_WINDOW_VITE_DEV_SERVER_URL });
+    logger.window.debug("Loading dev server URL", {
+      url: MAIN_WINDOW_VITE_DEV_SERVER_URL,
+    });
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
-    const filePath = path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`);
+    const filePath = path.join(
+      __dirname,
+      `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`
+    );
     logger.window.debug("Loading file", { path: filePath });
     mainWindow.loadFile(filePath);
   }
