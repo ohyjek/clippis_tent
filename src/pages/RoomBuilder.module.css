@@ -81,6 +81,24 @@
   cursor: default;
 }
 
+/* Audio sources container */
+.audioSources {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.audioSources > * {
+  pointer-events: auto;
+}
+
+.audioSourcesDrawMode {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
 /* Grid overlay */
 .gridOverlay {
   position: absolute;

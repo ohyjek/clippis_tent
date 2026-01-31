@@ -116,7 +116,72 @@ function createRoomFromCorners(start: Position, end: Position, id: string, color
 }
 
 // ============================================================================
-// COMPONENT
+// DRAWING PREVIEW COMPONENT
+// ============================================================================
+
+interface DrawingPreviewProps {
+  start: () => Position | null;
+  end: () => Position | null;
+  toPercent: (val: number) => number;
+}
+
+function DrawingPreview(props: DrawingPreviewProps) {
+  const start = () => props.start();
+  const end = () => props.end();
+
+  const left = () => {
+    const s = start();
+    const e = end();
+    if (!s || !e) return 0;
+    return Math.min(props.toPercent(s.x), props.toPercent(e.x));
+  };
+
+  const top = () => {
+    const s = start();
+    const e = end();
+    if (!s || !e) return 0;
+    return Math.min(props.toPercent(s.y), props.toPercent(e.y));
+  };
+
+  const widthPct = () => {
+    const s = start();
+    const e = end();
+    if (!s || !e) return 0;
+    return Math.abs(props.toPercent(e.x) - props.toPercent(s.x));
+  };
+
+  const heightPct = () => {
+    const s = start();
+    const e = end();
+    if (!s || !e) return 0;
+    return Math.abs(props.toPercent(e.y) - props.toPercent(s.y));
+  };
+
+  const dimensions = () => {
+    const s = start();
+    const e = end();
+    if (!s || !e) return "0.0 × 0.0";
+    const w = Math.abs(e.x - s.x).toFixed(1);
+    const h = Math.abs(e.y - s.y).toFixed(1);
+    return `${w} × ${h}`;
+  };
+
+  return (
+    <div
+      class={styles.drawPreview}
+      style={{
+        left: `${left()}%`,
+        top: `${top()}%`,
+        width: `${widthPct()}%`,
+        height: `${heightPct()}%`,
+      }}
+      data-dimensions={dimensions()}
+    />
+  );
+}
+
+// ============================================================================
+// MAIN COMPONENT
 // ============================================================================
 
 export function RoomBuilder() {
@@ -746,31 +811,8 @@ export function RoomBuilder() {
             <div class={styles.gridOverlay} />
 
             {/* Drawing preview */}
-            <Show when={isDrawing() && drawStart() && drawEnd() ? { start: drawStart(), end: drawEnd() } : null}>
-              {(preview) => {
-                const start = preview().start;
-                const end = preview().end;
-                if (!start || !end) return null;
-                const left = Math.min(toPercent(start.x), toPercent(end.x));
-                const top = Math.min(toPercent(start.y), toPercent(end.y));
-                const widthPct = Math.abs(toPercent(end.x) - toPercent(start.x));
-                const heightPct = Math.abs(toPercent(end.y) - toPercent(start.y));
-                const widthUnits = Math.abs(end.x - start.x).toFixed(1);
-                const heightUnits = Math.abs(end.y - start.y).toFixed(1);
-
-                return (
-                  <div
-                    class={styles.drawPreview}
-                    style={{
-                      left: `${left}%`,
-                      top: `${top}%`,
-                      width: `${widthPct}%`,
-                      height: `${heightPct}%`,
-                    }}
-                    data-dimensions={`${widthUnits} × ${heightUnits}`}
-                  />
-                );
-              }}
+            <Show when={isDrawing() && drawStart()}>
+              <DrawingPreview start={drawStart} end={drawEnd} toPercent={toPercent} />
             </Show>
 
             {/* Rooms */}
@@ -890,52 +932,55 @@ export function RoomBuilder() {
               </For>
             </svg>
 
-            {/* Speakers */}
-            <For each={speakers()}>
-              {(speaker) => (
-                <Speaker
-                  id={speaker.id}
-                  position={speaker.position}
-                  color={speaker.color}
-                  facing={speaker.facing}
-                  gain={calculateDisplayGain(speaker)}
-                  isSelected={selectedSpeaker() === speaker.id}
-                  isPlaying={isPlaying(speaker.id)}
-                  isMoving={isMovingSpeaker() === speaker.id}
-                  isRotating={isRotatingSpeaker() === speaker.id}
-                  onClick={() => {
-                    setSelectedSpeaker(speaker.id);
-                    togglePlayback(speaker.id);
-                  }}
-                  onMoveStart={handleSpeakerMoveStart(speaker.id)}
-                  onRotateStart={handleSpeakerRotateStart(speaker.id)}
-                  style={{
-                    left: `${toPercent(speaker.position.x)}%`,
-                    top: `${toPercent(speaker.position.y)}%`,
-                  }}
-                />
-              )}
-            </For>
+            {/* Audio sources container - disabled in draw mode */}
+            <div class={drawingMode() === "rectangle" ? styles.audioSourcesDrawMode : styles.audioSources}>
+              {/* Speakers */}
+              <For each={speakers()}>
+                {(speaker) => (
+                  <Speaker
+                    id={speaker.id}
+                    position={speaker.position}
+                    color={speaker.color}
+                    facing={speaker.facing}
+                    gain={calculateDisplayGain(speaker)}
+                    isSelected={selectedSpeaker() === speaker.id}
+                    isPlaying={isPlaying(speaker.id)}
+                    isMoving={isMovingSpeaker() === speaker.id}
+                    isRotating={isRotatingSpeaker() === speaker.id}
+                    onClick={() => {
+                      setSelectedSpeaker(speaker.id);
+                      togglePlayback(speaker.id);
+                    }}
+                    onMoveStart={handleSpeakerMoveStart(speaker.id)}
+                    onRotateStart={handleSpeakerRotateStart(speaker.id)}
+                    style={{
+                      left: `${toPercent(speaker.position.x)}%`,
+                      top: `${toPercent(speaker.position.y)}%`,
+                    }}
+                  />
+                )}
+              </For>
 
-            {/* Listener */}
-            <Speaker
-              id="listener"
-              position={listenerPos()}
-              color="#3b82f6"
-              facing={listenerFacing()}
-              gain={1}
-              isSelected={false}
-              isPlaying={false}
-              isMoving={isDraggingListener()}
-              isRotating={isRotatingListener()}
-              icon="🎧"
-              onMoveStart={handleListenerMove}
-              onRotateStart={handleListenerRotate}
-              style={{
-                left: `${toPercent(listenerPos().x)}%`,
-                top: `${toPercent(listenerPos().y)}%`,
-              }}
-            />
+              {/* Listener */}
+              <Speaker
+                id="listener"
+                position={listenerPos()}
+                color="#3b82f6"
+                facing={listenerFacing()}
+                gain={1}
+                isSelected={false}
+                isPlaying={false}
+                isMoving={isDraggingListener()}
+                isRotating={isRotatingListener()}
+                icon="🎧"
+                onMoveStart={handleListenerMove}
+                onRotateStart={handleListenerRotate}
+                style={{
+                  left: `${toPercent(listenerPos().x)}%`,
+                  top: `${toPercent(listenerPos().y)}%`,
+                }}
+              />
+            </div>
           </div>
 
           <div class={styles.statusBar}>
