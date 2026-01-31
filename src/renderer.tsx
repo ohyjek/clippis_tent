@@ -3,12 +3,17 @@
  * Sets up the SolidJS app with routing and layout shell
  */
 import { render } from "solid-js/web";
+import { lazy } from "solid-js";
 import { Router, Route } from "@solidjs/router";
 import { Shell } from "./components/layout";
-import { Demo, Settings, VoiceRoom } from "./pages";
 
 import "./styles/variables.css";
 import "./index.css";
+
+// Lazy load pages for code splitting
+const Demo = lazy(() => import("./pages/Demo").then((m) => ({ default: m.Demo })));
+const VoiceRoom = lazy(() => import("./pages/VoiceRoom").then((m) => ({ default: m.VoiceRoom })));
+const Settings = lazy(() => import("./pages/Settings").then((m) => ({ default: m.Settings })));
 
 const root = document.getElementById("root");
 
