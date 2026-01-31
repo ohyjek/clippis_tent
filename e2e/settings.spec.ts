@@ -56,14 +56,8 @@ test.describe("Settings Page", () => {
   test("should adjust master volume", async ({ page }) => {
     const slider = page.getByRole("slider");
 
-    // Get initial value
-    const initialValue = await slider.inputValue();
-
-    // Change the value
+    // Change the value - verifies slider is interactive
     await slider.fill("0.5");
-
-    // Note: The actual value change depends on the component implementation
-    // This test verifies the slider is interactive
     await expect(slider).toBeVisible();
   });
 });
