@@ -1,3 +1,3 @@
-export { AudioRoom } from "./AudioRoom";
+export { DemoRoom } from "./DemoRoom";
 export { Listener } from "./Listener";
 export { SoundSource } from "./SoundSource";

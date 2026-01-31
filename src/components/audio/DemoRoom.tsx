@@ -4,9 +4,16 @@ import { calculateSpatialParams, CARDINAL_DIRECTIONS } from "../../lib/spatial-a
 import { Button, Slider } from "../ui";
 import { Listener } from "./Listener";
 import { SoundSource } from "./SoundSource";
-import styles from "./AudioRoom.module.css";
+import styles from "./DemoRoom.module.css";
 
-export function AudioRoom() {
+/**
+ * DemoRoom - Interactive spatial audio demonstration
+ * 
+ * This component provides a visual demonstration of spatial audio positioning.
+ * Users can add sound sources, move the listener, and hear how audio changes
+ * based on position (volume attenuation and stereo panning).
+ */
+export function DemoRoom() {
   // Play a tone at a specific position with spatial audio
   const playSoundAtPosition = (position: { x: number; y: number }, frequency: number) => {
     const audioContext = audioStore.getAudioContext();
@@ -120,7 +127,7 @@ export function AudioRoom() {
       {/* Room visualization */}
       <div class={styles.roomCard}>
         <h2 class={styles.roomTitle}>
-          Audio Room {audioStore.audioInitialized() && "🔊"}
+          Demo Room {audioStore.audioInitialized() && "🔊"}
         </h2>
 
         <div class={styles.room} onClick={handleRoomClick}>

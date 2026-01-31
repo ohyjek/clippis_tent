@@ -9,7 +9,8 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { path: "/", label: "Audio Room", icon: "🎧" },
+  { path: "/", label: "Demo Room", icon: "🎧" },
+  { path: "/voice", label: "Voice Room", icon: "🎙️" },
   { path: "/settings", label: "Settings", icon: "⚙️" },
 ];
 

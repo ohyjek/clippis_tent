@@ -50,47 +50,6 @@
   overflow: hidden;
 }
 
-/* Listener */
-.listener {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  background: var(--color-accent-blue);
-  border-radius: var(--radius-full);
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 3px solid var(--color-accent-blue-light);
-  box-shadow: var(--shadow-glow-blue);
-  font-size: 1.2rem;
-  z-index: 10;
-  transition: left var(--transition-fast), top var(--transition-fast);
-}
-
-/* Sound Source */
-.soundSource {
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-full);
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid white;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  font-weight: bold;
-  font-size: 0.875rem;
-  z-index: 5;
-}
-
-.soundSource:hover {
-  transform: translate(-50%, -50%) scale(1.15);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
-}
-
 /* Grid Lines */
 .gridLineH {
   position: absolute;
