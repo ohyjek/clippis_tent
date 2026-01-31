@@ -19,14 +19,13 @@ import {
   randomPosition,
 } from "../lib/spatial-audio";
 
-// Store AudioContext outside of Howler since we're using Web Audio API directly
 let audioContext: AudioContext | null = null;
 
 function createAudioStore() {
   // Audio state
   const [audioInitialized, setAudioInitialized] = createSignal(false);
   const [masterVolume, setMasterVolume] = createSignal(0.5);
-  
+
   // Spatial audio state
   const [listenerPos, setListenerPos] = createSignal<Position>({ x: 0, y: 0 });
   const [sounds, setSounds] = createSignal<SoundSource[]>([]);
@@ -35,8 +34,10 @@ function createAudioStore() {
   const [audioInputDevice, setAudioInputDevice] = createSignal<string>("");
   const [audioOutputDevice, setAudioOutputDevice] = createSignal<string>("");
   const [spatialAudioEnabled, setSpatialAudioEnabled] = createSignal(true);
-  const [noiseSuppressionEnabled, setNoiseSuppressionEnabled] = createSignal(true);
-  const [echoCancellationEnabled, setEchoCancellationEnabled] = createSignal(true);
+  const [noiseSuppressionEnabled, setNoiseSuppressionEnabled] =
+    createSignal(true);
+  const [echoCancellationEnabled, setEchoCancellationEnabled] =
+    createSignal(true);
 
   // Initialize audio context
   const initializeAudio = () => {
@@ -65,7 +66,7 @@ function createAudioStore() {
   // Move a sound source to a new random position
   const moveSound = (soundId: string) => {
     let movedSound: SoundSource | undefined;
-    
+
     setSounds((prev) =>
       prev.map((s) => {
         if (s.id === soundId) {
@@ -112,7 +113,7 @@ function createAudioStore() {
     masterVolume,
     listenerPos,
     sounds,
-    
+
     // Settings
     audioInputDevice,
     audioOutputDevice,
