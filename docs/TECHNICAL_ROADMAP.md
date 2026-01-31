@@ -1,15 +1,16 @@
 # Technical Roadmap
 
-A phased technical roadmap covering infrastructure (logging, error handling, testing), user experience (themes, localization), and future features (auth) - prioritized for a team of up to 5 developers.
+A phased technical roadmap covering infrastructure (logging, error handling, testing), user experience (themes, localization, accessibility), spatial audio features, and future features (auth, analytics) - prioritized for a team of up to 5 developers.
 
 This roadmap is organized into phases that can be worked on incrementally. Each phase builds on the previous.
 
 **Status Overview**:
 - ✅ Phase 1-4: Infrastructure complete (logging, errors, UI library, testing)
 - 🔲 Phase 5: CI/CD & versioning planned
-- 🔲 Phase 6-7: UX enhancements planned (themes, i18n)
-- 🔲 Phase 8: Auth foundation planned
-- 🔲 Phase 9: Analytics planned (late)
+- ✅ Phase 6-7: UX enhancements complete (themes, i18n, accessibility)
+- 🔲 Phase 8: Enhanced Room System planned
+- 🔲 Phase 9: Auth foundation planned
+- 🔲 Phase 10: Analytics planned (late)
 
 ---
 
@@ -521,157 +522,241 @@ jobs:
 
 ---
 
-## Phase 6: Theme System 🔲 PLANNED
+## Phase 6: Theme System ✅ COMPLETED
 
-**Goal**: Support light/dark themes and custom color schemes.
+**Goal**: Support light/dark themes with system preference detection.
 
-### 5.1 Theme Architecture
+**Status**: Implemented in `src/stores/theme.ts` and `src/styles/variables.css`.
 
-```typescript
-// src/lib/theme/types.ts
-export type ThemeMode = "light" | "dark" | "system";
+### 6.1 Implementation Summary
 
-export interface Theme {
-  mode: ThemeMode;
-  colors: {
-    bgPrimary: string;
-    bgSecondary: string;
-    bgTertiary: string;
-    textPrimary: string;
-    textSecondary: string;
-    textMuted: string;
-    border: string;
-    accentBlue: string;
-    accentGreen: string;
-    accentPurple: string;
-    accentRed: string;
-  };
-}
-```
+- **Theme Store** (`src/stores/theme.ts`): Manages light/dark/system modes
+- **CSS Variables** (`src/styles/variables.css`): Light theme via `[data-theme="light"]`
+- **System Detection**: Listens to `prefers-color-scheme` media query
+- **Persistence**: Theme preference stored in localStorage
+- **No Flash**: Theme applied before first render
 
-### 5.2 Implementation Plan
+### 6.2 Files
 
-1. **CSS Custom Properties** (already using)
-   - Extend `src/styles/variables.css` with light/dark variants
-   - Use `[data-theme="dark"]` / `[data-theme="light"]` selectors
-
-2. **Theme Store**
-   ```typescript
-   // src/stores/theme.ts
-   const [theme, setTheme] = createSignal<ThemeMode>("system");
-   
-   createEffect(() => {
-     const resolved = theme() === "system" 
-       ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-       : theme();
-     document.documentElement.dataset.theme = resolved;
-   });
-   ```
-
-3. **System Preference Detection**
-   - Listen to `prefers-color-scheme` media query
-   - Sync with OS theme when set to "system"
-
-4. **Persistence**
-   - Store preference in `electron-store` or localStorage
-   - Apply before first render to prevent flash
-
-### 5.3 UI Updates
-
-- Add theme toggle to Settings page
-- Update all CSS modules to use theme-aware variables
-- Ensure sufficient contrast in both modes
+- `src/stores/theme.ts` - Theme store with `themeMode`, `setThemeMode`, `resolvedTheme`
+- `src/styles/variables.css` - CSS custom properties with light/dark variants
+- `src/pages/Settings.tsx` - Theme selector in Appearance section
 
 ---
 
-## Phase 7: Localization (i18n) 🔲 PLANNED
+## Phase 7: Localization & Accessibility ✅ COMPLETED
 
-**Goal**: Support multiple languages for global accessibility.
+**Goal**: Multi-language support and WCAG 2.1 compliance.
 
-### 6.1 Library Options
+**Status**: 
+- i18n implemented with `@solid-primitives/i18n`
+- Accessibility implemented (WCAG 2.1 Level AA)
 
-| Library              | Pros                                   | Cons                    |
-| -------------------- | -------------------------------------- | ----------------------- |
-| **@solid-primitives/i18n** | SolidJS native, reactive, lightweight | Less ecosystem          |
-| **i18next**          | Mature, huge ecosystem, pluralization  | Heavier, React-focused  |
-| **Paraglide**        | Compile-time, type-safe, tiny runtime  | Newer                   |
+### 7.1 Localization Summary
 
-**Recommendation**: `@solid-primitives/i18n` for SolidJS-native reactivity, or Paraglide for type-safety.
+- **Library**: `@solid-primitives/i18n` (SolidJS-native, reactive)
+- **Translations**: `src/locales/en.json` (English, ready for more languages)
+- **Provider**: `I18nProvider` wraps app in `renderer.tsx`
+- **Hook**: `useI18n()` returns `[t, locale, setLocale]`
+- **Persistence**: Locale stored in localStorage
 
-### 6.2 Translation Structure
+### 7.2 Accessibility Summary
 
-```
-src/
-├── locales/
-│   ├── en.json          # English (default)
-│   ├── es.json          # Spanish
-│   ├── ja.json          # Japanese
-│   └── index.ts         # Loader and types
-└── lib/
-    └── i18n.ts          # i18n setup and hooks
-```
+- **Tabs**: WAI-ARIA pattern (role=tablist/tab, keyboard navigation)
+- **Forms**: Labels associated via htmlFor/id, aria-describedby
+- **Navigation**: Skip link, aria-current=page, labeled landmarks
+- **Focus**: Visible focus-visible styles on all interactive elements
+- **Motion**: `prefers-reduced-motion` disables animations
+- **Screen Readers**: aria-live regions, decorative icons hidden
 
-### 6.3 Translation File Format
+### 7.3 Files
 
-```json
-// src/locales/en.json
-{
-  "nav": {
-    "tent": "The Tent",
-    "scenarios": "Scenarios",
-    "voiceRoom": "Voice Room",
-    "settings": "Settings"
-  },
-  "settings": {
-    "title": "Settings",
-    "audioDevices": "Audio Devices",
-    "outputDevice": "Output Device",
-    "inputDevice": "Input Device",
-    "audioProcessing": "Audio Processing",
-    "spatialAudio": "Spatial Audio",
-    "noiseSuppression": "Noise Suppression"
-  },
-  "common": {
-    "play": "Play",
-    "stop": "Stop",
-    "save": "Save",
-    "cancel": "Cancel"
-  }
-}
-```
-
-### 6.4 Usage Pattern
-
-```typescript
-// With @solid-primitives/i18n
-import { useI18n } from "@/lib/i18n";
-
-function Settings() {
-  const [t] = useI18n();
-  
-  return (
-    <Section title={t("settings.audioDevices")}>
-      <SelectField label={t("settings.outputDevice")} ... />
-    </Section>
-  );
-}
-```
-
-### 6.5 Implementation Steps
-
-1. Install i18n library
-2. Create translation files for English (extract all strings)
-3. Add language selector to Settings
-4. Persist language preference
-5. Add additional languages incrementally
+- `src/lib/i18n.tsx` - i18n setup, provider, hook
+- `src/locales/en.json` - English translations
+- `src/index.css` - prefers-reduced-motion, global focus styles
+- `packages/ui/src/components/*` - ARIA attributes, focus styles
 
 ---
 
-## Phase 8: Auth Foundation 🔲 PLANNED
+## Phase 8: Enhanced Room System 🔲 PLANNED
+
+**Goal**: Advanced spatial audio room simulation with multiple rooms, custom shapes, and interactive sound sources.
+
+### 8.1 Overview
+
+Enhance the current room demo (which shows basic wall occlusion) to support:
+- Multiple interconnected rooms
+- Custom room shapes (beyond rectangles)
+- Drag-and-drop sound source placement
+- Real-time audio propagation visualization
+
+### 8.2 Multiple Rooms
+
+**Current State**: Single rectangular room with fixed walls.
+
+**Target State**: Multiple rooms with connecting doorways/openings.
+
+```typescript
+interface Room {
+  id: string;
+  name: string;
+  shape: RoomShape;
+  openings: Opening[];  // Doorways, windows
+  color?: string;
+}
+
+interface Opening {
+  id: string;
+  // Line segment defining the opening
+  start: Point;
+  end: Point;
+  // Sound transmission factor (0-1)
+  transmission: number;
+}
+```
+
+**Implementation Approach**:
+1. Room list sidebar to add/select rooms
+2. Visual room editor canvas
+3. Audio engine calculates path through openings
+4. Sound attenuates based on walls crossed and opening sizes
+
+### 8.3 Custom Room Shapes (Shape Drawing Tool)
+
+**Inspiration**: Rather than just splitting frames (like Dolby Axon), allow freeform polygon drawing.
+
+**Shape Drawing Modes**:
+
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| **Rectangle** | Click-drag to draw rectangle | Quick room creation |
+| **Polygon** | Click points, double-click to close | L-shaped rooms, complex layouts |
+| **Freehand** | Draw path, auto-simplify | Organic shapes |
+
+**Data Structure**:
+
+```typescript
+type RoomShape = 
+  | { type: "rectangle"; bounds: Rect }
+  | { type: "polygon"; points: Point[] }
+  | { type: "circle"; center: Point; radius: number };
+
+interface Point { x: number; y: number; }
+interface Rect { x: number; y: number; width: number; height: number; }
+```
+
+**Shape Editor Features**:
+- Draw mode toggle (rectangle/polygon/freehand)
+- Point handles for editing vertices
+- Snap to grid option
+- Undo/redo for shape edits
+- Room naming and color assignment
+
+### 8.4 Interactive Sound Sources
+
+**Goal**: Allow users to place, move, and configure multiple sound sources.
+
+**Features**:
+- **Add Sound**: Click/tap to place new sound source
+- **Move Sound**: Drag to reposition (like current speaker demo)
+- **Configure Sound**: Click to select, adjust:
+  - Direction (drag cone)
+  - Volume/gain
+  - Sound file/type
+  - Directivity pattern
+
+**Reuse Speaker Component**:
+```typescript
+// Already have this in @clippis/ui
+<Speaker
+  position={source.position}
+  facing={source.facing}
+  gain={source.gain}
+  onMoveStart={handleMove}
+  onRotateStart={handleRotate}
+  onClick={handleSelect}
+/>
+```
+
+### 8.5 Audio Propagation
+
+**Algorithm Enhancement**:
+
+Current: Simple line-of-sight with single wall intersection.
+
+Enhanced:
+1. Cast rays from source to listener
+2. For each wall segment:
+   - Check if opening exists nearby
+   - Calculate path through openings (diffraction)
+   - Apply distance + wall attenuation
+3. Sum contributions from all paths (multi-path propagation)
+
+```typescript
+interface AudioPath {
+  source: Point;
+  listener: Point;
+  segments: PathSegment[];
+  totalAttenuation: number;
+}
+
+interface PathSegment {
+  type: "direct" | "through_wall" | "through_opening";
+  distance: number;
+  attenuation: number;
+}
+```
+
+### 8.6 UI Components Needed
+
+1. **RoomEditor** - Canvas for drawing/editing rooms
+2. **RoomList** - Sidebar showing all rooms with add/delete
+3. **ShapeToolbar** - Drawing mode selector
+4. **SoundSourceList** - Manage sound sources
+5. **PropertyPanel** - Edit selected room/source properties
+
+### 8.7 Implementation Phases
+
+**Phase 8a: Multi-Room Foundation**
+- Add room list data structure
+- Render multiple rooms on canvas
+- Basic room switching
+
+**Phase 8b: Shape Drawing**
+- Rectangle drawing tool
+- Polygon drawing tool
+- Shape editing (vertex handles)
+- Undo/redo
+
+**Phase 8c: Sound Source Management**
+- Add/remove sound sources
+- Drag to position
+- Direction/volume controls
+
+**Phase 8d: Advanced Audio**
+- Multi-room audio propagation
+- Opening/doorway transmission
+- Visual audio path debugging
+
+### 8.8 Technical Considerations
+
+**Performance**:
+- Throttle audio recalculation during drag
+- Use Web Workers for complex path calculations
+- Canvas optimization for many rooms
+
+**Persistence**:
+- Save room layouts to localStorage or file
+- Export/import room configurations
+- Preset room templates
+
+---
+
+## Phase 9: Auth Foundation 🔲 PLANNED
 
 **Goal**: Prepare architecture for auth without implementing yet.
 
-### 7.1 Auth-Ready Architecture
+### 9.1 Auth-Ready Architecture
 
 Create placeholder interfaces now:
 
@@ -691,7 +776,7 @@ export interface AuthState {
 }
 ```
 
-### 7.2 Future Options
+### 9.2 Future Options
 
 | Provider        | Pros                              | Cons               |
 | --------------- | --------------------------------- | ------------------ |
@@ -704,13 +789,13 @@ export interface AuthState {
 
 ---
 
-## Phase 9: Analytics & Telemetry 🔲 PLANNED (LATE)
+## Phase 10: Analytics & Telemetry 🔲 PLANNED (LATE)
 
 **Goal**: Understand usage patterns to improve the product (privacy-respecting).
 
 **Important**: This phase is intentionally late - focus on building a great product first.
 
-### 9.1 Privacy-First Principles
+### 10.1 Privacy-First Principles
 
 - **Opt-in only**: Users must explicitly consent
 - **Anonymized**: No PII, no user-identifying data
@@ -718,7 +803,7 @@ export interface AuthState {
 - **Local-first**: Aggregate locally when possible
 - **Minimal**: Only collect what's actionable
 
-### 9.2 What to Track
+### 10.2 What to Track
 
 **Usage Metrics** (anonymous):
 - Feature usage frequency (which demos, scenarios used)
@@ -732,7 +817,7 @@ export interface AuthState {
 - Personal identifiers
 - Microphone/audio content
 
-### 9.3 Implementation Options
+### 10.3 Implementation Options
 
 | Provider          | Pros                                | Cons                    |
 | ----------------- | ----------------------------------- | ----------------------- |
@@ -743,7 +828,7 @@ export interface AuthState {
 
 **Recommendation**: Aptabase for Electron apps, or self-hosted PostHog for full control.
 
-### 9.4 Electron-Specific Considerations
+### 10.4 Electron-Specific Considerations
 
 ```typescript
 // src/lib/analytics.ts (future)
@@ -766,7 +851,7 @@ export function trackEvent(name: string, props?: Record<string, unknown>) {
 }
 ```
 
-### 9.5 Consent UI
+### 10.5 Consent UI
 
 Add to Settings page:
 - Clear explanation of what's collected
@@ -797,13 +882,20 @@ Add to Settings page:
 
 ## Success Metrics
 
+### Completed ✅
+
 - **Logging**: All errors logged with context, performance metrics for audio operations
 - **Error Handling**: Zero unhandled exceptions in production, user-facing error messages
-- **UI Library**: 80%+ test coverage, Storybook docs for all components
-- **E2E**: Critical paths covered, < 2min total runtime
+- **UI Library**: 129 unit tests, Storybook docs for all 8 components
+- **E2E**: 4 test suites covering critical paths
+- **Themes**: Light/dark/system modes, system preference sync, no flash on load
+- **Localization**: Type-safe translations with `@solid-primitives/i18n`, English complete
+- **Accessibility**: WCAG 2.1 Level AA, keyboard navigation, screen reader support
+
+### Planned 🔲
+
 - **CI/CD**: All PRs pass quality gates, automated releases
 - **Versioning**: Semantic versions, automated changelog, conventional commits
-- **Themes**: Light/dark modes, system preference sync, no flash on load
-- **Localization**: Type-safe translations, 2+ languages, persisted preference
+- **Room System**: Multiple rooms, custom shapes, interactive sound sources
 - **Auth**: (Future) Login flow, session persistence
 - **Analytics**: (Future) Privacy-first, opt-in, actionable insights
