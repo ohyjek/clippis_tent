@@ -1,76 +1,126 @@
 import { createSignal, onMount, For } from "solid-js";
-import { Howl, Howler } from "howler";
+import { Howler } from "howler";
+
+// Sound frequencies for different sound sources (musical notes)
+const SOUND_FREQUENCIES = [330, 392, 440, 494, 523, 587, 659, 784];
+
+// Sound source type using Web Audio API
+interface SoundSource {
+  id: string;
+  position: { x: number; y: number };
+  frequency: number;
+}
 
 function App() {
   const [listenerPos, setListenerPos] = createSignal({ x: 0, y: 0 });
-  const [sounds, setSounds] = createSignal<
-    Array<{
-      id: string;
-      position: { x: number; y: number };
-      sound: Howl;
-    }>
-  >([]);
+  const [sounds, setSounds] = createSignal<SoundSource[]>([]);
+  const [masterVolume, setMasterVolume] = createSignal(0.5);
+  const [audioInitialized, setAudioInitialized] = createSignal(false);
 
   // Initialize audio context on mount
   onMount(() => {
-    Howler.ctx = new AudioContext();
-    console.log("Audio context ready");
+    // Set master volume
+    Howler.volume(masterVolume());
 
-    // Add a test sound
-    addTestSound();
+    // Add a click handler to initialize audio on first user interaction
+    const initAudio = () => {
+      if (!audioInitialized()) {
+        Howler.ctx = new AudioContext();
+        console.log("Audio context ready");
+        setAudioInitialized(true);
+
+        // Add initial test sounds
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => addTestSound(), i * 300);
+        }
+      }
+    };
+
+    // Initialize on any click
+    document.addEventListener("click", initAudio, { once: true });
+
+    // Also initialize if user clicks our buttons
+    return () => {
+      document.removeEventListener("click", initAudio);
+    };
   });
 
+  // Update master volume when slider changes
+  const updateMasterVolume = (value: number) => {
+    setMasterVolume(value);
+    Howler.volume(value);
+  };
+
   const addTestSound = () => {
+    // Make sure audio is initialized
+    if (!audioInitialized()) {
+      Howler.ctx = new AudioContext();
+      setAudioInitialized(true);
+    }
+
     const id = `sound-${Date.now()}`;
     const position = {
       x: Math.random() * 4 - 2,
       y: Math.random() * 4 - 2,
     };
 
-    const sound = new Howl({
-      src: [
-        "https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3",
-      ],
-      loop: true,
-      volume: 0.2,
-      onload: () => {
-        sound.play();
-        updateSoundPosition(id);
-      },
-    });
+    // Pick a random frequency from our musical notes
+    const frequency = SOUND_FREQUENCIES[Math.floor(Math.random() * SOUND_FREQUENCIES.length)];
 
-    setSounds((prev) => [...prev, { id, position, sound }]);
+    setSounds((prev) => [...prev, { id, position, frequency }]);
+
+    // Play the sound immediately to give feedback
+    setTimeout(() => {
+      playSoundAtPosition(position, frequency);
+    }, 100);
   };
 
-  const updateSoundPosition = (soundId: string) => {
-    setSounds((prev) =>
-      prev.map((s) => {
-        if (s.id === soundId) {
-          const dx = s.position.x - listenerPos().x;
-          const distance = Math.sqrt(dx * dx);
-          const volume = 1.0 / (1.0 + distance);
-          const pan = Math.max(-1, Math.min(1, dx / 5));
+  // Play a tone at a specific position with spatial audio
+  const playSoundAtPosition = (position: { x: number; y: number }, frequency: number) => {
+    if (!audioInitialized()) return;
 
-          s.sound.volume(volume * 0.2);
-          s.sound.stereo(pan);
-        }
-        return s;
-      })
-    );
+    const audioContext = Howler.ctx as AudioContext;
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    const panner = audioContext.createStereoPanner();
+
+    oscillator.connect(panner);
+    panner.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Calculate spatial audio parameters
+    const dx = position.x - listenerPos().x;
+    const dy = position.y - listenerPos().y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const volume = (1.0 / (1.0 + distance)) * masterVolume() * 0.3;
+    const pan = Math.max(-1, Math.min(1, dx / 3));
+
+    oscillator.frequency.value = frequency;
+    oscillator.type = "sine";
+    gainNode.gain.value = volume;
+    panner.pan.value = pan;
+
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.25);
   };
 
   const handleRoomClick = (e: MouseEvent) => {
+    // Initialize audio if not already
+    if (!audioInitialized()) {
+      Howler.ctx = new AudioContext();
+      setAudioInitialized(true);
+    }
+
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width - 0.5) * 5;
     const y = ((e.clientY - rect.top) / rect.height - 0.5) * 5;
 
     setListenerPos({ x, y });
-
-    // Update all sounds
-    sounds().forEach((s) => updateSoundPosition(s.id));
   };
 
   const moveSound = (soundId: string) => {
+    let movedSound: SoundSource | undefined;
+    
     setSounds((prev) =>
       prev.map((s) => {
         if (s.id === soundId) {
@@ -78,14 +128,48 @@ function App() {
             x: Math.random() * 4 - 2,
             y: Math.random() * 4 - 2,
           };
-
-          return { ...s, position: newPosition };
+          movedSound = { ...s, position: newPosition };
+          return movedSound;
         }
         return s;
       })
     );
 
-    updateSoundPosition(soundId);
+    // Play sound at new position
+    if (movedSound) {
+      playSoundAtPosition(movedSound.position, movedSound.frequency);
+    }
+  };
+
+  // Play all sounds in sequence to demonstrate spatial audio
+  const playSoundDemo = () => {
+    sounds().forEach((s, i) => {
+      setTimeout(() => {
+        playSoundAtPosition(s.position, s.frequency);
+      }, i * 500);
+    });
+  };
+
+  // Test spatial audio with cardinal directions
+  const testCardinalDirections = () => {
+    if (!audioInitialized()) {
+      Howler.ctx = new AudioContext();
+      setAudioInitialized(true);
+    }
+
+    const directions = [
+      { x: -2, y: 0, name: "Left", freq: 330 },
+      { x: 2, y: 0, name: "Right", freq: 440 },
+      { x: 0, y: -2, name: "Front", freq: 550 },
+      { x: 0, y: 2, name: "Back", freq: 660 },
+    ];
+
+    directions.forEach((dir, i) => {
+      setTimeout(() => {
+        console.log(`Playing ${dir.name} tone`);
+        playSoundAtPosition({ x: dir.x, y: dir.y }, dir.freq);
+      }, i * 800);
+    });
   };
 
   return (
@@ -111,7 +195,8 @@ function App() {
           🎮 Dolby Axon Clone
         </h1>
         <p style={{ color: "#94a3b8", "margin-bottom": "2rem" }}>
-          Spatial Audio Prototype with SolidJS
+          Spatial Audio Prototype with SolidJS -{" "}
+          {audioInitialized() ? "Audio Active 🔊" : "Click to activate audio"}
         </p>
 
         <div
@@ -119,6 +204,8 @@ function App() {
             display: "flex",
             gap: "1rem",
             "margin-bottom": "2rem",
+            "flex-wrap": "wrap",
+            "align-items": "center",
           }}
         >
           <button
@@ -136,6 +223,52 @@ function App() {
           </button>
 
           <button
+            onClick={playSoundDemo}
+            style={{
+              background: "#10b981",
+              border: "none",
+              color: "white",
+              padding: "0.75rem 1.5rem",
+              "border-radius": "0.5rem",
+              cursor: "pointer",
+            }}
+          >
+            🔊 Play Demo
+          </button>
+
+          <button
+            onClick={testCardinalDirections}
+            style={{
+              background: "#8b5cf6",
+              border: "none",
+              color: "white",
+              padding: "0.75rem 1.5rem",
+              "border-radius": "0.5rem",
+              cursor: "pointer",
+            }}
+          >
+            🧭 Test Directions
+          </button>
+
+          <div
+            style={{ display: "flex", "align-items": "center", gap: "0.5rem" }}
+          >
+            <span>Volume:</span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={masterVolume()}
+              onInput={(e) =>
+                updateMasterVolume(parseFloat(e.currentTarget.value))
+              }
+              style={{ width: "100px" }}
+            />
+            <span>{Math.round(masterVolume() * 100)}%</span>
+          </div>
+
+          <button
             onClick={() => setListenerPos({ x: 0, y: 0 })}
             style={{
               background: "#1e293b",
@@ -150,19 +283,40 @@ function App() {
           </button>
 
           <button
-            onClick={() => setSounds([])}
+            onClick={() => {
+              setSounds([]);
+            }}
             style={{
-              background: "#1e293b",
-              border: "1px solid #475569",
-              color: "#e2e8f0",
+              background: "#ef4444",
+              border: "none",
+              color: "white",
               padding: "0.75rem 1.5rem",
               "border-radius": "0.5rem",
               cursor: "pointer",
             }}
           >
-            🎧 Reset Sources
+            🗑️ Clear All
           </button>
         </div>
+
+        {!audioInitialized() && (
+          <div
+            style={{
+              background: "rgba(59, 130, 246, 0.1)",
+              border: "1px solid #3b82f6",
+              "border-radius": "0.5rem",
+              padding: "1rem",
+              "margin-bottom": "2rem",
+              "text-align": "center",
+            }}
+          >
+            <p style={{ margin: 0 }}>
+              🔊 <strong>Audio needs activation:</strong> Click anywhere on the
+              page to enable audio playback. This is a browser security
+              requirement.
+            </p>
+          </div>
+        )}
 
         <div
           style={{
@@ -173,7 +327,7 @@ function App() {
           }}
         >
           <h2 style={{ "margin-bottom": "1rem", color: "#cbd5e1" }}>
-            Audio Room
+            Audio Room {audioInitialized() && "🔊"}
           </h2>
 
           <div
@@ -212,7 +366,7 @@ function App() {
 
             {/* Sound Sources */}
             <For each={sounds()}>
-              {(sound) => (
+              {(sound, index) => (
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
@@ -224,21 +378,71 @@ function App() {
                     top: `${50 + sound.position.y * 20}%`,
                     width: "30px",
                     height: "30px",
-                    background: "#8b5cf6",
+                    background: `hsl(${index() * 60}, 70%, 60%)`,
                     "border-radius": "50%",
                     transform: "translate(-50%, -50%)",
                     display: "flex",
                     "align-items": "center",
                     "justify-content": "center",
-                    border: "2px solid #c4b5fd",
+                    border: "2px solid white",
                     cursor: "pointer",
                     transition: "all 0.3s ease",
+                    "font-weight": "bold",
                   }}
+                  title={`Click to move sound source ${index() + 1}`}
                 >
-                  🔊
+                  {index() + 1}
                 </div>
               )}
             </For>
+
+            {/* Room grid */}
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "0",
+                right: "0",
+                height: "1px",
+                background: "rgba(255,255,255,0.1)",
+                transform: "translateY(-50%)",
+              }}
+            ></div>
+            <div
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "0",
+                bottom: "0",
+                width: "1px",
+                background: "rgba(255,255,255,0.1)",
+                transform: "translateX(-50%)",
+              }}
+            ></div>
+
+            {/* Direction labels */}
+            <div
+              style={{
+                position: "absolute",
+                left: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "rgba(255,255,255,0.5)",
+              }}
+            >
+              ← Left
+            </div>
+            <div
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "rgba(255,255,255,0.5)",
+              }}
+            >
+              Right →
+            </div>
           </div>
 
           <div
@@ -247,10 +451,21 @@ function App() {
               background: "#0f172a",
               padding: "0.5rem",
               "border-radius": "0.25rem",
+              display: "flex",
+              "justify-content": "space-between",
+              "align-items": "center",
             }}
           >
-            Listener Position: ({listenerPos().x.toFixed(2)},{" "}
-            {listenerPos().y.toFixed(2)})
+            <div>
+              Listener Position: ({listenerPos().x.toFixed(2)},{" "}
+              {listenerPos().y.toFixed(2)})
+            </div>
+            <div>
+              {sounds().length} sound{sounds().length !== 1 ? "s" : ""} active
+            </div>
+            <div style={{ "font-size": "0.9em", color: "#94a3b8" }}>
+              Click room to move listener • Click numbers to move sounds
+            </div>
           </div>
         </div>
 
@@ -266,16 +481,51 @@ function App() {
           </h3>
           <ul style={{ color: "#94a3b8", "line-height": "1.6" }}>
             <li>
-              • Click anywhere in the room to move the listener (blue circle)
+              • <strong>First, click anywhere</strong> to activate audio
+              (browser requirement)
             </li>
             <li>
-              • Click on sound sources (purple circles) to randomize their
-              positions
+              • <strong>Click anywhere in the room</strong> to move the listener
             </li>
-            <li>• Volume decreases with distance</li>
-            <li>• Stereo panning based on horizontal position</li>
-            <li>• {sounds().length} active sound sources</li>
+            <li>
+              • <strong>Click on numbered sound sources</strong> to randomize
+              their positions
+            </li>
+            <li>
+              • <strong>Volume decreases with distance</strong> (inverse square
+              law)
+            </li>
+            <li>
+              • <strong>Stereo panning based on horizontal position</strong>{" "}
+              (left/right)
+            </li>
+            <li>
+              • <strong>"Test Directions"</strong> uses direct Web Audio API
+              (should always work)
+            </li>
+            <li>
+              • <strong>"Play Demo"</strong> plays all sounds in sequence
+            </li>
+            <li>• Adjust master volume with the slider</li>
           </ul>
+
+          <div
+            style={{
+              "margin-top": "1.5rem",
+              padding: "1rem",
+              background: "rgba(139, 92, 246, 0.1)",
+              "border-radius": "0.5rem",
+              "border-left": "4px solid #8b5cf6",
+            }}
+          >
+            <strong>🎯 Next steps:</strong>
+            <ol style={{ "margin-top": "0.5rem", "padding-left": "1.5rem" }}>
+              <li>Add real microphone input</li>
+              <li>Add WebRTC for peer-to-peer connections</li>
+              <li>Implement proper HRTF for 3D audio</li>
+              <li>Add room echo simulation</li>
+            </ol>
+          </div>
         </div>
       </div>
     </div>
