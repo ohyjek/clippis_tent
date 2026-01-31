@@ -1,19 +1,18 @@
 /**
- * FullDemo.tsx - Complete Spatial Audio Playground (Tab 1 of The Tent)
+ * FullDemo.tsx - Complete Spatial Audio Playground
  *
  * The comprehensive demo combining all spatial audio features:
- * - Draggable listener with facing direction (same UI as speakers)
+ * - Draw rooms by clicking and dragging
+ * - Draggable listener with facing direction
  * - Multiple speakers with configurable directivity patterns
  * - Continuous tone playback with real-time updates
- * - Room boundaries with wall attenuation
+ * - Room boundaries with configurable wall attenuation
  * - Multiple distance attenuation models
  */
-import { createSignal, createEffect, onCleanup, For } from "solid-js";
+import { createSignal, createEffect, onCleanup, For, Show } from "solid-js";
 import {
   Position,
-  Room,
   Wall,
-  createRectangularRoom,
   SPEAKER_COLORS,
 } from "@/lib/spatial-audio";
 import {
@@ -43,27 +42,158 @@ interface AudioNodes {
   panner: StereoPannerNode;
 }
 
+/** Room with bounds for drawing */
+interface DrawnRoom {
+  id: string;
+  label: string;
+  bounds: { x: number; y: number; width: number; height: number };
+  walls: Wall[];
+  center: Position;
+  color: string;
+  attenuation: number;
+}
+
+type DrawingMode = "select" | "draw";
+
+// Room colors
+const ROOM_COLORS = [
+  "#8b5cf6", "#3b82f6", "#10b981", "#f59e0b",
+  "#ef4444", "#ec4899", "#6366f1", "#14b8a6",
+];
+
+const DEFAULT_ATTENUATION = 0.7;
+
+/** Create walls from bounds */
+function createWallsFromBounds(bounds: { x: number; y: number; width: number; height: number }): Wall[] {
+  const halfW = bounds.width / 2;
+  const halfH = bounds.height / 2;
+  const left = bounds.x - halfW;
+  const right = bounds.x + halfW;
+  const top = bounds.y - halfH;
+  const bottom = bounds.y + halfH;
+
+  return [
+    { start: { x: left, y: top }, end: { x: right, y: top } },
+    { start: { x: right, y: top }, end: { x: right, y: bottom } },
+    { start: { x: right, y: bottom }, end: { x: left, y: bottom } },
+    { start: { x: left, y: bottom }, end: { x: left, y: top } },
+  ];
+}
+
+/** Create room from two corners */
+function createRoomFromCorners(start: Position, end: Position, id: string, color: string): DrawnRoom {
+  const minX = Math.min(start.x, end.x);
+  const maxX = Math.max(start.x, end.x);
+  const minY = Math.min(start.y, end.y);
+  const maxY = Math.max(start.y, end.y);
+
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const center = { x: minX + width / 2, y: minY + height / 2 };
+
+  const bounds = { x: center.x, y: center.y, width, height };
+  const walls = createWallsFromBounds(bounds);
+
+  return {
+    id,
+    label: `Room ${id.slice(-4)}`,
+    bounds,
+    walls,
+    center,
+    color,
+    attenuation: DEFAULT_ATTENUATION,
+  };
+}
+
+/** Drawing preview component */
+function DrawingPreview(props: {
+  start: () => Position | null;
+  end: () => Position | null;
+  toPercent: (val: number) => number;
+}) {
+  const start = () => props.start();
+  const end = () => props.end();
+
+  const left = () => {
+    const s = start();
+    const e = end();
+    if (!s || !e) return 0;
+    return Math.min(props.toPercent(s.x), props.toPercent(e.x));
+  };
+
+  const top = () => {
+    const s = start();
+    const e = end();
+    if (!s || !e) return 0;
+    return Math.min(props.toPercent(s.y), props.toPercent(e.y));
+  };
+
+  const widthPct = () => {
+    const s = start();
+    const e = end();
+    if (!s || !e) return 0;
+    return Math.abs(props.toPercent(e.x) - props.toPercent(s.x));
+  };
+
+  const heightPct = () => {
+    const s = start();
+    const e = end();
+    if (!s || !e) return 0;
+    return Math.abs(props.toPercent(e.y) - props.toPercent(s.y));
+  };
+
+  const dimensions = () => {
+    const s = start();
+    const e = end();
+    if (!s || !e) return "0.0 × 0.0";
+    const w = Math.abs(e.x - s.x).toFixed(1);
+    const h = Math.abs(e.y - s.y).toFixed(1);
+    return `${w} × ${h}`;
+  };
+
+  return (
+    <div
+      class={styles.drawPreview}
+      style={{
+        left: `${left()}%`,
+        top: `${top()}%`,
+        width: `${widthPct()}%`,
+        height: `${heightPct()}%`,
+      }}
+      data-dimensions={dimensions()}
+    />
+  );
+}
+
 export function FullDemo() {
   let roomRef: HTMLDivElement | undefined;
 
-  // Room configuration - two adjacent rooms
-  const [rooms] = createSignal<Room[]>([
-    createRectangularRoom({ x: -1.2, y: 0 }, 2.2, 4, "room-a", "Room A"),
-    createRectangularRoom({ x: 1.2, y: 0 }, 2.2, 4, "room-b", "Room B"),
-  ]);
+  // Room state - now mutable for drawing
+  const [rooms, setRooms] = createSignal<DrawnRoom[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = createSignal<string | null>(null);
+  const [nextColorIndex, setNextColorIndex] = createSignal(0);
+
+  // Drawing state
+  const [drawingMode, setDrawingMode] = createSignal<DrawingMode>("select");
+  const [isDrawing, setIsDrawing] = createSignal(false);
+  const [drawStart, setDrawStart] = createSignal<Position | null>(null);
+  const [drawEnd, setDrawEnd] = createSignal<Position | null>(null);
 
   // Get all walls from all rooms
   const allWalls = (): Wall[] => rooms().flatMap((r) => r.walls);
 
+  // Get selected room
+  const selectedRoom = () => rooms().find((r) => r.id === selectedRoomId());
+
   // Listener state (position + facing, same as speakers)
-  const [listenerPos, setListenerPos] = createSignal<Position>({ x: 1.2, y: 0 });
+  const [listenerPos, setListenerPos] = createSignal<Position>({ x: 0, y: 0 });
   const [listenerFacing, setListenerFacing] = createSignal(0);
 
   // Speakers state
   const [speakers, setSpeakers] = createSignal<SpeakerState[]>([
     {
       id: "speaker-1",
-      position: { x: -1.2, y: 0 },
+      position: { x: -1, y: 0 },
       facing: 0,
       color: SPEAKER_COLORS[0],
       directivity: "cardioid",
@@ -84,6 +214,14 @@ export function FullDemo() {
   // Playing state - manage audio nodes directly for proper reactivity
   const [playingSpeakers, setPlayingSpeakers] = createSignal<Set<string>>(new Set());
   const audioNodes = new Map<string, AudioNodes>();
+
+  // Calculate effective attenuation per wall
+  const effectiveAttenuation = (): number => {
+    const roomList = rooms();
+    if (roomList.length === 0) return DEFAULT_ATTENUATION;
+    const sum = roomList.reduce((acc, r) => acc + r.attenuation, 0);
+    return sum / roomList.length;
+  };
 
   // Directivity pattern options
   const directivityOptions = [
@@ -126,6 +264,80 @@ export function FullDemo() {
 
   // Convert room coordinates to percentage for rendering
   const toPercent = (val: number) => 50 + val * 20;
+
+  // ============================================================================
+  // DRAWING HANDLERS
+  // ============================================================================
+
+  const handleCanvasMouseDown = (e: MouseEvent) => {
+    if (drawingMode() !== "draw") return;
+
+    const pos = getPositionFromEvent(e);
+    setIsDrawing(true);
+    setDrawStart(pos);
+    setDrawEnd(pos);
+  };
+
+  const handleCanvasMouseMove = (e: MouseEvent) => {
+    if (!isDrawing()) return;
+    setDrawEnd(getPositionFromEvent(e));
+  };
+
+  const handleCanvasMouseUp = () => {
+    if (!isDrawing()) return;
+
+    const start = drawStart();
+    const end = drawEnd();
+
+    if (start && end) {
+      const width = Math.abs(end.x - start.x);
+      const height = Math.abs(end.y - start.y);
+
+      if (width > 0.2 && height > 0.2) {
+        const color = ROOM_COLORS[nextColorIndex() % ROOM_COLORS.length];
+        const id = `room-${Date.now()}`;
+        const room = createRoomFromCorners(start, end, id, color);
+
+        setRooms((prev) => [...prev, room]);
+        setSelectedRoomId(id);
+        setNextColorIndex((i) => i + 1);
+      }
+    }
+
+    setIsDrawing(false);
+    setDrawStart(null);
+    setDrawEnd(null);
+  };
+
+  // ============================================================================
+  // ROOM MANAGEMENT
+  // ============================================================================
+
+  const handleRoomClick = (roomId: string) => (e: MouseEvent) => {
+    e.stopPropagation();
+    if (drawingMode() === "select") {
+      setSelectedRoomId(roomId);
+    }
+  };
+
+  const deleteSelectedRoom = () => {
+    const id = selectedRoomId();
+    if (!id) return;
+    setRooms((prev) => prev.filter((r) => r.id !== id));
+    setSelectedRoomId(null);
+  };
+
+  const updateRoomAttenuation = (attenuation: number) => {
+    const id = selectedRoomId();
+    if (!id) return;
+    setRooms((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, attenuation } : r))
+    );
+  };
+
+  // ============================================================================
+  // LISTENER HANDLERS
+  // ============================================================================
 
   // Listener move handling
   const handleListenerMove = (e: MouseEvent) => {
@@ -275,9 +487,12 @@ export function FullDemo() {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  // Room click to initialize audio
-  const handleRoomClick = () => {
-    audioStore.initializeAudio();
+  // Canvas click to initialize audio (when not drawing)
+  const handleCanvasClick = () => {
+    if (drawingMode() === "select") {
+      audioStore.initializeAudio();
+      setSelectedRoomId(null); // Deselect room when clicking empty space
+    }
   };
 
   // Calculate audio parameters for a speaker
@@ -293,12 +508,15 @@ export function FullDemo() {
       waveform: "sine" as const,
       playing: true,
     };
+    // Convert attenuation (0-1) to "transmission" (what gets through)
+    const transmission = 1 - effectiveAttenuation();
     return calculateAudioParameters(
       sourceConfig,
       listener,
       allWalls(),
       distanceModel(),
-      audioStore.masterVolume()
+      audioStore.masterVolume(),
+      transmission
     );
   };
 
@@ -444,43 +662,19 @@ export function FullDemo() {
     );
   };
 
-  // Play one-shot beep
-  const playBeep = () => {
-    audioStore.initializeAudio();
-    const audioContext = audioStore.getAudioContext();
-    if (!audioContext) return;
-
-    const speaker = speakers().find((s) => s.id === selectedSpeaker());
-    if (!speaker) return;
-
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    const panner = audioContext.createStereoPanner();
-
-    oscillator.connect(panner);
-    panner.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator.frequency.value = speaker.frequency;
-    oscillator.type = "sine";
-
-    const params = getAudioParams(speaker);
-    gainNode.gain.value = params.volume;
-    panner.pan.value = params.pan;
-
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.3);
-  };
-
   // Reset to initial state
   const resetDemo = () => {
     stopAllPlayback();
-    setListenerPos({ x: 1.2, y: 0 });
+    setRooms([]);
+    setSelectedRoomId(null);
+    setNextColorIndex(0);
+    setDrawingMode("select");
+    setListenerPos({ x: 0, y: 0 });
     setListenerFacing(0);
     setSpeakers([
       {
         id: "speaker-1",
-        position: { x: -1.2, y: 0 },
+        position: { x: -1, y: 0 },
         facing: 0,
         color: SPEAKER_COLORS[0],
         directivity: "cardioid",
@@ -499,7 +693,24 @@ export function FullDemo() {
 
   return (
     <div class={styles.container}>
+      {/* Mode toggle and primary controls */}
       <div class={styles.controls}>
+        <div class={styles.modeToggle}>
+          <Button
+            variant={drawingMode() === "select" ? "primary" : "outline"}
+            icon="👆"
+            onClick={() => setDrawingMode("select")}
+          >
+            Select
+          </Button>
+          <Button
+            variant={drawingMode() === "draw" ? "primary" : "outline"}
+            icon="✏️"
+            onClick={() => setDrawingMode("draw")}
+          >
+            Draw Room
+          </Button>
+        </div>
         <Button variant="primary" icon="➕" onClick={addSpeaker}>
           Add Speaker
         </Button>
@@ -509,9 +720,6 @@ export function FullDemo() {
           onClick={() => togglePlayback(selectedSpeaker())}
         >
           {isPlaying(selectedSpeaker()) ? "Stop" : "Play"}
-        </Button>
-        <Button variant="outline" icon="🔔" onClick={playBeep}>
-          Beep
         </Button>
         <Slider
           label="Volume"
@@ -541,6 +749,26 @@ export function FullDemo() {
           value={getSelectedSpeaker()?.directivity ?? "cardioid"}
           onChange={(e) => updateDirectivity(e.currentTarget.value as DirectivityPattern)}
         />
+        <Show when={selectedRoom()}>
+          {(room) => (
+            <div class={styles.roomSettings}>
+              <label class={styles.settingsLabel}>
+                Room Attenuation: {Math.round(room().attenuation * 100)}%
+              </label>
+              <input
+                type="range"
+                class={styles.slider}
+                min="0"
+                max="100"
+                value={room().attenuation * 100}
+                onInput={(e) => updateRoomAttenuation(parseInt(e.currentTarget.value) / 100)}
+              />
+              <Button variant="danger" icon="🗑️" onClick={deleteSelectedRoom}>
+                Delete Room
+              </Button>
+            </div>
+          )}
+        </Show>
       </div>
 
       {!audioStore.audioInitialized() && (
@@ -553,45 +781,75 @@ export function FullDemo() {
       )}
 
       <div class={styles.roomCard}>
-        <h2 class={styles.roomTitle}>The Tent</h2>
+        <h2 class={styles.roomTitle}>
+          {drawingMode() === "draw" ? "Click and drag to draw a room" : "The Tent"}
+        </h2>
 
-        <div class={styles.room} ref={roomRef} onClick={handleRoomClick}>
+        <div
+          class={`${styles.room} ${drawingMode() === "draw" ? styles.drawMode : ""}`}
+          ref={roomRef}
+          onClick={handleCanvasClick}
+          onMouseDown={handleCanvasMouseDown}
+          onMouseMove={handleCanvasMouseMove}
+          onMouseUp={handleCanvasMouseUp}
+          onMouseLeave={handleCanvasMouseUp}
+        >
+          {/* Grid overlay */}
+          <div class={styles.gridOverlay} />
+
+          {/* Drawing preview */}
+          <Show when={isDrawing() && drawStart()}>
+            <DrawingPreview start={drawStart} end={drawEnd} toPercent={toPercent} />
+          </Show>
+
           {/* Room boundaries */}
           <For each={rooms()}>
-            {(room) => (
-              <>
-                <div
-                  class={styles.roomArea}
-                  style={{
-                    left: `${toPercent(room.center.x - 1.1)}%`,
-                    top: `${toPercent(room.center.y - 2)}%`,
-                    width: `${2.2 * 20}%`,
-                    height: `${4 * 20}%`,
-                  }}
-                >
-                  <span class={styles.roomLabel}>{room.label}</span>
-                </div>
-                <For each={room.walls}>
-                  {(wall) => {
-                    const isVertical = wall.start.x === wall.end.x;
-                    const length = isVertical
-                      ? Math.abs(wall.end.y - wall.start.y)
-                      : Math.abs(wall.end.x - wall.start.x);
+            {(room) => {
+              const b = room.bounds;
+              const left = toPercent(b.x - b.width / 2);
+              const top = toPercent(b.y - b.height / 2);
+              const width = b.width * 20;
+              const height = b.height * 20;
 
-                    return (
-                      <div
-                        class={`${styles.wall} ${isVertical ? styles.vertical : styles.horizontal}`}
-                        style={{
-                          left: `${toPercent(Math.min(wall.start.x, wall.end.x))}%`,
-                          top: `${toPercent(Math.min(wall.start.y, wall.end.y))}%`,
-                          [isVertical ? "height" : "width"]: `${length * 20}%`,
-                        }}
-                      />
-                    );
-                  }}
-                </For>
-              </>
-            )}
+              return (
+                <>
+                  <div
+                    class={`${styles.roomArea} ${selectedRoomId() === room.id ? styles.selected : ""} ${drawingMode() === "draw" ? styles.drawModeRoom : ""}`}
+                    style={{
+                      left: `${left}%`,
+                      top: `${top}%`,
+                      width: `${width}%`,
+                      height: `${height}%`,
+                      "border-color": room.color,
+                      background: `${room.color}20`,
+                    }}
+                    onClick={handleRoomClick(room.id)}
+                  >
+                    <span class={styles.roomLabel}>{room.label}</span>
+                  </div>
+                  <For each={room.walls}>
+                    {(wall) => {
+                      const isVertical = wall.start.x === wall.end.x;
+                      const length = isVertical
+                        ? Math.abs(wall.end.y - wall.start.y)
+                        : Math.abs(wall.end.x - wall.start.x);
+
+                      return (
+                        <div
+                          class={`${styles.wall} ${isVertical ? styles.vertical : styles.horizontal}`}
+                          style={{
+                            left: `${toPercent(Math.min(wall.start.x, wall.end.x))}%`,
+                            top: `${toPercent(Math.min(wall.start.y, wall.end.y))}%`,
+                            [isVertical ? "height" : "width"]: `${length * 20}%`,
+                            background: room.color,
+                          }}
+                        />
+                      );
+                    }}
+                  </For>
+                </>
+              );
+            }}
           </For>
 
           {/* Sound path lines */}
@@ -666,35 +924,34 @@ export function FullDemo() {
           <span>
             Listener: ({listenerPos().x.toFixed(1)}, {listenerPos().y.toFixed(1)})
           </span>
-          <span>Facing: {((listenerFacing() * 180) / Math.PI).toFixed(0)}°</span>
+          <span>{rooms().length} room{rooms().length !== 1 ? "s" : ""}</span>
           <span>
             {speakers().length} speaker{speakers().length !== 1 ? "s" : ""}
             {playingSpeakers().size > 0 && ` (${playingSpeakers().size} playing)`}
           </span>
-          <span class={styles.hint}>Drag icon to move • Drag cone to rotate</span>
+          <span class={styles.hint}>
+            {drawingMode() === "draw" ? "Click and drag to draw" : "Drag to move • Click rooms to select"}
+          </span>
         </div>
       </div>
 
       <div class={styles.legend}>
-        <h4>Advanced Spatial Audio Demo</h4>
+        <h4>Spatial Audio Playground</h4>
         <p>
-          This demo uses <strong>listener-relative panning</strong> - sounds are panned
-          based on where they are relative to which way you're facing.
+          Draw rooms, place speakers, and experience <strong>listener-relative spatial audio</strong>.
         </p>
         <ul>
+          <li>
+            <strong>✏️ Draw Mode</strong>: Click and drag to create rooms with walls
+          </li>
+          <li>
+            <strong>👆 Select Mode</strong>: Click rooms to adjust attenuation, drag speakers/listener
+          </li>
           <li>
             <strong>🎧 Listener</strong>: Drag icon to move, drag cone to rotate facing
           </li>
           <li>
-            <strong>🎤 Speakers</strong>: Click to toggle sound, drag icon to move, drag
-            cone to rotate
-          </li>
-          <li>
-            <strong>Distance Model</strong>: Changes how volume falls off with distance
-          </li>
-          <li>
-            <strong>Directivity Pattern</strong>: Changes the speaker's sound projection
-            shape
+            <strong>🎤 Speakers</strong>: Click to toggle sound, drag to move/rotate
           </li>
         </ul>
       </div>

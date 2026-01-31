@@ -24,6 +24,46 @@
   padding: var(--spacing-md);
   background: var(--color-bg-secondary);
   border-radius: var(--radius-md);
+  align-items: flex-start;
+}
+
+.roomSettings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  min-width: 180px;
+}
+
+.settingsLabel {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-bg-tertiary);
+  appearance: none;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent-blue);
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent-blue);
+  border: none;
+  cursor: pointer;
 }
 
 .banner {
@@ -61,17 +101,79 @@
   overflow: hidden;
 }
 
+.room.drawMode {
+  cursor: crosshair;
+}
+
+/* Mode toggle */
+.modeToggle {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+/* Grid overlay */
+.gridOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--color-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-border) 1px, transparent 1px);
+  background-size: 20% 20%;
+  opacity: 0.3;
+}
+
+/* Drawing preview */
+.drawPreview {
+  position: absolute;
+  border: 2px dashed var(--color-accent-blue);
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  z-index: 100;
+}
+
+.drawPreview::after {
+  content: attr(data-dimensions);
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
 /* Room areas */
 .roomArea {
   position: absolute;
-  background: rgba(59, 130, 246, 0.05);
-  border: 1px dashed rgba(59, 130, 246, 0.2);
+  background: rgba(139, 92, 246, 0.1);
+  border: 2px solid var(--color-accent-purple);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding-top: var(--spacing-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.roomArea:hover {
+  background: rgba(139, 92, 246, 0.15);
+}
+
+.roomArea.selected {
+  border-color: var(--color-accent-blue);
+  background: rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.roomArea.drawModeRoom {
   pointer-events: none;
+  opacity: 0.5;
 }
 
 .roomLabel {
