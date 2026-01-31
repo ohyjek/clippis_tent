@@ -10,7 +10,7 @@
  * Each scenario places sound sources at predetermined positions
  * and plays them to demonstrate specific audio concepts.
  */
-import { createSignal, createEffect, For, onCleanup } from "solid-js";
+import { createSignal, createMemo, For, onCleanup, Show } from "solid-js";
 import { Section, SelectField, Button } from "@/components/ui";
 import {
   type Position,
@@ -112,15 +112,36 @@ function toPixels(pos: Position): { left: number; top: number } {
   };
 }
 
+/** Pre-compute source data with spatial params */
+interface ComputedSource extends ScenarioSource {
+  params: { volume: number; pan: number };
+  pixelPos: { left: number; top: number };
+}
+
 export function Scenarios() {
   const [selectedId, setSelectedId] = createSignal("surround");
   const [playing, setPlaying] = createSignal<string | null>(null);
   const [oscillators, setOscillators] = createSignal<OscillatorNode[]>([]);
 
-  const scenario = () => SCENARIOS.find((s) => s.id === selectedId()) ?? SCENARIOS[0];
+  // Memoize the current scenario to avoid recomputation
+  const scenario = createMemo(() => 
+    SCENARIOS.find((s) => s.id === selectedId()) ?? SCENARIOS[0]
+  );
 
-  const scenarioOptions = () =>
-    SCENARIOS.map((s) => ({ value: s.id, label: s.name }));
+  // Pre-compute all source data including spatial params
+  const computedSources = createMemo((): ComputedSource[] => {
+    const s = scenario();
+    return s.sources.map((source) => ({
+      ...source,
+      params: calculateSpatialParams(s.listenerPosition, source.position),
+      pixelPos: toPixels(source.position),
+    }));
+  });
+
+  // Listener pixel position
+  const listenerPixelPos = createMemo(() => toPixels(scenario().listenerPosition));
+
+  const scenarioOptions = SCENARIOS.map((s) => ({ value: s.id, label: s.name }));
 
   /** Stop all currently playing sounds */
   const stopAll = () => {
@@ -137,23 +158,21 @@ export function Scenarios() {
   };
 
   /** Play a single source */
-  const playSource = (source: ScenarioSource) => {
+  const playSource = (source: ComputedSource) => {
     audioStore.initializeAudio();
     const ctx = audioStore.getAudioContext();
     if (!ctx) return;
 
     stopAll();
 
-    const params = calculateSpatialParams(scenario().listenerPosition, source.position);
-    
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     const panner = ctx.createStereoPanner();
 
     osc.frequency.value = source.frequency;
     osc.type = "sine";
-    gain.gain.value = params.volume * audioStore.masterVolume();
-    panner.pan.value = params.pan;
+    gain.gain.value = source.params.volume * audioStore.masterVolume();
+    panner.pan.value = source.params.pan;
 
     osc.connect(gain);
     gain.connect(panner);
@@ -180,7 +199,7 @@ export function Scenarios() {
     stopAll();
     setPlaying("sequence");
 
-    const sources = scenario().sources;
+    const sources = computedSources();
     let index = 0;
 
     const playNext = () => {
@@ -190,7 +209,6 @@ export function Scenarios() {
       }
 
       const source = sources[index];
-      const params = calculateSpatialParams(scenario().listenerPosition, source.position);
 
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -198,8 +216,8 @@ export function Scenarios() {
 
       osc.frequency.value = source.frequency;
       osc.type = "sine";
-      gain.gain.value = params.volume * audioStore.masterVolume();
-      panner.pan.value = params.pan;
+      gain.gain.value = source.params.volume * audioStore.masterVolume();
+      panner.pan.value = source.params.pan;
 
       osc.connect(gain);
       gain.connect(panner);
@@ -228,11 +246,10 @@ export function Scenarios() {
     stopAll();
     setPlaying("all");
 
+    const sources = computedSources();
     const newOscillators: OscillatorNode[] = [];
 
-    scenario().sources.forEach((source) => {
-      const params = calculateSpatialParams(scenario().listenerPosition, source.position);
-
+    sources.forEach((source) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       const panner = ctx.createStereoPanner();
@@ -240,8 +257,8 @@ export function Scenarios() {
       osc.frequency.value = source.frequency;
       osc.type = "sine";
       // Reduce volume when playing multiple sources
-      gain.gain.value = (params.volume * audioStore.masterVolume()) / Math.sqrt(scenario().sources.length);
-      panner.pan.value = params.pan;
+      gain.gain.value = (source.params.volume * audioStore.masterVolume()) / Math.sqrt(sources.length);
+      panner.pan.value = source.params.pan;
 
       osc.connect(gain);
       gain.connect(panner);
@@ -264,11 +281,11 @@ export function Scenarios() {
   // Cleanup on unmount
   onCleanup(() => stopAll());
 
-  // Stop when scenario changes
-  createEffect(() => {
-    selectedId();
+  // Handle scenario change - stop audio when switching
+  const handleScenarioChange = (newId: string) => {
     stopAll();
-  });
+    setSelectedId(newId);
+  };
 
   return (
     <div class={styles.page}>
@@ -282,9 +299,9 @@ export function Scenarios() {
       <Section title="Select Scenario">
         <SelectField
           label="Scenario"
-          options={scenarioOptions()}
+          options={scenarioOptions}
           value={selectedId()}
-          onChange={(e) => setSelectedId(e.currentTarget.value)}
+          onChange={(e) => handleScenarioChange(e.currentTarget.value)}
         />
         <p class={styles.description}>{scenario().description}</p>
       </Section>
@@ -292,38 +309,41 @@ export function Scenarios() {
       <div class={styles.content}>
         <Section title="Room View">
           <div class={styles.room}>
-            {/* Sound sources */}
-            <For each={scenario().sources}>
-              {(source) => {
-                const pos = () => toPixels(source.position);
-                const params = () => calculateSpatialParams(scenario().listenerPosition, source.position);
-                const isPlaying = () => playing() === source.id || playing() === "all" || playing() === "sequence";
+            {/* Sound sources - using Show to force re-render on scenario change */}
+            <Show when={computedSources()} keyed>
+              {(sources) => (
+                <For each={sources}>
+                  {(source) => {
+                    const isPlaying = () => 
+                      playing() === source.id || playing() === "all" || playing() === "sequence";
 
-                return (
-                  <button
-                    class={styles.source}
-                    classList={{ [styles.active]: isPlaying() }}
-                    style={{
-                      left: `${pos().left}px`,
-                      top: `${pos().top}px`,
-                      "background-color": source.color,
-                      "box-shadow": isPlaying() ? `0 0 20px ${source.color}` : "none",
-                    }}
-                    onClick={() => playSource(source)}
-                    title={`${source.label} (${source.frequency}Hz)\nVolume: ${Math.round(params().volume * 100)}%\nPan: ${params().pan > 0 ? "R" : "L"} ${Math.round(Math.abs(params().pan) * 100)}%`}
-                  >
-                    <span class={styles.sourceLabel}>{source.label}</span>
-                  </button>
-                );
-              }}
-            </For>
+                    return (
+                      <button
+                        class={styles.source}
+                        classList={{ [styles.active]: isPlaying() }}
+                        style={{
+                          left: `${source.pixelPos.left}px`,
+                          top: `${source.pixelPos.top}px`,
+                          "background-color": source.color,
+                          "box-shadow": isPlaying() ? `0 0 20px ${source.color}` : "none",
+                        }}
+                        onClick={() => playSource(source)}
+                        title={`${source.label} (${source.frequency}Hz)\nVolume: ${Math.round(source.params.volume * 100)}%\nPan: ${source.params.pan > 0 ? "R" : "L"} ${Math.round(Math.abs(source.params.pan) * 100)}%`}
+                      >
+                        <span class={styles.sourceLabel}>{source.label}</span>
+                      </button>
+                    );
+                  }}
+                </For>
+              )}
+            </Show>
 
-            {/* Listener - using wrapper div for pixel positioning */}
+            {/* Listener */}
             <div
               class={styles.listener}
               style={{
-                left: `${toPixels(scenario().listenerPosition).left}px`,
-                top: `${toPixels(scenario().listenerPosition).top}px`,
+                left: `${listenerPixelPos().left}px`,
+                top: `${listenerPixelPos().top}px`,
               }}
             >
               <div class={styles.listenerIcon}>🎧</div>
@@ -358,22 +378,19 @@ export function Scenarios() {
 
           <div class={styles.legend}>
             <p class={styles.legendTitle}>Sound Sources:</p>
-            <For each={scenario().sources}>
-              {(source) => {
-                const params = () => calculateSpatialParams(scenario().listenerPosition, source.position);
-                return (
-                  <div class={styles.legendItem}>
-                    <span
-                      class={styles.legendDot}
-                      style={{ "background-color": source.color }}
-                    />
-                    <span class={styles.legendLabel}>{source.label}</span>
-                    <span class={styles.legendInfo}>
-                      {source.frequency}Hz • Vol {Math.round(params().volume * 100)}% • Pan {params().pan > 0 ? "R" : "L"}{Math.round(Math.abs(params().pan) * 100)}%
-                    </span>
-                  </div>
-                );
-              }}
+            <For each={computedSources()}>
+              {(source) => (
+                <div class={styles.legendItem}>
+                  <span
+                    class={styles.legendDot}
+                    style={{ "background-color": source.color }}
+                  />
+                  <span class={styles.legendLabel}>{source.label}</span>
+                  <span class={styles.legendInfo}>
+                    {source.frequency}Hz • Vol {Math.round(source.params.volume * 100)}% • Pan {source.params.pan > 0 ? "R" : "L"}{Math.round(Math.abs(source.params.pan) * 100)}%
+                  </span>
+                </div>
+              )}
             </For>
           </div>
         </Section>
