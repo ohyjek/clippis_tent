@@ -2,7 +2,7 @@
   "name": "clippis_tent",
   "productName": "clippis_tent",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Spatial voice chat prototype inspired by Dolby Axon",
   "main": ".vite/build/main.js",
   "private": true,
   "scripts": {
@@ -10,7 +10,9 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "eslint --ext .ts,.tsx ."
+    "lint": "eslint --ext .ts,.tsx .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "Omi",
@@ -42,12 +44,14 @@
     "eslint-plugin-import": "^2.32.0",
     "typescript": "~4.5.5",
     "vite": "^5.4.21",
-    "vite-plugin-solid": "^2.11.10"
+    "vite-plugin-solid": "^2.11.10",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
     "howler": "^2.2.4",
     "solid-js": "^1.9.10",
     "webrtc-adapter": "^9.0.3"
-  }
+  },
+  "packageManager": "pnpm@10.28.2+sha512.41872f037ad22f7348e3b1debbaf7e867cfd448f2726d9cf74c08f19507c31d2c8e7a11525b983febc2df640b5438dee6023ebb1f84ed43cc2d654d2bc326264"
 }

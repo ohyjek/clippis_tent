@@ -1,18 +1,16 @@
 import { createSignal, onMount, For } from "solid-js";
 import { Howler } from "howler";
-
-// Sound frequencies for different sound sources (musical notes)
-const SOUND_FREQUENCIES = [330, 392, 440, 494, 523, 587, 659, 784];
-
-// Sound source type using Web Audio API
-interface SoundSource {
-  id: string;
-  position: { x: number; y: number };
-  frequency: number;
-}
+import {
+  type SoundSource,
+  type Position,
+  calculateSpatialParams,
+  createSoundSource,
+  randomPosition,
+  CARDINAL_DIRECTIONS,
+} from "../lib/spatial-audio";
 
 function App() {
-  const [listenerPos, setListenerPos] = createSignal({ x: 0, y: 0 });
+  const [listenerPos, setListenerPos] = createSignal<Position>({ x: 0, y: 0 });
   const [sounds, setSounds] = createSignal<SoundSource[]>([]);
   const [masterVolume, setMasterVolume] = createSignal(0.5);
   const [audioInitialized, setAudioInitialized] = createSignal(false);
@@ -58,25 +56,17 @@ function App() {
       setAudioInitialized(true);
     }
 
-    const id = `sound-${Date.now()}`;
-    const position = {
-      x: Math.random() * 4 - 2,
-      y: Math.random() * 4 - 2,
-    };
-
-    // Pick a random frequency from our musical notes
-    const frequency = SOUND_FREQUENCIES[Math.floor(Math.random() * SOUND_FREQUENCIES.length)];
-
-    setSounds((prev) => [...prev, { id, position, frequency }]);
+    const newSound = createSoundSource();
+    setSounds((prev) => [...prev, newSound]);
 
     // Play the sound immediately to give feedback
     setTimeout(() => {
-      playSoundAtPosition(position, frequency);
+      playSoundAtPosition(newSound.position, newSound.frequency);
     }, 100);
   };
 
   // Play a tone at a specific position with spatial audio
-  const playSoundAtPosition = (position: { x: number; y: number }, frequency: number) => {
+  const playSoundAtPosition = (position: Position, frequency: number) => {
     if (!audioInitialized()) return;
 
     const audioContext = Howler.ctx as AudioContext;
@@ -88,12 +78,8 @@ function App() {
     panner.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
-    // Calculate spatial audio parameters
-    const dx = position.x - listenerPos().x;
-    const dy = position.y - listenerPos().y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    const volume = (1.0 / (1.0 + distance)) * masterVolume() * 0.3;
-    const pan = Math.max(-1, Math.min(1, dx / 3));
+    // Calculate spatial audio parameters using utility function
+    const { volume, pan } = calculateSpatialParams(listenerPos(), position, masterVolume());
 
     oscillator.frequency.value = frequency;
     oscillator.type = "sine";
@@ -124,11 +110,7 @@ function App() {
     setSounds((prev) =>
       prev.map((s) => {
         if (s.id === soundId) {
-          const newPosition = {
-            x: Math.random() * 4 - 2,
-            y: Math.random() * 4 - 2,
-          };
-          movedSound = { ...s, position: newPosition };
+          movedSound = { ...s, position: randomPosition() };
           return movedSound;
         }
         return s;
@@ -157,17 +139,10 @@ function App() {
       setAudioInitialized(true);
     }
 
-    const directions = [
-      { x: -2, y: 0, name: "Left", freq: 330 },
-      { x: 2, y: 0, name: "Right", freq: 440 },
-      { x: 0, y: -2, name: "Front", freq: 550 },
-      { x: 0, y: 2, name: "Back", freq: 660 },
-    ];
-
-    directions.forEach((dir, i) => {
+    CARDINAL_DIRECTIONS.forEach((dir, i) => {
       setTimeout(() => {
         console.log(`Playing ${dir.name} tone`);
-        playSoundAtPosition({ x: dir.x, y: dir.y }, dir.freq);
+        playSoundAtPosition({ x: dir.x, y: dir.y }, dir.frequency);
       }, i * 800);
     });
   };
