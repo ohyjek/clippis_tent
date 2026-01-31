@@ -1,13 +1,5 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    // Library-specific: emit declarations
-    "declaration": true,
-    "declarationMap": true,
-    "composite": true,
-    "rootDir": "src",
-    "outDir": "dist"
-  },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
