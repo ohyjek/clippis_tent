@@ -1,5 +1,5 @@
 import { SoundSource as SoundSourceType } from "../../lib/spatial-audio";
-import styles from "./AudioRoom.module.css";
+import styles from "./SoundSource.module.css";
 
 interface SoundSourceProps {
   sound: SoundSourceType;

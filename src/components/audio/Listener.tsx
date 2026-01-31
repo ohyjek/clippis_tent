@@ -1,5 +1,5 @@
 import { Position } from "../../lib/spatial-audio";
-import styles from "./AudioRoom.module.css";
+import styles from "./Listener.module.css";
 
 interface ListenerProps {
   position: Position;

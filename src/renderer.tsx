@@ -5,7 +5,7 @@
 import { render } from "solid-js/web";
 import { Router, Route } from "@solidjs/router";
 import { Shell } from "./components/layout";
-import { Home, Settings } from "./pages";
+import { Demo, Settings, VoiceRoom } from "./pages";
 
 import "./styles/variables.css";
 import "./index.css";
@@ -21,7 +21,8 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 render(
   () => (
     <Router root={Shell}>
-      <Route path="/" component={Home} />
+      <Route path="/" component={Demo} />
+      <Route path="/voice" component={VoiceRoom} />
       <Route path="/settings" component={Settings} />
     </Router>
   ),
