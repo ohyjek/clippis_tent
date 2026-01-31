@@ -8,6 +8,7 @@ import {
   randomPosition,
   CARDINAL_DIRECTIONS,
 } from "../lib/spatial-audio";
+import styles from "./App.module.css";
 
 function App() {
   const [listenerPos, setListenerPos] = createSignal<Position>({ x: 0, y: 0 });
@@ -79,7 +80,11 @@ function App() {
     gainNode.connect(audioContext.destination);
 
     // Calculate spatial audio parameters using utility function
-    const { volume, pan } = calculateSpatialParams(listenerPos(), position, masterVolume());
+    const { volume, pan } = calculateSpatialParams(
+      listenerPos(),
+      position,
+      masterVolume()
+    );
 
     oscillator.frequency.value = frequency;
     oscillator.type = "sine";
@@ -106,7 +111,7 @@ function App() {
 
   const moveSound = (soundId: string) => {
     let movedSound: SoundSource | undefined;
-    
+
     setSounds((prev) =>
       prev.map((s) => {
         if (s.id === soundId) {
@@ -148,86 +153,37 @@ function App() {
   };
 
   return (
-    <div
-      style={{
-        "font-family": "system-ui, sans-serif",
-        background: "#0f172a",
-        color: "#e2e8f0",
-        "min-height": "100vh",
-        padding: "2rem",
-      }}
-    >
-      <div style={{ "max-width": "1200px", margin: "0 auto" }}>
-        <h1
-          style={{
-            "font-size": "2.5rem",
-            background: "linear-gradient(90deg, #8b5cf6, #3b82f6)",
-            "-webkit-background-clip": "text",
-            "-webkit-text-fill-color": "transparent",
-            "margin-bottom": "0.5rem",
-          }}
-        >
-          🎮 Dolby Axon Clone
-        </h1>
-        <p style={{ color: "#94a3b8", "margin-bottom": "2rem" }}>
+    <div class={styles.app}>
+      <div class={styles.container}>
+        <h1 class={styles.title}>🎮 Clippi's Tent</h1>
+        <p class={styles.subtitle}>
           Spatial Audio Prototype with SolidJS -{" "}
           {audioInitialized() ? "Audio Active 🔊" : "Click to activate audio"}
         </p>
 
-        <div
-          style={{
-            display: "flex",
-            gap: "1rem",
-            "margin-bottom": "2rem",
-            "flex-wrap": "wrap",
-            "align-items": "center",
-          }}
-        >
+        <div class={styles.controls}>
           <button
+            class={`${styles.btn} ${styles.btnPrimary}`}
             onClick={addTestSound}
-            style={{
-              background: "#3b82f6",
-              border: "none",
-              color: "white",
-              padding: "0.75rem 1.5rem",
-              "border-radius": "0.5rem",
-              cursor: "pointer",
-            }}
           >
             ➕ Add Sound Source
           </button>
 
           <button
+            class={`${styles.btn} ${styles.btnSuccess}`}
             onClick={playSoundDemo}
-            style={{
-              background: "#10b981",
-              border: "none",
-              color: "white",
-              padding: "0.75rem 1.5rem",
-              "border-radius": "0.5rem",
-              cursor: "pointer",
-            }}
           >
             🔊 Play Demo
           </button>
 
           <button
+            class={`${styles.btn} ${styles.btnPurple}`}
             onClick={testCardinalDirections}
-            style={{
-              background: "#8b5cf6",
-              border: "none",
-              color: "white",
-              padding: "0.75rem 1.5rem",
-              "border-radius": "0.5rem",
-              cursor: "pointer",
-            }}
           >
             🧭 Test Directions
           </button>
 
-          <div
-            style={{ display: "flex", "align-items": "center", gap: "0.5rem" }}
-          >
+          <div class={styles.volumeControl}>
             <span>Volume:</span>
             <input
               type="range"
@@ -238,54 +194,29 @@ function App() {
               onInput={(e) =>
                 updateMasterVolume(parseFloat(e.currentTarget.value))
               }
-              style={{ width: "100px" }}
+              class={styles.volumeSlider}
             />
             <span>{Math.round(masterVolume() * 100)}%</span>
           </div>
 
           <button
+            class={`${styles.btn} ${styles.btnOutline}`}
             onClick={() => setListenerPos({ x: 0, y: 0 })}
-            style={{
-              background: "#1e293b",
-              border: "1px solid #475569",
-              color: "#e2e8f0",
-              padding: "0.75rem 1.5rem",
-              "border-radius": "0.5rem",
-              cursor: "pointer",
-            }}
           >
             🎧 Reset Listener
           </button>
 
           <button
-            onClick={() => {
-              setSounds([]);
-            }}
-            style={{
-              background: "#ef4444",
-              border: "none",
-              color: "white",
-              padding: "0.75rem 1.5rem",
-              "border-radius": "0.5rem",
-              cursor: "pointer",
-            }}
+            class={`${styles.btn} ${styles.btnDanger}`}
+            onClick={() => setSounds([])}
           >
             🗑️ Clear All
           </button>
         </div>
 
         {!audioInitialized() && (
-          <div
-            style={{
-              background: "rgba(59, 130, 246, 0.1)",
-              border: "1px solid #3b82f6",
-              "border-radius": "0.5rem",
-              padding: "1rem",
-              "margin-bottom": "2rem",
-              "text-align": "center",
-            }}
-          >
-            <p style={{ margin: 0 }}>
+          <div class={styles.audioBanner}>
+            <p>
               🔊 <strong>Audio needs activation:</strong> Click anywhere on the
               page to enable audio playback. This is a browser security
               requirement.
@@ -293,47 +224,18 @@ function App() {
           </div>
         )}
 
-        <div
-          style={{
-            background: "#1e293b",
-            "border-radius": "1rem",
-            padding: "1.5rem",
-            "margin-bottom": "2rem",
-          }}
-        >
-          <h2 style={{ "margin-bottom": "1rem", color: "#cbd5e1" }}>
+        <div class={styles.card}>
+          <h2 class={styles.cardTitle}>
             Audio Room {audioInitialized() && "🔊"}
           </h2>
 
-          <div
-            onClick={handleRoomClick}
-            style={{
-              position: "relative",
-              width: "100%",
-              height: "500px",
-              background: "#0f172a",
-              border: "2px solid #475569",
-              "border-radius": "0.5rem",
-              cursor: "crosshair",
-              "margin-bottom": "1rem",
-            }}
-          >
+          <div class={styles.room} onClick={handleRoomClick}>
             {/* Listener */}
             <div
+              class={styles.listener}
               style={{
-                position: "absolute",
                 left: `${50 + listenerPos().x * 20}%`,
                 top: `${50 + listenerPos().y * 20}%`,
-                width: "40px",
-                height: "40px",
-                background: "#3b82f6",
-                "border-radius": "50%",
-                transform: "translate(-50%, -50%)",
-                display: "flex",
-                "align-items": "center",
-                "justify-content": "center",
-                border: "3px solid #93c5fd",
-                "box-shadow": "0 0 20px rgba(59, 130, 246, 0.5)",
               }}
             >
               🎧
@@ -343,26 +245,15 @@ function App() {
             <For each={sounds()}>
               {(sound, index) => (
                 <div
+                  class={styles.soundSource}
+                  style={{
+                    left: `${50 + sound.position.x * 20}%`,
+                    top: `${50 + sound.position.y * 20}%`,
+                    background: `hsl(${index() * 60}, 70%, 60%)`,
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
                     moveSound(sound.id);
-                  }}
-                  style={{
-                    position: "absolute",
-                    left: `${50 + sound.position.x * 20}%`,
-                    top: `${50 + sound.position.y * 20}%`,
-                    width: "30px",
-                    height: "30px",
-                    background: `hsl(${index() * 60}, 70%, 60%)`,
-                    "border-radius": "50%",
-                    transform: "translate(-50%, -50%)",
-                    display: "flex",
-                    "align-items": "center",
-                    "justify-content": "center",
-                    border: "2px solid white",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    "font-weight": "bold",
                   }}
                   title={`Click to move sound source ${index() + 1}`}
                 >
@@ -372,65 +263,23 @@ function App() {
             </For>
 
             {/* Room grid */}
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "0",
-                right: "0",
-                height: "1px",
-                background: "rgba(255,255,255,0.1)",
-                transform: "translateY(-50%)",
-              }}
-            ></div>
-            <div
-              style={{
-                position: "absolute",
-                left: "50%",
-                top: "0",
-                bottom: "0",
-                width: "1px",
-                background: "rgba(255,255,255,0.1)",
-                transform: "translateX(-50%)",
-              }}
-            ></div>
+            <div class={styles.gridLineH} />
+            <div class={styles.gridLineV} />
 
             {/* Direction labels */}
             <div
-              style={{
-                position: "absolute",
-                left: "10px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "rgba(255,255,255,0.5)",
-              }}
+              class={`${styles.directionLabel} ${styles.directionLabelLeft}`}
             >
               ← Left
             </div>
             <div
-              style={{
-                position: "absolute",
-                right: "10px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "rgba(255,255,255,0.5)",
-              }}
+              class={`${styles.directionLabel} ${styles.directionLabelRight}`}
             >
               Right →
             </div>
           </div>
 
-          <div
-            style={{
-              "font-family": "'Courier New', monospace",
-              background: "#0f172a",
-              padding: "0.5rem",
-              "border-radius": "0.25rem",
-              display: "flex",
-              "justify-content": "space-between",
-              "align-items": "center",
-            }}
-          >
+          <div class={styles.statusBar}>
             <div>
               Listener Position: ({listenerPos().x.toFixed(2)},{" "}
               {listenerPos().y.toFixed(2)})
@@ -438,23 +287,15 @@ function App() {
             <div>
               {sounds().length} sound{sounds().length !== 1 ? "s" : ""} active
             </div>
-            <div style={{ "font-size": "0.9em", color: "#94a3b8" }}>
+            <div class={styles.statusHint}>
               Click room to move listener • Click numbers to move sounds
             </div>
           </div>
         </div>
 
-        <div
-          style={{
-            background: "#1e293b",
-            "border-radius": "1rem",
-            padding: "1.5rem",
-          }}
-        >
-          <h3 style={{ "margin-bottom": "1rem", color: "#cbd5e1" }}>
-            How it works:
-          </h3>
-          <ul style={{ color: "#94a3b8", "line-height": "1.6" }}>
+        <div class={styles.card}>
+          <h3 class={styles.cardTitle}>How it works:</h3>
+          <ul class={styles.instructions}>
             <li>
               • <strong>First, click anywhere</strong> to activate audio
               (browser requirement)
@@ -484,17 +325,9 @@ function App() {
             <li>• Adjust master volume with the slider</li>
           </ul>
 
-          <div
-            style={{
-              "margin-top": "1.5rem",
-              padding: "1rem",
-              background: "rgba(139, 92, 246, 0.1)",
-              "border-radius": "0.5rem",
-              "border-left": "4px solid #8b5cf6",
-            }}
-          >
+          <div class={styles.callout}>
             <strong>🎯 Next steps:</strong>
-            <ol style={{ "margin-top": "0.5rem", "padding-left": "1.5rem" }}>
+            <ol>
               <li>Add real microphone input</li>
               <li>Add WebRTC for peer-to-peer connections</li>
               <li>Implement proper HRTF for 3D audio</li>
