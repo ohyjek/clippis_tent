@@ -68,8 +68,8 @@ export function SpatialCanvas() {
     setCurrentPerspective(speakerId);
   };
 
-  // Check if speaker is the observer (for special icon)
-  const isObserver = (speakerId: string) => speakerId === "observer";
+  // Get icon for speaker: headphones for current perspective, microphone for others
+  const getSpeakerIcon = (speakerId: string) => (isCurrentPerspective(speakerId) ? "🎧" : "🎤");
 
   return (
     <div
@@ -133,7 +133,7 @@ export function SpatialCanvas() {
               isPlaying={isPlaying(speaker.id)}
               isMoving={isMovingSpeaker() === speaker.id}
               isRotating={isRotatingSpeaker() === speaker.id}
-              icon={isObserver(speaker.id) ? "🎧" : undefined}
+              icon={getSpeakerIcon(speaker.id)}
               onClick={() => {
                 setSelectedSpeaker(speaker.id);
                 togglePlayback(speaker.id);
