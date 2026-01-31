@@ -1,18 +1,35 @@
 /**
  * StatusBar.tsx - Bottom status bar for the canvas
  *
- * Shows listener position, room count, speaker count, and interaction hints.
+ * Shows current perspective, room count, speaker count, and interaction hints.
  */
 import { useDemoContext } from "../../context";
 import styles from "./StatusBar.module.css";
 
 export function StatusBar() {
-  const { listenerPos, rooms, speakers, playingSpeakers, drawingMode } = useDemoContext();
+  const {
+    rooms,
+    speakers,
+    playingSpeakers,
+    drawingMode,
+    currentPerspective,
+    getPerspectivePosition,
+  } = useDemoContext();
+
+  const getPerspectiveName = () => {
+    const perspective = currentPerspective();
+    if (perspective === "observer") return "Observer";
+    const speakerList = speakers();
+    const index = speakerList.findIndex((s) => s.id === perspective);
+    return index >= 0 ? `Speaker ${index}` : "Unknown";
+  };
+
+  const pos = getPerspectivePosition();
 
   return (
     <div class={styles.statusBar}>
-      <span>
-        🎧 ({listenerPos().x.toFixed(1)}, {listenerPos().y.toFixed(1)})
+      <span class={styles.perspective}>
+        👤 You: {getPerspectiveName()} ({pos.x.toFixed(1)}, {pos.y.toFixed(1)})
       </span>
       <span>
         {rooms().length} room{rooms().length !== 1 ? "s" : ""}
@@ -22,7 +39,9 @@ export function StatusBar() {
         {playingSpeakers().size > 0 && ` (${playingSpeakers().size} playing)`}
       </span>
       <span class={styles.hint}>
-        {drawingMode() === "draw" ? "Click and drag to draw" : "Drag to move • Click to select"}
+        {drawingMode() === "draw"
+          ? "Click and drag to draw"
+          : "Drag to move • Double-click to become"}
       </span>
     </div>
   );

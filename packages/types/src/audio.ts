@@ -25,6 +25,11 @@ export type DistanceModel = "linear" | "inverse" | "exponential";
  */
 export type WaveformType = OscillatorType;
 
+/**
+ * Audio source type for speakers
+ */
+export type AudioSourceType = "oscillator" | "microphone";
+
 // ============================================================================
 // Speaker Types
 // ============================================================================
@@ -45,6 +50,8 @@ export interface Speaker {
 export interface SpeakerState extends Speaker {
   directivity: DirectivityPattern;
   frequency: number;
+  /** Audio source type - oscillator for testing, microphone for real voice */
+  sourceType: AudioSourceType;
 }
 
 /**

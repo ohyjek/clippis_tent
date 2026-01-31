@@ -3,8 +3,8 @@
  *
  * Contains the interactive area where users can:
  * - Draw rooms by clicking and dragging
- * - Position and rotate speakers
- * - Move and rotate the listener
+ * - Position and rotate speakers (all entities are speakers)
+ * - Switch perspective (who you are)
  */
 import { Show, For } from "solid-js";
 import { Speaker } from "@/components/ui";
@@ -28,18 +28,17 @@ export function SpatialCanvas() {
     drawStart,
     drawEnd,
 
-    // Listener state
-    listenerPos,
-    listenerFacing,
-
-    // Speaker state
+    // Speaker state (all entities are speakers)
     speakers,
     selectedSpeaker,
     setSelectedSpeaker,
 
+    // Perspective state
+    isCurrentPerspective,
+    setCurrentPerspective,
+    getPerspectivePosition,
+
     // Interaction state
-    isDraggingListener,
-    isRotatingListener,
     isMovingSpeaker,
     isRotatingSpeaker,
 
@@ -52,8 +51,6 @@ export function SpatialCanvas() {
     showSoundPaths,
 
     // Handlers
-    handleListenerMove,
-    handleListenerRotate,
     handleSpeakerMoveStart,
     handleSpeakerRotateStart,
     handleCanvasClick,
@@ -65,6 +62,14 @@ export function SpatialCanvas() {
     // Room ref
     setRoomRef,
   } = useDemoContext();
+
+  // Double-click to switch perspective
+  const handleSpeakerDoubleClick = (speakerId: string) => {
+    setCurrentPerspective(speakerId);
+  };
+
+  // Check if speaker is the observer (for special icon)
+  const isObserver = (speakerId: string) => speakerId === "observer";
 
   return (
     <div
@@ -92,62 +97,54 @@ export function SpatialCanvas() {
         onRoomClick={handleRoomClick}
       />
 
-      {/* Sound path lines */}
+      {/* Sound path lines - from current perspective to other speakers */}
       <Show when={showSoundPaths()}>
         <SoundPaths
-          speakers={speakers()}
-          listenerPos={listenerPos()}
+          speakers={speakers().filter((s) => !isCurrentPerspective(s.id))}
+          listenerPos={getPerspectivePosition()}
           selectedSpeakerId={selectedSpeaker()}
           getWallCount={getWallCount}
         />
       </Show>
 
-      {/* Speakers */}
+      {/* All speakers (including observer) */}
       <For each={speakers()}>
         {(speaker) => (
-          <Speaker
-            id={speaker.id}
-            position={speaker.position}
-            color={speaker.color}
-            facing={speaker.facing}
-            gain={calculateDisplayGain(speaker)}
-            isSelected={selectedSpeaker() === speaker.id}
-            isPlaying={isPlaying(speaker.id)}
-            isMoving={isMovingSpeaker() === speaker.id}
-            isRotating={isRotatingSpeaker() === speaker.id}
-            onClick={() => {
-              setSelectedSpeaker(speaker.id);
-              togglePlayback(speaker.id);
-            }}
-            onMoveStart={handleSpeakerMoveStart(speaker.id)}
-            onRotateStart={handleSpeakerRotateStart(speaker.id)}
+          <div
+            class={`${styles.entityWrapper} ${isCurrentPerspective(speaker.id) ? styles.currentPerspective : ""}`}
+            onDblClick={() => handleSpeakerDoubleClick(speaker.id)}
+            title={
+              isCurrentPerspective(speaker.id)
+                ? "You (current perspective)"
+                : "Double-click to become this speaker"
+            }
             style={{
               left: `${toPercent(speaker.position.x)}%`,
               top: `${toPercent(speaker.position.y)}%`,
             }}
-          />
+          >
+            <Speaker
+              id={speaker.id}
+              position={speaker.position}
+              color={speaker.color}
+              facing={speaker.facing}
+              gain={isCurrentPerspective(speaker.id) ? 1 : calculateDisplayGain(speaker)}
+              isSelected={selectedSpeaker() === speaker.id}
+              isPlaying={isPlaying(speaker.id)}
+              isMoving={isMovingSpeaker() === speaker.id}
+              isRotating={isRotatingSpeaker() === speaker.id}
+              icon={isObserver(speaker.id) ? "🎧" : undefined}
+              onClick={() => {
+                setSelectedSpeaker(speaker.id);
+                togglePlayback(speaker.id);
+              }}
+              onMoveStart={handleSpeakerMoveStart(speaker.id)}
+              onRotateStart={handleSpeakerRotateStart(speaker.id)}
+              label={isCurrentPerspective(speaker.id) ? "YOU" : undefined}
+            />
+          </div>
         )}
       </For>
-
-      {/* Listener */}
-      <Speaker
-        id="listener"
-        position={listenerPos()}
-        color="#3b82f6"
-        facing={listenerFacing()}
-        gain={1}
-        isSelected={false}
-        isPlaying={false}
-        isMoving={isDraggingListener()}
-        isRotating={isRotatingListener()}
-        icon="🎧"
-        onMoveStart={handleListenerMove}
-        onRotateStart={handleListenerRotate}
-        style={{
-          left: `${toPercent(listenerPos().x)}%`,
-          top: `${toPercent(listenerPos().y)}%`,
-        }}
-      />
     </div>
   );
 }

@@ -58,6 +58,12 @@ export const FREQUENCY_NOTES: Record<number, string> = {
   880: "A5",
 };
 
+/** Audio source type options */
+export const SOURCE_TYPE_OPTIONS: SelectOption[] = [
+  { value: "oscillator", label: "Test Tone (Oscillator)" },
+  { value: "microphone", label: "Microphone (Voice)" },
+];
+
 /** Directivity pattern options for speakers */
 export const DIRECTIVITY_OPTIONS: SelectOption[] = [
   { value: "omnidirectional", label: "Omni (all directions)" },

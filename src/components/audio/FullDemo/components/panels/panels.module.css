@@ -93,6 +93,13 @@
   color: var(--color-text-muted);
 }
 
+/* Hint text */
+.hint {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-xs);
+}
+
 /* Button row */
 .buttonRow {
   display: flex;

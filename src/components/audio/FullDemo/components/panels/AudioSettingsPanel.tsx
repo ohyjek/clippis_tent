@@ -1,9 +1,9 @@
 /**
  * AudioSettingsPanel.tsx - Panel for audio settings
  *
- * Contains distance model selection, max distance, rear gain, and visual settings.
+ * Contains perspective selection, distance model, max distance, rear gain, and visual settings.
  */
-import { For } from "solid-js";
+import { For, Index } from "solid-js";
 import type { DistanceModel } from "@/lib/spatial-audio-engine";
 import { Panel, Toggle } from "@/components/ui";
 import { useDemoContext } from "../../context";
@@ -20,10 +20,38 @@ export function AudioSettingsPanel() {
     setRearGainFloor,
     showSoundPaths,
     setShowSoundPaths,
+    hearSelf,
+    setHearSelf,
+    currentPerspective,
+    setCurrentPerspective,
+    speakers,
   } = useDemoContext();
+
+  // Get display label for a speaker
+  const getSpeakerLabel = (speakerId: string, index: number) => {
+    if (speakerId === "observer") return "You (Observer)";
+    return `Speaker ${index}`;
+  };
 
   return (
     <Panel title="Audio Settings" icon="⚙️">
+      <div class={styles.propertyGroup}>
+        <label class={styles.propertyLabel}>Your Perspective</label>
+        <select
+          class={styles.propertySelect}
+          value={currentPerspective()}
+          onChange={(e) => setCurrentPerspective(e.currentTarget.value)}
+        >
+          {/* All speakers - use Index to preserve DOM nodes */}
+          <Index each={speakers()}>
+            {(speaker, i) => (
+              <option value={speaker().id}>{getSpeakerLabel(speaker().id, i)}</option>
+            )}
+          </Index>
+        </select>
+        <small class={styles.hint}>Who are you? Audio is heard from this position.</small>
+      </div>
+
       <div class={styles.propertyGroup}>
         <label class={styles.propertyLabel}>Distance Model</label>
         <select
@@ -71,6 +99,15 @@ export function AudioSettingsPanel() {
           <span>{Math.round(rearGainFloor() * 100)}%</span>
           <span>Loud (80%)</span>
         </div>
+      </div>
+
+      <div class={styles.propertyGroup}>
+        <Toggle
+          label="Hear Yourself"
+          description="Hear your own speaker's audio output"
+          checked={hearSelf()}
+          onChange={(e) => setHearSelf(e.currentTarget.checked)}
+        />
       </div>
 
       <div class={styles.propertyGroup}>
