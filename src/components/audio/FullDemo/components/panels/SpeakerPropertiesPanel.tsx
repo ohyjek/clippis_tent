@@ -7,11 +7,18 @@ import { Show, For } from "solid-js";
 import { SPEAKER_COLORS } from "@/lib/spatial-audio";
 import type { DirectivityPattern } from "@/lib/spatial-audio-engine";
 import type { AudioSourceType } from "@clippis/types";
-import { Button, ColorSwatches, Panel } from "@/components/ui";
+import {
+  Button,
+  ColorSwatches,
+  Panel,
+  DropdownField,
+  SliderField,
+  FieldGroup,
+  ButtonRow,
+} from "@/components/ui";
 import { useDemoContext } from "../../context";
 import { DIRECTIVITY_OPTIONS, SOURCE_TYPE_OPTIONS } from "../../constants";
 import { getNoteName } from "../../utils";
-import styles from "./panels.module.css";
 
 export function SpeakerPropertiesPanel() {
   const {
@@ -30,69 +37,57 @@ export function SpeakerPropertiesPanel() {
     <Show when={getSelectedSpeaker()}>
       {(speaker) => (
         <Panel title="Speaker Properties" icon="🎤">
-          <div class={styles.propertyGroup}>
-            <label class={styles.propertyLabel}>Audio Source</label>
-            <select
-              class={styles.propertySelect}
-              value={speaker().sourceType}
-              onChange={(e) => updateSourceType(e.currentTarget.value as AudioSourceType)}
-            >
-              <For each={SOURCE_TYPE_OPTIONS}>
-                {(opt) => <option value={opt.value}>{opt.label}</option>}
-              </For>
-            </select>
-            <Show when={speaker().sourceType === "microphone"}>
-              <small class={styles.hint}>
-                {microphoneEnabled() ? "🎙️ Mic active" : "Mic will be requested on play"}
-              </small>
-            </Show>
-          </div>
+          <DropdownField
+            label="Audio Source"
+            value={speaker().sourceType}
+            onChange={(e) => updateSourceType(e.currentTarget.value as AudioSourceType)}
+            hint={
+              speaker().sourceType === "microphone"
+                ? microphoneEnabled()
+                  ? "🎙️ Mic active"
+                  : "Mic will be requested on play"
+                : undefined
+            }
+          >
+            <For each={SOURCE_TYPE_OPTIONS}>
+              {(opt) => <option value={opt.value}>{opt.label}</option>}
+            </For>
+          </DropdownField>
 
-          <div class={styles.propertyGroup}>
-            <label class={styles.propertyLabel}>Pattern</label>
-            <select
-              class={styles.propertySelect}
-              value={speaker().directivity}
-              onChange={(e) => updateDirectivity(e.currentTarget.value as DirectivityPattern)}
-            >
-              <For each={DIRECTIVITY_OPTIONS}>
-                {(opt) => <option value={opt.value}>{opt.label}</option>}
-              </For>
-            </select>
-          </div>
+          <DropdownField
+            label="Pattern"
+            value={speaker().directivity}
+            onChange={(e) => updateDirectivity(e.currentTarget.value as DirectivityPattern)}
+          >
+            <For each={DIRECTIVITY_OPTIONS}>
+              {(opt) => <option value={opt.value}>{opt.label}</option>}
+            </For>
+          </DropdownField>
 
           <Show when={speaker().sourceType === "oscillator"}>
-            <div class={styles.propertyGroup}>
-              <label class={styles.propertyLabel}>
-                Note: {getNoteName(speaker().frequency)} ({speaker().frequency} Hz)
-              </label>
-              <input
-                type="range"
-                class={styles.propertySlider}
-                min="220"
-                max="880"
-                step="10"
-                value={speaker().frequency}
-                onInput={(e) => updateFrequency(parseInt(e.currentTarget.value))}
-              />
-              <div class={styles.sliderLabels}>
-                <span>A3 (220)</span>
-                <span>A5 (880)</span>
-              </div>
-            </div>
+            <SliderField
+              label={`Note: ${getNoteName(speaker().frequency)} (${speaker().frequency} Hz)`}
+              value={speaker().frequency}
+              onInput={(e) => updateFrequency(parseInt(e.currentTarget.value))}
+              min={220}
+              max={880}
+              step={10}
+              minLabel="A3 (220)"
+              maxLabel="A5 (880)"
+              formatValue={(v) => `${v} Hz`}
+            />
           </Show>
 
-          <div class={styles.propertyGroup}>
-            <label class={styles.propertyLabel}>Color</label>
+          <FieldGroup label="Color">
             <ColorSwatches
               colors={SPEAKER_COLORS}
               selected={speaker().color}
               onSelect={updateSpeakerColor}
               label="Speaker color"
             />
-          </div>
+          </FieldGroup>
 
-          <div class={`${styles.propertyGroup} ${styles.buttonRow}`}>
+          <ButtonRow>
             <Button
               variant={isPlaying(speaker().id) ? "danger" : "success"}
               icon={isPlaying(speaker().id) ? "⏹️" : "▶️"}
@@ -103,7 +98,7 @@ export function SpeakerPropertiesPanel() {
             <Button variant="danger" icon="🗑️" onClick={deleteSelectedSpeaker}>
               Delete
             </Button>
-          </div>
+          </ButtonRow>
         </Panel>
       )}
     </Show>

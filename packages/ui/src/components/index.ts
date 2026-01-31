@@ -4,6 +4,7 @@
 export { Button, type ButtonVariant } from "./Button";
 export { ColorSwatches, type ColorSwatchesProps } from "./ColorSwatches";
 export { ErrorBoundary } from "./ErrorBoundary";
+export { InputField, DropdownField, SliderField, FieldGroup, ButtonRow } from "./FormField";
 export { ItemList, type ItemListItem, type ItemListProps } from "./ItemList";
 export { Panel, type PanelProps } from "./Panel";
 export { Section } from "./Section";

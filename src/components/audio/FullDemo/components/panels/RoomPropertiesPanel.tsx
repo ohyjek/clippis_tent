@@ -4,10 +4,17 @@
  * Allows changing room name, color, and wall attenuation.
  */
 import { Show, createEffect, createSignal } from "solid-js";
-import { Button, ColorSwatches, Panel } from "@/components/ui";
+import {
+  Button,
+  ColorSwatches,
+  Panel,
+  InputField,
+  SliderField,
+  FieldGroup,
+  ButtonRow,
+} from "@/components/ui";
 import { useDemoContext } from "../../context";
 import { ROOM_COLORS } from "../../constants";
-import styles from "./panels.module.css";
 
 export function RoomPropertiesPanel() {
   const {
@@ -43,48 +50,38 @@ export function RoomPropertiesPanel() {
     <Show when={selectedRoom()}>
       {(room) => (
         <Panel title="Room Properties" icon="🚪">
-          <div class={styles.propertyGroup}>
-            <label class={styles.propertyLabel}>Name</label>
-            <input
-              type="text"
-              class={styles.propertyInput}
-              value={room().label}
-              onInput={(e) => updateRoomLabel(e.currentTarget.value)}
-            />
-          </div>
+          <InputField
+            label="Name"
+            value={room().label}
+            onInput={(e) => updateRoomLabel(e.currentTarget.value)}
+          />
 
-          <div class={styles.propertyGroup}>
-            <label class={styles.propertyLabel}>Color</label>
+          <FieldGroup label="Color">
             <ColorSwatches
               colors={ROOM_COLORS}
               selected={room().color}
               onSelect={updateRoomColor}
               label="Room color"
             />
-          </div>
+          </FieldGroup>
 
-          <div class={styles.propertyGroup}>
-            <label class={styles.propertyLabel}>Wall Attenuation: {sliderValue()}%</label>
-            <input
-              type="range"
-              class={styles.propertySlider}
-              min="0"
-              max="100"
-              step="1"
-              value={sliderValue()}
-              onInput={handleSliderChange}
-            />
-            <div class={styles.sliderLabels}>
-              <span>Transparent</span>
-              <span>Solid</span>
-            </div>
-          </div>
+          <SliderField
+            label={`Wall Attenuation: ${sliderValue()}%`}
+            value={sliderValue()}
+            onInput={handleSliderChange}
+            min={0}
+            max={100}
+            step={1}
+            minLabel="Transparent"
+            maxLabel="Solid"
+            formatValue={(v) => `${v}%`}
+          />
 
-          <div class={styles.propertyGroup}>
+          <ButtonRow>
             <Button variant="danger" icon="🗑️" onClick={deleteSelectedRoom}>
               Delete Room
             </Button>
-          </div>
+          </ButtonRow>
         </Panel>
       )}
     </Show>
