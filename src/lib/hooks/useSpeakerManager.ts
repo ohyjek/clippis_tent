@@ -6,6 +6,7 @@
 import { createSignal, type Accessor, type Setter } from "solid-js";
 import type { SpeakerState, DirectivityPattern, AudioSourceType, Position } from "@clippis/types";
 import { SPEAKER_COLORS } from "@/lib/spatial-audio";
+import { generateId, updateItemById } from "@/lib/spatial-utils";
 
 /** Options for speaker manager initialization */
 export interface SpeakerManagerOptions {
@@ -94,12 +95,12 @@ export function useSpeakerManager(options?: SpeakerManagerOptions): SpeakerManag
   const isCurrentPerspective = (id: string) => currentPerspective() === id;
 
   const getPerspectivePosition = (): Position => {
-    const speaker = speakers().find((s) => s.id === currentPerspective());
+    const speaker = getSpeakerById(currentPerspective());
     return speaker?.position ?? { x: 0, y: 0 };
   };
 
   const getPerspectiveFacing = (): number => {
-    const speaker = speakers().find((s) => s.id === currentPerspective());
+    const speaker = getSpeakerById(currentPerspective());
     return speaker?.facing ?? 0;
   };
 
@@ -107,7 +108,7 @@ export function useSpeakerManager(options?: SpeakerManagerOptions): SpeakerManag
     const currentSpeakers = speakers();
     const index = currentSpeakers.length;
     const newSpeaker: SpeakerState = {
-      id: `speaker-${Date.now()}`,
+      id: generateId("speaker"),
       position: {
         x: (Math.random() - 0.5) * 4,
         y: (Math.random() - 0.5) * 3,
@@ -138,48 +139,39 @@ export function useSpeakerManager(options?: SpeakerManagerOptions): SpeakerManag
     const remaining = speakers().filter((s) => s.id !== id);
 
     if (currentPerspective() === id) {
-      if (remaining.length > 0) {
-        setCurrentPerspective(remaining[0].id);
-      } else {
-        setCurrentPerspective("");
-      }
+      setCurrentPerspective(remaining[0]?.id ?? "");
     }
 
-    setSpeakers((prev) => prev.filter((s) => s.id !== id));
-
-    if (remaining.length > 0) {
-      setSelectedSpeaker(remaining[0].id);
-    } else {
-      setSelectedSpeaker("");
-    }
+    setSpeakers(remaining);
+    setSelectedSpeaker(remaining[0]?.id ?? "");
   };
 
   const updatePosition = (id: string, position: Position) => {
-    setSpeakers((prev) => prev.map((s) => (s.id === id ? { ...s, position } : s)));
+    setSpeakers((prev) => updateItemById(prev, id, { position }));
   };
 
   const updateFacing = (id: string, facing: number) => {
-    setSpeakers((prev) => prev.map((s) => (s.id === id ? { ...s, facing } : s)));
+    setSpeakers((prev) => updateItemById(prev, id, { facing }));
   };
 
   const updateDirectivity = (pattern: DirectivityPattern) => {
     const id = selectedSpeaker();
-    setSpeakers((prev) => prev.map((s) => (s.id === id ? { ...s, directivity: pattern } : s)));
+    setSpeakers((prev) => updateItemById(prev, id, { directivity: pattern }));
   };
 
   const updateFrequency = (frequency: number) => {
     const id = selectedSpeaker();
-    setSpeakers((prev) => prev.map((s) => (s.id === id ? { ...s, frequency } : s)));
+    setSpeakers((prev) => updateItemById(prev, id, { frequency }));
   };
 
   const updateColor = (color: string) => {
     const id = selectedSpeaker();
-    setSpeakers((prev) => prev.map((s) => (s.id === id ? { ...s, color } : s)));
+    setSpeakers((prev) => updateItemById(prev, id, { color }));
   };
 
   const updateSourceType = (sourceType: AudioSourceType) => {
     const id = selectedSpeaker();
-    setSpeakers((prev) => prev.map((s) => (s.id === id ? { ...s, sourceType } : s)));
+    setSpeakers((prev) => updateItemById(prev, id, { sourceType }));
   };
 
   const reset = (initialSpeakers: SpeakerState[]) => {

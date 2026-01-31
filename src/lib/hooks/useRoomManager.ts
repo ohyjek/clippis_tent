@@ -4,7 +4,13 @@
  * Provides room CRUD operations and selection state.
  */
 import { createSignal, type Accessor, type Setter } from "solid-js";
-import type { DrawnRoom, Position, Wall, Bounds } from "@clippis/types";
+import type { DrawnRoom, Position, Wall } from "@clippis/types";
+import {
+  createRoomFromCorners,
+  isValidRoomSize,
+  updateItemById,
+  DEFAULT_ATTENUATION,
+} from "@/lib/spatial-utils";
 
 /** Room creation configuration */
 export interface RoomConfig {
@@ -42,55 +48,6 @@ export interface RoomManagerState {
   clearRooms: () => void;
 }
 
-/** Minimum room size threshold */
-const MIN_ROOM_SIZE = 0.2;
-const DEFAULT_ATTENUATION = 0.5;
-
-/**
- * Create walls from rectangular bounds
- */
-function createWallsFromBounds(bounds: Bounds): Wall[] {
-  const halfW = bounds.width / 2;
-  const halfH = bounds.height / 2;
-  const left = bounds.x - halfW;
-  const right = bounds.x + halfW;
-  const top = bounds.y - halfH;
-  const bottom = bounds.y + halfH;
-
-  return [
-    { start: { x: left, y: top }, end: { x: right, y: top } },
-    { start: { x: right, y: top }, end: { x: right, y: bottom } },
-    { start: { x: right, y: bottom }, end: { x: left, y: bottom } },
-    { start: { x: left, y: bottom }, end: { x: left, y: top } },
-  ];
-}
-
-/**
- * Create room from two corner positions
- */
-function createRoomFromCorners(start: Position, end: Position, config: RoomConfig): DrawnRoom {
-  const minX = Math.min(start.x, end.x);
-  const maxX = Math.max(start.x, end.x);
-  const minY = Math.min(start.y, end.y);
-  const maxY = Math.max(start.y, end.y);
-
-  const width = maxX - minX;
-  const height = maxY - minY;
-  const center = { x: minX + width / 2, y: minY + height / 2 };
-  const bounds: Bounds = { x: center.x, y: center.y, width, height };
-  const walls = createWallsFromBounds(bounds);
-
-  return {
-    id: config.id,
-    label: `Room ${config.id.slice(-4)}`,
-    bounds,
-    walls,
-    center,
-    color: config.color,
-    attenuation: config.attenuation ?? DEFAULT_ATTENUATION,
-  };
-}
-
 /**
  * Hook for managing room state
  */
@@ -102,14 +59,17 @@ export function useRoomManager(): RoomManagerState {
   const allWalls = (): Wall[] => rooms().flatMap((r) => r.walls);
 
   const addRoom = (start: Position, end: Position, config: RoomConfig): boolean => {
-    const width = Math.abs(end.x - start.x);
-    const height = Math.abs(end.y - start.y);
-
-    if (width <= MIN_ROOM_SIZE || height <= MIN_ROOM_SIZE) {
+    if (!isValidRoomSize(start, end)) {
       return false;
     }
 
-    const room = createRoomFromCorners(start, end, config);
+    const room = createRoomFromCorners(
+      start,
+      end,
+      config.id,
+      config.color,
+      config.attenuation ?? DEFAULT_ATTENUATION
+    );
     setRooms((prev) => [...prev, room]);
     setSelectedRoomId(config.id);
     return true;
@@ -131,7 +91,7 @@ export function useRoomManager(): RoomManagerState {
     id: string,
     updates: Partial<Pick<DrawnRoom, "label" | "color" | "attenuation">>
   ) => {
-    setRooms((prev) => prev.map((r) => (r.id === id ? { ...r, ...updates } : r)));
+    setRooms((prev) => updateItemById(prev, id, updates));
   };
 
   const clearRooms = () => {

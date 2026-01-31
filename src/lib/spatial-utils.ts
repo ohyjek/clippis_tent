@@ -1,18 +1,48 @@
 /**
- * spatial-utils.ts - Coordinate conversion utilities for spatial audio
+ * spatial-utils.ts - Coordinate and geometry utilities for spatial audio
  *
- * These utilities handle conversion between:
- * - Room coordinates: Used for audio calculations (typically -2.5 to 2.5)
- * - Screen coordinates: Pixel positions from mouse events
- * - Percentage coordinates: CSS positioning (0-100%)
+ * Single source of truth for:
+ * - Coordinate conversion (room ↔ screen ↔ percentage)
+ * - Room/wall geometry creation
+ * - Distance and angle calculations
+ * - ID generation
  *
  * The coordinate system uses:
  * - Origin (0,0) at center
+ * - Room coordinates typically -2.5 to 2.5
  * - X increases to the right
  * - Y increases downward
  */
 
-import type { Position } from "./spatial-audio";
+import type { Position, Wall, Bounds, DrawnRoom } from "@clippis/types";
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+/** Default wall attenuation (0=transparent, 1=fully blocking) */
+export const DEFAULT_ATTENUATION = 0.5;
+
+/** Minimum room size threshold for drawing */
+export const MIN_ROOM_SIZE = 0.2;
+
+// ============================================================================
+// ID GENERATION
+// ============================================================================
+
+/**
+ * Generate a unique ID with prefix
+ *
+ * @param prefix - ID prefix (e.g., "room", "speaker", "source")
+ * @returns Unique ID string
+ */
+export function generateId(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+// ============================================================================
+// COORDINATE CONVERSION
+// ============================================================================
 
 /**
  * Convert room coordinates to percentage for rendering
@@ -108,6 +138,10 @@ export function toCssPosition(pos: Position): { left: string; top: string } {
   };
 }
 
+// ============================================================================
+// GEOMETRY CALCULATIONS
+// ============================================================================
+
 /**
  * Calculate distance between two positions
  *
@@ -140,4 +174,104 @@ export function angleBetween(from: Position, to: Position): number {
  */
 export function normalizeAngle(angle: number): number {
   return Math.atan2(Math.sin(angle), Math.cos(angle));
+}
+
+// ============================================================================
+// ROOM/WALL GEOMETRY
+// ============================================================================
+
+/**
+ * Create walls from rectangular bounds
+ *
+ * @param bounds - Rectangle with center position and dimensions
+ * @returns Array of four wall segments (clockwise from top-left)
+ */
+export function createWallsFromBounds(bounds: Bounds): Wall[] {
+  const halfW = bounds.width / 2;
+  const halfH = bounds.height / 2;
+  const left = bounds.x - halfW;
+  const right = bounds.x + halfW;
+  const top = bounds.y - halfH;
+  const bottom = bounds.y + halfH;
+
+  return [
+    { start: { x: left, y: top }, end: { x: right, y: top } }, // Top
+    { start: { x: right, y: top }, end: { x: right, y: bottom } }, // Right
+    { start: { x: right, y: bottom }, end: { x: left, y: bottom } }, // Bottom
+    { start: { x: left, y: bottom }, end: { x: left, y: top } }, // Left
+  ];
+}
+
+/**
+ * Create room from two corner positions (for drag-to-draw)
+ *
+ * @param start - First corner position
+ * @param end - Second corner position
+ * @param id - Unique room identifier
+ * @param color - Room color
+ * @param attenuation - Wall attenuation (default: DEFAULT_ATTENUATION)
+ * @returns Complete DrawnRoom object
+ */
+export function createRoomFromCorners(
+  start: Position,
+  end: Position,
+  id: string,
+  color: string,
+  attenuation = DEFAULT_ATTENUATION
+): DrawnRoom {
+  const minX = Math.min(start.x, end.x);
+  const maxX = Math.max(start.x, end.x);
+  const minY = Math.min(start.y, end.y);
+  const maxY = Math.max(start.y, end.y);
+
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const center = { x: minX + width / 2, y: minY + height / 2 };
+  const bounds: Bounds = { x: center.x, y: center.y, width, height };
+  const walls = createWallsFromBounds(bounds);
+
+  return {
+    id,
+    label: `Room ${id.slice(-4)}`,
+    bounds,
+    walls,
+    center,
+    color,
+    attenuation,
+  };
+}
+
+/**
+ * Check if a room meets minimum size requirements
+ *
+ * @param start - First corner position
+ * @param end - Second corner position
+ * @returns true if room is large enough
+ */
+export function isValidRoomSize(start: Position, end: Position): boolean {
+  const width = Math.abs(end.x - start.x);
+  const height = Math.abs(end.y - start.y);
+  return width > MIN_ROOM_SIZE && height > MIN_ROOM_SIZE;
+}
+
+// ============================================================================
+// COLLECTION HELPERS
+// ============================================================================
+
+/**
+ * Update an item in an array by ID
+ *
+ * Generic helper for the common pattern of updating a specific item in a list.
+ *
+ * @param items - Array of items with id property
+ * @param id - ID of item to update
+ * @param updates - Partial updates to apply
+ * @returns New array with updated item
+ */
+export function updateItemById<T extends { id: string }>(
+  items: T[],
+  id: string,
+  updates: Partial<Omit<T, "id">>
+): T[] {
+  return items.map((item) => (item.id === id ? { ...item, ...updates } : item));
 }
