@@ -9,7 +9,6 @@
  *
  * Routes:
  *   /         -> The Tent (spatial audio demo)
- *   /builder  -> Room Builder (room building tool)
  *   /settings -> Settings page
  */
 import { A, useLocation } from "@solidjs/router";
@@ -19,14 +18,13 @@ import styles from "./Sidebar.module.css";
 
 interface NavItem {
   path: string;
-  labelKey: "nav.tent" | "nav.builder" | "nav.settings";
+  labelKey: "nav.tent" | "nav.settings";
   icon: string;
 }
 
 /** Navigation items shown in the sidebar */
 const navItems: NavItem[] = [
   { path: "/", labelKey: "nav.tent", icon: "🎪" },
-  { path: "/builder", labelKey: "nav.builder", icon: "🏗️" },
   { path: "/settings", labelKey: "nav.settings", icon: "⚙️" },
 ];
 
