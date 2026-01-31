@@ -1,7 +1,7 @@
 /**
  * Toggle.stories.tsx - Storybook stories for Toggle component
  */
-import type { Meta, StoryObj } from "storybook-solidjs";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { createSignal } from "solid-js";
 import { Toggle } from "./Toggle";
 

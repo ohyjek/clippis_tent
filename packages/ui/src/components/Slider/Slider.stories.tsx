@@ -1,7 +1,7 @@
 /**
  * Slider.stories.tsx - Storybook stories for Slider component
  */
-import type { Meta, StoryObj } from "storybook-solidjs";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { createSignal } from "solid-js";
 import { Slider } from "./Slider";
 

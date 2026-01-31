@@ -10,9 +10,16 @@
  * - Border radius
  * - Transitions
  * - Layout dimensions
+ *
+ * Theme support:
+ * - Default (dark) theme in :root
+ * - Light theme in [data-theme="light"]
+ * - Theme is set via document.documentElement.dataset.theme
  */
 
-/* Color Palette - Slate/Blue theme */
+/* ============================================
+   DEFAULT (DARK) THEME
+   ============================================ */
 :root {
   /* Background colors */
   --color-bg-primary: #0f172a;
@@ -58,4 +65,33 @@
   /* Layout */
   --sidebar-width: 240px;
   --header-height: 60px;
+}
+
+/* ============================================
+   LIGHT THEME
+   ============================================ */
+[data-theme="light"] {
+  /* Background colors - clean whites and light grays */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8fafc;
+  --color-bg-tertiary: #f1f5f9;
+
+  /* Text colors - dark slate for readability */
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+
+  /* Accent colors - slightly adjusted for light bg contrast */
+  --color-accent-blue: #2563eb;
+  --color-accent-blue-light: #3b82f6;
+  --color-accent-purple: #7c3aed;
+  --color-accent-green: #059669;
+  --color-accent-red: #dc2626;
+
+  /* Border colors */
+  --color-border: #e2e8f0;
+  --color-border-light: rgba(0, 0, 0, 0.05);
+
+  /* Shadows */
+  --shadow-glow-blue: 0 0 20px rgba(37, 99, 235, 0.3);
 }

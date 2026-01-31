@@ -1,7 +1,7 @@
 /**
  * Tabs.stories.tsx - Storybook stories for Tabs component
  */
-import type { Meta, StoryObj } from "storybook-solidjs";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { createSignal } from "solid-js";
 import { Tabs } from "./Tabs";
 

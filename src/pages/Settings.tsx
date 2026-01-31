@@ -1,7 +1,8 @@
 /**
- * Settings.tsx - Audio settings page (/settings)
+ * Settings.tsx - Application settings page (/settings)
  *
  * Allows users to configure:
+ * - Appearance (theme, language)
  * - Input/output audio devices
  * - Master volume
  * - Audio processing (spatial audio, noise suppression, echo cancellation)
@@ -10,6 +11,8 @@
  */
 import { createSignal, onMount } from "solid-js";
 import { audioStore } from "@/stores/audio";
+import { themeStore, ThemeMode } from "@/stores/theme";
+import { useI18n, locales, Locale } from "@/lib/i18n";
 import { Section, SelectField, Slider, Toggle } from "@/components/ui";
 import { logger } from "@/lib/logger";
 import { showToast } from "@/stores/toast";
@@ -21,6 +24,7 @@ interface AudioDevice {
 }
 
 export function Settings() {
+  const [t, locale, setLocale] = useI18n();
   const [inputDevices, setInputDevices] = createSignal<AudioDevice[]>([]);
   const [outputDevices, setOutputDevices] = createSignal<AudioDevice[]>([]);
 
@@ -52,10 +56,21 @@ export function Settings() {
       logger.error("Failed to enumerate audio devices:", err);
       showToast({ 
         type: "warning", 
-        message: "Could not access audio devices. Check microphone permissions." 
+        message: t("errors.audioDevices") 
       });
     }
   });
+
+  // Theme options using translations
+  const themeOptions = () => [
+    { value: "system", label: t("theme.system") },
+    { value: "dark", label: t("theme.dark") },
+    { value: "light", label: t("theme.light") },
+  ];
+
+  // Language options from locales
+  const languageOptions = () => 
+    locales.map((l) => ({ value: l.code, label: l.name }));
 
   const inputOptions = () =>
     inputDevices().map((d) => ({ value: d.deviceId, label: d.label }));
@@ -66,31 +81,46 @@ export function Settings() {
   return (
     <div class={styles.page}>
       <header class={styles.header}>
-        <h1 class={styles.title}>Settings</h1>
-        <p class={styles.subtitle}>Configure your audio preferences</p>
+        <h1 class={styles.title}>{t("settings.title")}</h1>
+        <p class={styles.subtitle}>{t("settings.subtitle")}</p>
       </header>
 
       <div class={styles.sections}>
-        <Section title="Audio Devices">
+        <Section title={t("settings.appearance")}>
           <SelectField
-            label="Input Device (Microphone)"
+            label={t("settings.theme")}
+            options={themeOptions()}
+            value={themeStore.themeMode()}
+            onChange={(e) => themeStore.setThemeMode(e.currentTarget.value as ThemeMode)}
+          />
+          <SelectField
+            label={t("settings.language")}
+            options={languageOptions()}
+            value={locale()}
+            onChange={(e) => setLocale(e.currentTarget.value as Locale)}
+          />
+        </Section>
+
+        <Section title={t("settings.audioDevices")}>
+          <SelectField
+            label={t("settings.inputDevice")}
             options={inputOptions()}
-            placeholder="Default"
+            placeholder={t("common.default")}
             value={audioStore.audioInputDevice()}
             onChange={(e) => audioStore.setAudioInputDevice(e.currentTarget.value)}
           />
           <SelectField
-            label="Output Device (Speakers)"
+            label={t("settings.outputDevice")}
             options={outputOptions()}
-            placeholder="Default"
+            placeholder={t("common.default")}
             value={audioStore.audioOutputDevice()}
             onChange={(e) => audioStore.setAudioOutputDevice(e.currentTarget.value)}
           />
         </Section>
 
-        <Section title="Volume">
+        <Section title={t("settings.volume")}>
           <div class={styles.volumeRow}>
-            <span class={styles.volumeLabel}>Master Volume</span>
+            <span class={styles.volumeLabel}>{t("settings.masterVolume")}</span>
             <Slider
               min={0}
               max={1}
@@ -105,33 +135,33 @@ export function Settings() {
           </div>
         </Section>
 
-        <Section title="Audio Processing">
+        <Section title={t("settings.audioProcessing")}>
           <div class={styles.toggleList}>
             <Toggle
-              label="Spatial Audio"
-              description="Enable 3D positional audio effects"
+              label={t("settings.spatialAudio")}
+              description={t("settings.spatialAudioDesc")}
               checked={audioStore.spatialAudioEnabled()}
               onChange={(e) => audioStore.setSpatialAudioEnabled(e.currentTarget.checked)}
             />
             <Toggle
-              label="Noise Suppression"
-              description="Reduce background noise from microphone"
+              label={t("settings.noiseSuppression")}
+              description={t("settings.noiseSuppressionDesc")}
               checked={audioStore.noiseSuppressionEnabled()}
               onChange={(e) => audioStore.setNoiseSuppressionEnabled(e.currentTarget.checked)}
             />
             <Toggle
-              label="Echo Cancellation"
-              description="Prevent audio feedback loops"
+              label={t("settings.echoCancellation")}
+              description={t("settings.echoCancellationDesc")}
               checked={audioStore.echoCancellationEnabled()}
               onChange={(e) => audioStore.setEchoCancellationEnabled(e.currentTarget.checked)}
             />
           </div>
         </Section>
 
-        <Section title="About">
+        <Section title={t("settings.about")}>
           <div class={styles.about}>
-            <p><strong>Clippis</strong> — Spatial Voice Chat</p>
-            <p class={styles.muted}>Version 1.0.0</p>
+            <p><strong>{t("app.name")}</strong> — {t("app.tagline")}</p>
+            <p class={styles.muted}>{t("settings.version")} 1.0.0</p>
             <p class={styles.muted}>
               A Dolby Axon-inspired spatial audio prototype built with Electron,
               SolidJS, and Web Audio API.

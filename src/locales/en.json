@@ -1,0 +1,54 @@
+{
+  "app": {
+    "name": "Clippi's Tent",
+    "tagline": "Spatial Voice Chat"
+  },
+  "nav": {
+    "tent": "The Tent",
+    "scenarios": "Scenarios",
+    "voiceRoom": "Voice Room",
+    "settings": "Settings"
+  },
+  "status": {
+    "audioActive": "Audio Active",
+    "audioInactive": "Audio Inactive"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Configure your audio preferences",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "language": "Language",
+    "audioDevices": "Audio Devices",
+    "inputDevice": "Input Device (Microphone)",
+    "outputDevice": "Output Device (Speakers)",
+    "volume": "Volume",
+    "masterVolume": "Master Volume",
+    "audioProcessing": "Audio Processing",
+    "spatialAudio": "Spatial Audio",
+    "spatialAudioDesc": "Enable 3D positional audio effects",
+    "noiseSuppression": "Noise Suppression",
+    "noiseSuppressionDesc": "Reduce background noise from microphone",
+    "echoCancellation": "Echo Cancellation",
+    "echoCancellationDesc": "Prevent audio feedback loops",
+    "about": "About",
+    "version": "Version"
+  },
+  "theme": {
+    "system": "System",
+    "dark": "Dark",
+    "light": "Light"
+  },
+  "common": {
+    "play": "Play",
+    "stop": "Stop",
+    "save": "Save",
+    "cancel": "Cancel",
+    "default": "Default",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
+  },
+  "errors": {
+    "audioDevices": "Could not access audio devices. Check microphone permissions."
+  }
+}

@@ -1,7 +1,7 @@
 /**
  * Button.stories.tsx - Storybook stories for Button component
  */
-import type { Meta, StoryObj } from "storybook-solidjs";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { Button } from "./Button";
 
 const meta: Meta<typeof Button> = {

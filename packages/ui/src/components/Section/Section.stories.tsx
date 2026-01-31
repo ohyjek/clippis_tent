@@ -1,7 +1,7 @@
 /**
  * Section.stories.tsx - Storybook stories for Section component
  */
-import type { Meta, StoryObj } from "storybook-solidjs";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { Section } from "./Section";
 
 const meta: Meta<typeof Section> = {

@@ -3,7 +3,7 @@
  * 
  * Sets up global decorators and parameters for all stories.
  */
-import type { Preview } from "storybook-solidjs";
+import type { Preview } from "storybook-solidjs-vite";
 
 // Import CSS variables used by components
 const cssVars = `

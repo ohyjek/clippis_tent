@@ -7,6 +7,8 @@
  * - Lazy-loaded pages for code splitting
  * - Global error handlers
  * - Toast notifications
+ * - I18n provider for translations
+ * - Theme initialization
  *
  * Routes:
  *   /          -> Tent (spatial audio demos)
@@ -19,8 +21,11 @@ import { lazy } from "solid-js";
 import { Router, Route } from "@solidjs/router";
 import { App } from "@/components/layout";
 import { ErrorBoundary, ToastContainer } from "@/components/ui";
+import { I18nProvider } from "@/lib/i18n";
 import { logger } from "@/lib/logger";
 import { showToast } from "@/stores/toast";
+// Initialize theme store (applies theme before first render)
+import "@/stores/theme";
 
 import "@/styles/variables.css";
 import "@/index.css";
@@ -56,13 +61,15 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 render(
   () => (
     <ErrorBoundary>
-      <Router root={App}>
-        <Route path="/" component={Tent} />
-        <Route path="/scenarios" component={Scenarios} />
-        <Route path="/voice" component={VoiceRoom} />
-        <Route path="/settings" component={Settings} />
-      </Router>
-      <ToastContainer />
+      <I18nProvider>
+        <Router root={App}>
+          <Route path="/" component={Tent} />
+          <Route path="/scenarios" component={Scenarios} />
+          <Route path="/voice" component={VoiceRoom} />
+          <Route path="/settings" component={Settings} />
+        </Router>
+        <ToastContainer />
+      </I18nProvider>
     </ErrorBoundary>
   ),
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

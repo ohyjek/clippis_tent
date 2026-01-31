@@ -1,7 +1,7 @@
 /**
  * SelectField.stories.tsx - Storybook stories for SelectField component
  */
-import type { Meta, StoryObj } from "storybook-solidjs";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { SelectField } from "./SelectField";
 
 const meta: Meta<typeof SelectField> = {

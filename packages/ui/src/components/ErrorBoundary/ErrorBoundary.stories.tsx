@@ -1,7 +1,7 @@
 /**
  * ErrorBoundary.stories.tsx - Storybook stories for ErrorBoundary component
  */
-import type { Meta, StoryObj } from "storybook-solidjs";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { createSignal } from "solid-js";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Button } from "../Button";

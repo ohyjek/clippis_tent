@@ -1,7 +1,7 @@
 /**
  * Toast.stories.tsx - Storybook stories for Toast component
  */
-import type { Meta, StoryObj } from "storybook-solidjs";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { createSignal } from "solid-js";
 import { ToastContainer, type ToastData } from "./Toast";
 import { Button } from "../Button";

@@ -3,6 +3,7 @@
  *
  * Shows the app logo, navigation links, and audio status indicator.
  * Highlights the currently active route.
+ * Uses i18n for all user-facing strings.
  *
  * Routes:
  *   /          -> The Tent (spatial audio demos)
@@ -12,23 +13,25 @@
  */
 import { A, useLocation } from "@solidjs/router";
 import { audioStore } from "@/stores/audio";
+import { useI18n } from "@/lib/i18n";
 import styles from "./Sidebar.module.css";
 
 interface NavItem {
   path: string;
-  label: string;
+  labelKey: "nav.tent" | "nav.scenarios" | "nav.voiceRoom" | "nav.settings";
   icon: string;
 }
 
 /** Navigation items shown in the sidebar */
 const navItems: NavItem[] = [
-  { path: "/", label: "The Tent", icon: "🎪" },
-  { path: "/scenarios", label: "Scenarios", icon: "🎬" },
-  { path: "/voice", label: "Voice Room", icon: "🎙️" },
-  { path: "/settings", label: "Settings", icon: "⚙️" },
+  { path: "/", labelKey: "nav.tent", icon: "🎪" },
+  { path: "/scenarios", labelKey: "nav.scenarios", icon: "🎬" },
+  { path: "/voice", labelKey: "nav.voiceRoom", icon: "🎙️" },
+  { path: "/settings", labelKey: "nav.settings", icon: "⚙️" },
 ];
 
 export function Sidebar() {
+  const [t] = useI18n();
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
 
@@ -36,7 +39,7 @@ export function Sidebar() {
     <aside class={styles.sidebar}>
       <div class={styles.logo}>
         <span class={styles.logoIcon}>🎮</span>
-        <span class={styles.logoText}>Clippi's Tent</span>
+        <span class={styles.logoText}>{t("app.name")}</span>
       </div>
 
       <nav class={styles.nav}>
@@ -46,7 +49,7 @@ export function Sidebar() {
             class={`${styles.navItem} ${isActive(item.path) ? styles.active : ""}`}
           >
             <span class={styles.navIcon}>{item.icon}</span>
-            <span>{item.label}</span>
+            <span>{t(item.labelKey)}</span>
           </A>
         ))}
       </nav>
@@ -59,7 +62,7 @@ export function Sidebar() {
             }`}
           />
           <span class={styles.statusText}>
-            {audioStore.audioInitialized() ? "Audio Active" : "Audio Inactive"}
+            {audioStore.audioInitialized() ? t("status.audioActive") : t("status.audioInactive")}
           </span>
         </div>
       </div>
