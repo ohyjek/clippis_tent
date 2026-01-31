@@ -65,13 +65,21 @@ describe("Button", () => {
 
   it("does not call onClick when disabled", () => {
     const onClick = vi.fn();
-    render(() => <Button onClick={onClick} disabled>Disabled</Button>);
+    render(() => (
+      <Button onClick={onClick} disabled>
+        Disabled
+      </Button>
+    ));
     fireEvent.click(screen.getByRole("button"));
     expect(onClick).not.toHaveBeenCalled();
   });
 
   it("passes through additional HTML attributes", () => {
-    render(() => <Button data-testid="custom-button" type="submit">Submit</Button>);
+    render(() => (
+      <Button data-testid="custom-button" type="submit">
+        Submit
+      </Button>
+    ));
     const button = screen.getByTestId("custom-button");
     expect(button).toHaveAttribute("type", "submit");
   });
