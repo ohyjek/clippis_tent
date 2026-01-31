@@ -1,0 +1,32 @@
+{
+  // Editor settings for this project
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // TypeScript
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // ESLint
+  "eslint.validate": ["typescript", "typescriptreact"],
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+
+  // File associations
+  "files.associations": {
+    "*.css": "css"
+  },
+
+  // Exclude from search/watch
+  "files.exclude": {
+    "**/.vite": true,
+    "**/out": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.vite": true,
+    "**/out": true,
+    "**/pnpm-lock.yaml": true
+  }
+}

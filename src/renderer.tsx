@@ -41,5 +41,6 @@ render(
       <Route path="/settings" component={Settings} />
     </Router>
   ),
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   root!
 );

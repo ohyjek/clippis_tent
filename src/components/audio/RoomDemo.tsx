@@ -90,7 +90,7 @@ export function RoomDemo() {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  const handleRoomClick = (e: MouseEvent) => {
+  const handleRoomClick = () => {
     audioStore.initializeAudio();
     playSound();
   };
