@@ -4,11 +4,12 @@
  * The comprehensive demo combining all spatial audio features:
  * - Draggable listener position
  * - Multiple speakers with position, direction, and click-to-play
+ * - Continuous tone playback for real-time spatial audio demonstration
  * - Room boundaries with wall attenuation
  *
  * This is the default/primary demo that showcases all the concepts together.
  */
-import { createSignal, For } from "solid-js";
+import { createSignal, createEffect, onCleanup, For } from "solid-js";
 import {
   Speaker as SpeakerData,
   Position,
@@ -25,6 +26,13 @@ import {
 import { audioStore } from "@/stores/audio";
 import { Button, Slider, Speaker } from "@/components/ui";
 import styles from "./FullDemo.module.css";
+
+/** Audio nodes for a continuously playing speaker */
+interface ContinuousAudioNodes {
+  oscillator: OscillatorNode;
+  gainNode: GainNode;
+  panner: StereoPannerNode;
+}
 
 export function FullDemo() {
   let roomRef: HTMLDivElement | undefined;
@@ -48,6 +56,13 @@ export function FullDemo() {
   const [isMovingSpeaker, setIsMovingSpeaker] = createSignal<string | null>(null);
   const [isRotatingSpeaker, setIsRotatingSpeaker] = createSignal<string | null>(null);
   const [playingSpeaker, setPlayingSpeaker] = createSignal<string | null>(null);
+  
+  // Continuous playback state
+  const [continuousPlaying, setContinuousPlaying] = createSignal<Set<string>>(new Set());
+  const continuousAudioNodes = new Map<string, ContinuousAudioNodes>();
+  
+  // Check if a speaker is playing continuously
+  const isContinuousPlaying = (speakerId: string) => continuousPlaying().has(speakerId);
 
   // Convert mouse event to room coordinates
   const getPositionFromEvent = (e: MouseEvent): Position => {
@@ -153,6 +168,125 @@ export function FullDemo() {
     audioStore.initializeAudio();
   };
 
+  /**
+   * Start continuous playback for a speaker
+   * Creates a looping oscillator that updates in real-time
+   */
+  const startContinuousPlayback = (speakerId: string) => {
+    audioStore.initializeAudio();
+    const audioContext = audioStore.getAudioContext();
+    if (!audioContext) return;
+
+    // Stop if already playing
+    if (continuousAudioNodes.has(speakerId)) {
+      stopContinuousPlayback(speakerId);
+      return;
+    }
+
+    const speaker = speakers().find((s) => s.id === speakerId);
+    if (!speaker) return;
+
+    // Create audio nodes
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    const panner = audioContext.createStereoPanner();
+
+    oscillator.connect(panner);
+    panner.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Set initial values
+    oscillator.frequency.value = 440;
+    oscillator.type = "sine";
+    
+    // Calculate initial audio parameters
+    const { volume, pan } = calculateAudioParams(speaker);
+    gainNode.gain.value = volume;
+    panner.pan.value = pan;
+
+    // Start the oscillator
+    oscillator.start();
+
+    // Store the nodes
+    continuousAudioNodes.set(speakerId, { oscillator, gainNode, panner });
+    setContinuousPlaying((prev) => new Set([...prev, speakerId]));
+  };
+
+  /**
+   * Stop continuous playback for a speaker
+   */
+  const stopContinuousPlayback = (speakerId: string) => {
+    const nodes = continuousAudioNodes.get(speakerId);
+    if (nodes) {
+      nodes.oscillator.stop();
+      nodes.oscillator.disconnect();
+      nodes.gainNode.disconnect();
+      nodes.panner.disconnect();
+      continuousAudioNodes.delete(speakerId);
+    }
+    setContinuousPlaying((prev) => {
+      const next = new Set(prev);
+      next.delete(speakerId);
+      return next;
+    });
+  };
+
+  /**
+   * Stop all continuous playback
+   */
+  const stopAllContinuous = () => {
+    for (const speakerId of continuousAudioNodes.keys()) {
+      stopContinuousPlayback(speakerId);
+    }
+  };
+
+  /**
+   * Calculate audio parameters for a speaker based on current positions
+   */
+  const calculateAudioParams = (speaker: SpeakerData) => {
+    const directionalGain = calculateDirectionalGain(speaker.facing, speaker.position, listenerPos());
+    const wallCount = countWallsBetween(speaker.position, listenerPos(), allWalls());
+    const wallAttenuation = calculateWallAttenuation(wallCount);
+    const distance = calculateDistance(speaker.position, listenerPos());
+    const baseVolume = 1 / (1 + distance);
+    const dx = speaker.position.x - listenerPos().x;
+    const pan = calculatePan(dx);
+    
+    const volume = baseVolume * directionalGain * wallAttenuation * audioStore.masterVolume() * 0.15;
+    return { volume, pan };
+  };
+
+  // Update continuous audio in real-time when positions change
+  createEffect(() => {
+    // Dependencies: listener position, speakers, master volume
+    const listener = listenerPos();
+    const speakerList = speakers();
+    const masterVol = audioStore.masterVolume();
+    
+    // Suppress unused variable warnings - these are reactive dependencies
+    void listener;
+    void masterVol;
+
+    // Update all playing speakers
+    for (const speaker of speakerList) {
+      const nodes = continuousAudioNodes.get(speaker.id);
+      if (nodes) {
+        const { volume, pan } = calculateAudioParams(speaker);
+        // Smooth transition for gain changes
+        nodes.gainNode.gain.linearRampToValueAtTime(
+          volume,
+          audioStore.getAudioContext()?.currentTime ?? 0 + 0.05
+        );
+        nodes.panner.pan.value = pan;
+      }
+    }
+  });
+
+  // Cleanup on unmount
+  onCleanup(() => {
+    stopAllContinuous();
+  });
+
   // Calculate effective gain for a speaker (direction + walls + distance)
   const calculateEffectiveGain = (speaker: SpeakerData): number => {
     const directionGain = calculateDirectionalGain(speaker.facing, speaker.position, listenerPos());
@@ -223,6 +357,7 @@ export function FullDemo() {
 
   // Reset to initial state
   const resetDemo = () => {
+    stopAllContinuous();
     setListenerPos({ x: 1.2, y: 0 });
     setSpeakers([{ ...createSpeaker("speaker-1", 0), position: { x: -1.2, y: 0 } }]);
     setSelectedSpeaker("speaker-1");
@@ -241,8 +376,15 @@ export function FullDemo() {
         <Button variant="primary" icon="➕" onClick={addSpeaker}>
           Add Speaker
         </Button>
-        <Button variant="success" icon="🔊" onClick={() => playSound()}>
-          Play Sound
+        <Button 
+          variant={isContinuousPlaying(selectedSpeaker()) ? "danger" : "success"} 
+          icon={isContinuousPlaying(selectedSpeaker()) ? "⏹️" : "🔊"} 
+          onClick={() => startContinuousPlayback(selectedSpeaker())}
+        >
+          {isContinuousPlaying(selectedSpeaker()) ? "Stop Tone" : "Play Tone"}
+        </Button>
+        <Button variant="outline" icon="🔔" onClick={() => playSound()}>
+          Beep
         </Button>
         <Slider
           label="Volume"
@@ -261,7 +403,7 @@ export function FullDemo() {
       {!audioStore.audioInitialized() && (
         <div class={styles.banner}>
           <p>
-            🔊 <strong>Click a speaker</strong> to play sound, or drag elements to interact
+            🔊 <strong>Click a speaker</strong> to start a continuous tone, then drag to hear real-time changes!
           </p>
         </div>
       )}
@@ -338,10 +480,13 @@ export function FullDemo() {
                 facing={speaker.facing}
                 gain={calculateEffectiveGain(speaker)}
                 isSelected={selectedSpeaker() === speaker.id}
-                isPlaying={playingSpeaker() === speaker.id}
+                isPlaying={playingSpeaker() === speaker.id || isContinuousPlaying(speaker.id)}
                 isMoving={isMovingSpeaker() === speaker.id}
                 isRotating={isRotatingSpeaker() === speaker.id}
-                onClick={() => playSound(speaker.id)}
+                onClick={() => {
+                  setSelectedSpeaker(speaker.id);
+                  startContinuousPlayback(speaker.id);
+                }}
                 onMoveStart={handleSpeakerMoveStart(speaker.id)}
                 onRotateStart={handleSpeakerRotateStart(speaker.id)}
                 style={{
@@ -370,11 +515,14 @@ export function FullDemo() {
           <span>
             Listener: ({listenerPos().x.toFixed(1)}, {listenerPos().y.toFixed(1)})
           </span>
-          <span>{speakers().length} speaker{speakers().length !== 1 ? "s" : ""}</span>
+          <span>
+            {speakers().length} speaker{speakers().length !== 1 ? "s" : ""}
+            {continuousPlaying().size > 0 && ` (${continuousPlaying().size} playing)`}
+          </span>
           <span class={getSelectedWallCount() > 0 ? styles.attenuated : ""}>
             Walls: {getSelectedWallCount()}
           </span>
-          <span class={styles.hint}>Click speakers to play • Drag to move/rotate</span>
+          <span class={styles.hint}>Click to toggle tone • Drag to move</span>
         </div>
       </div>
 
@@ -383,11 +531,12 @@ export function FullDemo() {
         <p>
           This demo combines <strong>distance</strong>, <strong>direction</strong>, and{" "}
           <strong>room boundaries</strong> - all the factors that affect how we hear sound in
-          real spaces.
+          real spaces. Click a speaker to start a <strong>continuous tone</strong> and move
+          around to hear how the volume and panning change in real-time!
         </p>
         <ul>
           <li>
-            <strong>Click</strong> a speaker to play a sound
+            <strong>Click</strong> a speaker to toggle continuous tone (click again to stop)
           </li>
           <li>
             <strong>Drag the microphone icon</strong> to move speakers
@@ -396,7 +545,7 @@ export function FullDemo() {
             <strong>Drag the colored cone</strong> to change speaker direction
           </li>
           <li>
-            <strong>Drag the headphones</strong> to move your listening position
+            <strong>Drag the headphones</strong> to move and hear real-time audio changes
           </li>
           <li>
             <strong>Walls</strong> between speaker and listener reduce sound by 70% each
