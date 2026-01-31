@@ -13,21 +13,23 @@ test.describe("Navigation", () => {
   });
 
   test("should display the sidebar with navigation items", async ({ page }) => {
-    // Check sidebar exists
+    // Check sidebar nav exists
     await expect(page.locator("nav")).toBeVisible();
 
-    // Check navigation links
-    await expect(page.getByText("The Tent")).toBeVisible();
-    await expect(page.getByText("Scenarios")).toBeVisible();
-    await expect(page.getByText("Voice Room")).toBeVisible();
-    await expect(page.getByText("Settings")).toBeVisible();
+    // Check navigation links (specifically in the nav element)
+    const nav = page.locator("nav");
+    await expect(nav.getByText("The Tent")).toBeVisible();
+    await expect(nav.getByText("Scenarios")).toBeVisible();
+    await expect(nav.getByText("Voice Room")).toBeVisible();
+    await expect(nav.getByText("Settings")).toBeVisible();
   });
 
   test("should navigate to The Tent page", async ({ page }) => {
     await page.click("text=The Tent");
-    await expect(page).toHaveURL(/.*tent/i);
-    // Check for tent-specific content
-    await expect(page.getByRole("heading", { name: /the tent/i })).toBeVisible();
+    // The Tent is the home page at "/"
+    await expect(page).toHaveURL(/\/$/);
+    // Check for tent-specific content (h1 heading)
+    await expect(page.locator("h1")).toContainText(/the tent/i);
   });
 
   test("should navigate to Scenarios page", async ({ page }) => {
@@ -47,7 +49,7 @@ test.describe("Navigation", () => {
   test("should navigate to Voice Room page", async ({ page }) => {
     await page.click("text=Voice Room");
     await expect(page).toHaveURL(/.*voice/i);
-    // Voice room is a placeholder, so just check it loads
-    await expect(page.getByRole("heading")).toBeVisible();
+    // Voice room is a placeholder, check for h1 heading
+    await expect(page.locator("h1")).toContainText(/voice room/i);
   });
 });

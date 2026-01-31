@@ -32,14 +32,16 @@ test.describe("Scenarios Page", () => {
   });
 
   test("should display sound source indicators", async ({ page }) => {
-    // Look for sound source buttons/indicators in the room visualization
-    const sources = page.locator("button").filter({ hasText: /Hz/ });
+    // Look for sound source elements in the room visualization
+    // Sources are divs with the source class and colored circles
+    const sources = page.locator("[class*='source']");
     await expect(sources.first()).toBeVisible();
   });
 
   test("should display listener icon", async ({ page }) => {
-    // Look for the listener (headphones emoji or icon)
-    await expect(page.getByText("🎧")).toBeVisible();
+    // Look for the listener element in the room
+    const listener = page.locator("[class*='listener']");
+    await expect(listener.first()).toBeVisible();
   });
 
   test("should have play controls", async ({ page }) => {

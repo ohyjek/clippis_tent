@@ -30,7 +30,8 @@ test.describe("Settings Page", () => {
   });
 
   test("should have spatial audio toggle", async ({ page }) => {
-    await expect(page.getByText("Spatial Audio")).toBeVisible();
+    // Use exact match to avoid matching the About section description
+    await expect(page.getByText("Spatial Audio", { exact: true })).toBeVisible();
     const checkbox = page.getByRole("checkbox").first();
     await expect(checkbox).toBeVisible();
   });
