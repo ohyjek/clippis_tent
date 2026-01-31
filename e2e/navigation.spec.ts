@@ -19,7 +19,6 @@ test.describe("Navigation", () => {
     // Check navigation links (specifically in the nav element)
     const nav = page.locator("nav");
     await expect(nav.getByText("The Tent")).toBeVisible();
-    await expect(nav.getByText("Room Builder")).toBeVisible();
     await expect(nav.getByText("Settings")).toBeVisible();
   });
 
@@ -29,13 +28,6 @@ test.describe("Navigation", () => {
     await expect(page).toHaveURL(/\/$/);
     // Check for tent-specific content (h1 heading)
     await expect(page.locator("h1")).toContainText(/the tent/i);
-  });
-
-  test("should navigate to Room Builder page", async ({ page }) => {
-    await page.click("text=Room Builder");
-    await expect(page).toHaveURL(/.*builder/i);
-    // Check for builder-specific content (h1 heading)
-    await expect(page.locator("h1")).toContainText(/room builder/i);
   });
 
   test("should navigate to Settings page", async ({ page }) => {

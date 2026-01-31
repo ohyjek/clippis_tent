@@ -6,19 +6,21 @@ A desktop application prototype recreating **Dolby Axon**-style spatial voice ch
 
 Clippis demonstrates spatial audio positioning where sound sources have virtual positions in a 2D room. The listener (you) can move around, and audio volume/panning adjusts based on:
 
-- **Distance attenuation** — Sounds get quieter as they move further away (inverse square law)
+- **Distance attenuation** — Sounds get quieter as they move further away
 - **Stereo panning** — Sounds pan left/right based on horizontal position relative to the listener
+- **Directional audio** — Speakers have directivity patterns (cardioid, omnidirectional, etc.)
+- **Wall occlusion** — Sound attenuates when passing through room walls
 
 ## Features
 
-- **The Tent** — Interactive spatial audio playground with three tabbed demos:
-  - **Listener Demo** — Move around and hear how distance/panning affects sound
-  - **Speaker Direction** — Directional audio where facing affects who hears you
-  - **Room Boundaries** — Walls that attenuate sound between rooms
-- **Scenarios** — Preset configurations (surround, stereo, distance, campfire, orchestra)
-- **Voice Room** — (Coming soon) Real-time voice chat with WebRTC
-- **Settings** — Configure audio devices, volume, and processing options
-- **Modern Architecture** — Lazy-loaded routes, global state, CSS Modules, `@/` path aliases
+- **The Tent** — Interactive spatial audio playground featuring:
+  - Draw rooms by clicking and dragging
+  - Draggable listener with facing direction
+  - Multiple speakers with configurable directivity patterns
+  - Real-time audio with distance attenuation models
+  - Room boundaries with configurable wall attenuation
+- **Settings** — Configure audio devices, theme, language, and processing options
+- **Modern Architecture** — Modular components, SolidJS Context, CSS Modules, `@/` path aliases
 
 ## Tech Stack
 
@@ -29,7 +31,7 @@ Clippis demonstrates spatial audio positioning where sound sources have virtual 
 | UI Framework      | SolidJS + @solidjs/router (lazy loading)   |
 | Styling           | CSS Modules + CSS Custom Properties        |
 | Audio             | Web Audio API (oscillators, stereo panner) |
-| Testing           | Vitest + @solidjs/testing-library          |
+| Testing           | Vitest + Playwright + Storybook            |
 | Package Manager   | pnpm (workspace monorepo)                  |
 
 ## Getting Started
@@ -50,7 +52,7 @@ cd clippis_tent
 pnpm install
 
 # Start development server
-pnpm start
+pnpm dev
 ```
 
 ### Scripts
@@ -76,10 +78,11 @@ pnpm start
 
 ### Testing
 
-The project has comprehensive unit test coverage:
+The project has comprehensive test coverage:
 
 - **Spatial audio library** (`src/lib/spatial-audio.ts`) — Distance, panning, and wall attenuation calculations
 - **UI components** (`packages/ui/`) — All components tested with `@solidjs/testing-library`
+- **E2E tests** (`e2e/`) — Critical user flows with Playwright
 
 ```bash
 # Run all tests
@@ -91,52 +94,59 @@ pnpm test:watch
 
 ## Architecture
 
-This is a **pnpm workspace monorepo** with the UI components extracted into a separate package.
+This is a **pnpm workspace monorepo** with UI components extracted into a reusable package.
 
 ```
 clippis_tent/
 ├── packages/
-│   └── ui/                        # @clippis/ui - Reusable UI component library
-│       ├── src/components/
-│       │   ├── Button/            # Button with variants (primary, success, danger)
-│       │   ├── Slider/            # Range input with label and value display
-│       │   ├── Section/           # Card container with title
-│       │   ├── SelectField/       # Dropdown with label
-│       │   ├── Tabs/              # Tab navigation component
-│       │   ├── Toggle/            # Checkbox with title and description
-│       │   ├── Toast/             # Toast notifications
-│       │   └── ErrorBoundary/     # Error boundary with fallback UI
-│       └── test/                  # Component test setup
+│   └── ui/                           # @clippis/ui - Reusable UI component library
+│       └── src/components/
+│           ├── Button/               # Button with variants (primary, success, danger)
+│           ├── ColorSwatches/        # Color picker grid
+│           ├── ItemList/             # Selectable list with swatches
+│           ├── Panel/                # Card container for sidebars
+│           ├── Section/              # Card container with title
+│           ├── SelectField/          # Dropdown with label
+│           ├── Slider/               # Range input with value display
+│           ├── Speaker/              # Draggable speaker with directional cone
+│           ├── Tabs/                 # Tab navigation
+│           ├── Toast/                # Toast notifications
+│           ├── Toggle/               # Checkbox with description
+│           └── ErrorBoundary/        # Error boundary with fallback UI
 ├── src/
-│   ├── main.ts                    # Electron main process
-│   ├── preload.ts                 # Preload script for IPC
-│   ├── renderer.tsx               # App entry with lazy-loaded routes
+│   ├── main.ts                       # Electron main process
+│   ├── preload.ts                    # Preload script for IPC
+│   ├── renderer.tsx                  # App entry with lazy-loaded routes
 │   ├── components/
-│   │   ├── ui/                    # App-specific UI wrappers (logging integration)
-│   │   ├── audio/                 # Audio-specific components
-│   │   │   ├── TentRoom.tsx       # Listener demo - distance/panning
-│   │   │   ├── SpeakerDemo.tsx    # Speaking direction demo
-│   │   │   ├── RoomDemo.tsx       # Room boundaries demo
-│   │   │   ├── Listener.tsx       # The "you" icon in the room
-│   │   │   └── SoundSource.tsx    # Draggable sound source circles
-│   │   └── layout/                # Layout components
-│   │       ├── App.tsx            # App layout with sidebar + main content
-│   │       └── Sidebar.tsx        # Navigation sidebar
-│   ├── pages/                     # Route pages (lazy-loaded)
-│   │   ├── Tent.tsx               # The Tent - spatial audio playground
-│   │   ├── Scenarios.tsx          # Preset spatial audio configurations
-│   │   ├── VoiceRoom.tsx          # Voice chat page (placeholder)
-│   │   └── Settings.tsx           # Audio settings page
-│   ├── stores/
-│   │   ├── audio.ts               # Global audio state (SolidJS signals)
-│   │   └── toast.ts               # Toast notification state
-│   └── lib/
-│       ├── spatial-audio.ts       # Spatial audio math utilities
-│       ├── logger.ts              # Renderer process logging
-│       ├── logger.main.ts         # Main process logging
-│       └── perf.ts                # Performance monitoring
+│   │   ├── ui/                       # App-specific UI wrappers (logging)
+│   │   ├── audio/                    # Audio-specific components
+│   │   │   └── FullDemo/             # Main spatial audio playground
+│   │   │       ├── context/          # SolidJS context for state management
+│   │   │       │   ├── DemoContext.tsx
+│   │   │       │   └── types.ts
+│   │   │       ├── components/       # Modular sub-components
+│   │   │       │   ├── Toolbar/
+│   │   │       │   ├── SpatialCanvas/
+│   │   │       │   ├── StatusBar/
+│   │   │       │   ├── Sidebar/
+│   │   │       │   └── panels/
+│   │   │       ├── constants.ts
+│   │   │       └── utils.ts
+│   │   └── layout/                   # Layout components (App, Sidebar)
+│   ├── pages/                        # Route pages (lazy-loaded)
+│   │   ├── Tent.tsx                  # The Tent - spatial audio playground
+│   │   └── Settings.tsx              # Audio settings page
+│   ├── stores/                       # Global state (SolidJS signals)
+│   │   ├── audio.ts
+│   │   ├── theme.ts
+│   │   └── toast.ts
+│   └── lib/                          # Core libraries
+│       ├── spatial-audio.ts          # Spatial audio math utilities
+│       ├── spatial-audio-engine.ts   # Advanced audio engine
+│       ├── i18n.tsx                  # Localization
+│       └── logger.ts                 # Logging utilities
 └── docs/
-    └── TECHNICAL_ROADMAP.md       # Development roadmap
+    └── TECHNICAL_ROADMAP.md          # Development roadmap
 ```
 
 ### Import Aliases
@@ -153,29 +163,30 @@ import { Button } from "@/components/ui";
 
 ### Spatial Audio Model
 
-The spatial audio system uses a simplified 2D model:
+The spatial audio system uses a 2D model with advanced features:
 
 ```
                     ┌─────────────────────────┐
                     │                         │
-                    │    🔊 Sound Source      │
+                    │    🎙️ Sound Source      │
                     │     (x: -1, y: 2)       │
+                    │     facing: →           │
                     │           │             │
-                    │      distance = √((dx)² + (dy)²)
+                    │      distance + walls   │
                     │           │             │
                     │           ▼             │
                     │    🎧 Listener          │
                     │     (x: 0, y: 0)        │
-                    │                         │
+                    │     facing: ↑           │
                     └─────────────────────────┘
 
-Volume = 1 / (1 + distance) × masterVolume
-Pan    = clamp(dx / 3, -1, 1)
+Volume = distanceAttenuation × directivityGain × wallOcclusion × masterVolume
+Pan    = calculateStereoPan(listener, source, listenerFacing)
 ```
 
 ## Roadmap
 
-### Technical Infrastructure (Completed)
+### Completed
 
 - [x] Logging and monitoring with `electron-log`
 - [x] Error handling with ErrorBoundary and Toast notifications
@@ -184,17 +195,11 @@ Pan    = clamp(dx / 3, -1, 1)
 - [x] Theme system (light/dark/system)
 - [x] Localization infrastructure (i18n)
 - [x] Accessibility (WCAG 2.1)
-
-### Phase 1: The Tent Enhancements
-
-- [x] Draggable sound sources
-- [x] Speaking direction (cardioid pattern)
-- [x] Room boundaries with wall attenuation
-- [x] Tabbed demo navigation
-- [x] Preset scenarios (surround, stereo, distance, campfire, orchestra)
-- [ ] Waveform options (sine, square, sawtooth, triangle)
-- [ ] Looping/continuous sound sources
-- [ ] Keyboard controls for listener movement
+- [x] Advanced spatial audio engine (distance models, directivity patterns)
+- [x] Interactive room drawing with wall occlusion
+- [x] Multiple speakers with configurable properties
+- [x] Draggable listener with facing direction
+- [x] Modular component architecture with SolidJS Context
 
 ### Phase 2: Voice Integration
 

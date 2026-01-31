@@ -9,7 +9,7 @@ This roadmap is organized into phases that can be worked on incrementally. Each 
 - 🔲 Phase 5: CI/CD & versioning planned
 - ✅ Phase 6-7: UX enhancements complete (themes, i18n, accessibility)
 - ✅ Phase 7.5: Advanced Audio Engine complete
-- 🔄 Phase 8: Room Building Tool (in progress)
+- ✅ Phase 8: Spatial Audio Playground complete (modular FullDemo with room drawing)
 - 🔲 Phase 9: Auth foundation planned
 - 🔲 Phase 10: Analytics planned (late)
 
@@ -236,16 +236,15 @@ describe("Button", () => {
 });
 ```
 
-### 3.5 Mock Data Structure
+### 3.5 Mock Data Structure (Optional)
 
-`packages/ui/mocks/`:
+Mock data can be organized in `packages/ui/mocks/`:
 
 ```
 mocks/
 ├── data/
 │   ├── selectOptions.ts    # Sample SelectField options
-│   ├── tabs.ts             # Sample Tabs data
-│   └── scenarios.ts        # Sample scenario configs
+│   └── tabs.ts             # Sample Tabs data
 └── handlers/
     └── events.ts           # Mock event handlers
 ```
@@ -359,22 +358,22 @@ pnpm add -D @playwright/test electron
 **Test critical flows**:
 
 ```typescript
-// e2e/scenarios.spec.ts
-test("can play scenario audio", async ({ electronApp }) => {
-  const page = await electronApp.firstWindow();
-  await page.click("text=Scenarios");
-  await page.selectOption("select", "stereo");
-  await page.click("text=Play All");
-  // Assert audio started (check UI state)
-  await expect(page.locator('button:has-text("Stop")')).toBeEnabled();
+// e2e/tent.spec.ts
+test("can interact with spatial audio demo", async ({ page }) => {
+  await page.goto("/");
+  // Check for room visualization
+  await expect(page.locator("[class*='room']").first()).toBeVisible();
+  // Check for play button
+  const playButton = page.getByRole("button", { name: /play/i });
+  await expect(playButton).toBeVisible();
 });
 ```
 
 **E2E coverage**:
 
-- Scenario playback
+- The Tent page interactions
 - Settings changes persist
-- Tab navigation
+- Navigation between pages
 - Error states
 
 ---
@@ -634,177 +633,76 @@ The Full Demo tab (`src/components/audio/FullDemo.tsx`) showcases all features:
 
 ---
 
-## Phase 8: Room Building Tool 🔄 IN PROGRESS
+## Phase 8: Spatial Audio Playground ✅ COMPLETED
 
-**Goal**: Advanced spatial audio room simulation with multiple rooms, custom shapes, and interactive sound sources.
+**Goal**: Interactive spatial audio playground with room drawing, multiple speakers, and modular architecture.
 
-### 8.1 Overview
+**Status**: Implemented as a refactored, modular FullDemo component with SolidJS Context.
 
-Enhance the current room demo (which shows basic wall occlusion) to support:
-- Multiple interconnected rooms
-- Custom room shapes (beyond rectangles)
-- Drag-and-drop sound source placement
-- Real-time audio propagation visualization
+### 8.1 Completed Features
 
-### 8.2 Multiple Rooms
+| Feature | Description |
+|---------|-------------|
+| **Room Drawing** | Click-and-drag to draw rectangular rooms |
+| **Multiple Rooms** | Support for multiple rooms with individual colors and wall attenuation |
+| **Multiple Speakers** | Add/remove speakers with unique frequencies and colors |
+| **Directivity Patterns** | 6 speaker patterns (omni, cardioid, supercardioid, etc.) |
+| **Distance Models** | 3 attenuation models (inverse, linear, exponential) |
+| **Wall Occlusion** | Sound attenuates through room walls |
+| **Real-time Audio** | Continuous playback with smooth parameter transitions |
+| **Draggable Elements** | Move and rotate both listener and speakers |
 
-**Current State**: Single rectangular room with fixed walls.
+### 8.2 Architecture
 
-**Target State**: Multiple rooms with connecting doorways/openings.
+The FullDemo component was refactored into a modular architecture:
 
-```typescript
-interface Room {
-  id: string;
-  name: string;
-  shape: RoomShape;
-  openings: Opening[];  // Doorways, windows
-  color?: string;
-}
-
-interface Opening {
-  id: string;
-  // Line segment defining the opening
-  start: Point;
-  end: Point;
-  // Sound transmission factor (0-1)
-  transmission: number;
-}
+```
+src/components/audio/FullDemo/
+├── index.ts                    # Barrel export
+├── FullDemo.tsx                # Thin shell (~60 lines)
+├── FullDemo.module.css         # Container styles
+├── constants.ts                # Colors, frequencies, options
+├── utils.ts                    # Helper functions
+├── context/
+│   ├── DemoContext.tsx         # SolidJS Context with all state/actions
+│   └── types.ts                # TypeScript interfaces
+└── components/
+    ├── Toolbar/                # Mode buttons, add speaker, play/stop
+    ├── SpatialCanvas/          # Main canvas with sub-components
+    │   ├── DrawingPreview.tsx
+    │   ├── RoomRenderer.tsx
+    │   └── SoundPaths.tsx
+    ├── StatusBar/              # Position, counts, hints
+    ├── Sidebar/                # Panel container
+    └── panels/                 # Property panels (5 components)
 ```
 
-**Implementation Approach**:
-1. Room list sidebar to add/select rooms
-2. Visual room editor canvas
-3. Audio engine calculates path through openings
-4. Sound attenuates based on walls crossed and opening sizes
+### 8.3 UI Components Extracted to @clippis/ui
 
-### 8.3 Custom Room Shapes (Shape Drawing Tool)
+Three new reusable components were extracted:
 
-**Inspiration**: Rather than just splitting frames (like Dolby Axon), allow freeform polygon drawing.
+1. **ColorSwatches** - Color picker grid with selection state
+2. **ItemList** - Selectable list with color swatches and icons
+3. **Panel** - Card-style container for sidebar panels
 
-**Shape Drawing Modes**:
+### 8.4 Key Patterns
 
-| Mode | Description | Use Case |
-|------|-------------|----------|
-| **Rectangle** | Click-drag to draw rectangle | Quick room creation |
-| **Polygon** | Click points, double-click to close | L-shaped rooms, complex layouts |
-| **Freehand** | Draw path, auto-simplify | Organic shapes |
-
-**Data Structure**:
-
+**SolidJS Context for State Management**:
 ```typescript
-type RoomShape = 
-  | { type: "rectangle"; bounds: Rect }
-  | { type: "polygon"; points: Point[] }
-  | { type: "circle"; center: Point; radius: number };
-
-interface Point { x: number; y: number; }
-interface Rect { x: number; y: number; width: number; height: number; }
+const { speakers, addSpeaker, togglePlayback } = useDemoContext();
 ```
 
-**Shape Editor Features**:
-- Draw mode toggle (rectangle/polygon/freehand)
-- Point handles for editing vertices
-- Snap to grid option
-- Undo/redo for shape edits
-- Room naming and color assignment
+**Modular Sub-components**:
+- Each component directory has: Component.tsx, Component.module.css, index.ts
+- Shared styles in panels.module.css
 
-### 8.4 Interactive Sound Sources
+### 8.5 Future Enhancements (Deferred)
 
-**Goal**: Allow users to place, move, and configure multiple sound sources.
-
-**Features**:
-- **Add Sound**: Click/tap to place new sound source
-- **Move Sound**: Drag to reposition (like current speaker demo)
-- **Configure Sound**: Click to select, adjust:
-  - Direction (drag cone)
-  - Volume/gain
-  - Sound file/type
-  - Directivity pattern
-
-**Reuse Speaker Component**:
-```typescript
-// Already have this in @clippis/ui
-<Speaker
-  position={source.position}
-  facing={source.facing}
-  gain={source.gain}
-  onMoveStart={handleMove}
-  onRotateStart={handleRotate}
-  onClick={handleSelect}
-/>
-```
-
-### 8.5 Audio Propagation
-
-**Algorithm Enhancement**:
-
-Current: Simple line-of-sight with single wall intersection.
-
-Enhanced:
-1. Cast rays from source to listener
-2. For each wall segment:
-   - Check if opening exists nearby
-   - Calculate path through openings (diffraction)
-   - Apply distance + wall attenuation
-3. Sum contributions from all paths (multi-path propagation)
-
-```typescript
-interface AudioPath {
-  source: Point;
-  listener: Point;
-  segments: PathSegment[];
-  totalAttenuation: number;
-}
-
-interface PathSegment {
-  type: "direct" | "through_wall" | "through_opening";
-  distance: number;
-  attenuation: number;
-}
-```
-
-### 8.6 UI Components Needed
-
-1. **RoomEditor** - Canvas for drawing/editing rooms
-2. **RoomList** - Sidebar showing all rooms with add/delete
-3. **ShapeToolbar** - Drawing mode selector
-4. **SoundSourceList** - Manage sound sources
-5. **PropertyPanel** - Edit selected room/source properties
-
-### 8.7 Implementation Phases
-
-**Phase 8a: Multi-Room Foundation**
-- Add room list data structure
-- Render multiple rooms on canvas
-- Basic room switching
-
-**Phase 8b: Shape Drawing**
-- Rectangle drawing tool
-- Polygon drawing tool
-- Shape editing (vertex handles)
-- Undo/redo
-
-**Phase 8c: Sound Source Management**
-- Add/remove sound sources
-- Drag to position
-- Direction/volume controls
-
-**Phase 8d: Advanced Audio**
-- Multi-room audio propagation
-- Opening/doorway transmission
-- Visual audio path debugging
-
-### 8.8 Technical Considerations
-
-**Performance**:
-- Throttle audio recalculation during drag
-- Use Web Workers for complex path calculations
-- Canvas optimization for many rooms
-
-**Persistence**:
-- Save room layouts to localStorage or file
-- Export/import room configurations
-- Preset room templates
+These features were considered but deferred for later phases:
+- Polygon room shapes (beyond rectangles)
+- Room doorways/openings with transmission factors
+- Multi-path audio propagation
+- Room layout persistence/export
 
 ---
 

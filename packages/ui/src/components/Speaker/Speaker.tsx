@@ -8,7 +8,7 @@
  * - Draggable for position and/or rotation
  * - Click to play/select
  *
- * Used across demos: SpeakerDemo, Scenarios, RoomDemo
+ * Used in FullDemo for both speakers and the listener.
  */
 import { JSX } from "solid-js";
 import styles from "./Speaker.module.css";
