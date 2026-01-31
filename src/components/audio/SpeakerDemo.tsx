@@ -4,7 +4,7 @@
  * Demonstrates directional audio using a cardioid pattern:
  * - Each speaker has a facing direction (shown as a visible cone)
  * - Sound is loudest when facing the listener, quietest when facing away
- * - Drag on a speaker to rotate its facing direction
+ * - Drag speaker icon to move, drag cone to rotate, click to play
  *
  * This simulates how Dolby Axon let users "face" different directions
  * to control who heard them best.
@@ -13,7 +13,7 @@
  */
 import { createSignal, For } from "solid-js";
 import {
-  Speaker,
+  Speaker as SpeakerData,
   Position,
   calculateDirectionalGain,
   calculateDistance,
@@ -21,13 +21,13 @@ import {
   createSpeaker,
 } from "@/lib/spatial-audio";
 import { audioStore } from "@/stores/audio";
-import { Button, Slider } from "@/components/ui";
+import { Button, Slider, Speaker } from "@/components/ui";
 import styles from "./SpeakerDemo.module.css";
 
 export function SpeakerDemo() {
   let roomRef: HTMLDivElement | undefined;
   
-  const [speakers, setSpeakers] = createSignal<Speaker[]>([
+  const [speakers, setSpeakers] = createSignal<SpeakerData[]>([
     { ...createSpeaker("speaker-1", 0), position: { x: -1, y: 0 } },
     { ...createSpeaker("speaker-2", 1), position: { x: 1, y: 0 } },
   ]);
@@ -35,6 +35,7 @@ export function SpeakerDemo() {
   const [listenerPos, setListenerPos] = createSignal<Position>({ x: 0, y: 1.5 });
   const [isDraggingSpeaker, setIsDraggingSpeaker] = createSignal<string | null>(null);
   const [isMovingSpeaker, setIsMovingSpeaker] = createSignal<string | null>(null);
+  const [playingSpeaker, setPlayingSpeaker] = createSignal<string | null>(null);
 
   const getPositionFromEvent = (e: MouseEvent): Position => {
     if (!roomRef) return { x: 0, y: 0 };
@@ -50,7 +51,7 @@ export function SpeakerDemo() {
   /**
    * Get the screen position of a speaker's center for angle calculations
    */
-  const getSpeakerScreenPosition = (speaker: Speaker): { x: number; y: number } => {
+  const getSpeakerScreenPosition = (speaker: SpeakerData): { x: number; y: number } => {
     if (!roomRef) return { x: 0, y: 0 };
     const rect = roomRef.getBoundingClientRect();
     return {
@@ -70,17 +71,17 @@ export function SpeakerDemo() {
    * Handle drag-to-rotate on a speaker (drag the cone area)
    * Calculates angle from speaker center to cursor position
    */
-  const handleSpeakerRotateStart = (e: MouseEvent, speaker: Speaker) => {
+  const handleSpeakerRotateStart = (speakerId: string) => (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     
     audioStore.initializeAudio();
-    setSelectedSpeaker(speaker.id);
-    setIsDraggingSpeaker(speaker.id);
+    setSelectedSpeaker(speakerId);
+    setIsDraggingSpeaker(speakerId);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       // Get current speaker position (it may have moved)
-      const currentSpeaker = speakers().find(s => s.id === speaker.id);
+      const currentSpeaker = speakers().find(s => s.id === speakerId);
       if (!currentSpeaker) return;
       
       const speakerScreen = getSpeakerScreenPosition(currentSpeaker);
@@ -91,7 +92,7 @@ export function SpeakerDemo() {
       );
       
       setSpeakers(prev => prev.map(s => 
-        s.id === speaker.id ? { ...s, facing: angle } : s
+        s.id === speakerId ? { ...s, facing: angle } : s
       ));
     };
 
@@ -100,7 +101,7 @@ export function SpeakerDemo() {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
       // Play sound on release to demonstrate the new direction
-      playDirectionalSound();
+      playDirectionalSound(speakerId);
     };
 
     document.addEventListener("mousemove", handleMouseMove);
@@ -111,18 +112,18 @@ export function SpeakerDemo() {
    * Handle drag-to-move on a speaker (drag the center icon)
    * Moves the speaker position within the room
    */
-  const handleSpeakerMoveStart = (e: MouseEvent, speaker: Speaker) => {
+  const handleSpeakerMoveStart = (speakerId: string) => (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     
     audioStore.initializeAudio();
-    setSelectedSpeaker(speaker.id);
-    setIsMovingSpeaker(speaker.id);
+    setSelectedSpeaker(speakerId);
+    setIsMovingSpeaker(speakerId);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const pos = getPositionFromEvent(moveEvent);
       setSpeakers(prev => prev.map(s => 
-        s.id === speaker.id ? { ...s, position: pos } : s
+        s.id === speakerId ? { ...s, position: pos } : s
       ));
     };
 
@@ -153,12 +154,22 @@ export function SpeakerDemo() {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  const playDirectionalSound = () => {
+  /**
+   * Play a directional sound from the specified speaker
+   * @param speakerId - ID of speaker to play from (defaults to selected speaker)
+   */
+  const playDirectionalSound = (speakerId?: string) => {
+    audioStore.initializeAudio();
     const audioContext = audioStore.getAudioContext();
     if (!audioContext) return;
 
-    const speaker = speakers().find(s => s.id === selectedSpeaker());
+    const targetId = speakerId ?? selectedSpeaker();
+    const speaker = speakers().find(s => s.id === targetId);
     if (!speaker) return;
+
+    // Set visual playing state
+    setPlayingSpeaker(targetId);
+    setSelectedSpeaker(targetId);
 
     // Calculate directional gain based on speaker facing
     const directionalGain = calculateDirectionalGain(
@@ -194,6 +205,9 @@ export function SpeakerDemo() {
 
     oscillator.start();
     oscillator.stop(audioContext.currentTime + 0.3);
+
+    // Clear playing state after sound ends
+    setTimeout(() => setPlayingSpeaker(null), 300);
   };
 
   const addSpeaker = () => {
@@ -208,7 +222,7 @@ export function SpeakerDemo() {
     setSelectedSpeaker("");
   };
 
-  const getGainForSpeaker = (speaker: Speaker) => {
+  const getGainForSpeaker = (speaker: SpeakerData) => {
     return calculateDirectionalGain(speaker.facing, speaker.position, listenerPos());
   };
 
@@ -218,7 +232,7 @@ export function SpeakerDemo() {
         <Button variant="primary" icon="➕" onClick={addSpeaker}>
           Add Speaker
         </Button>
-        <Button variant="success" icon="🔊" onClick={playDirectionalSound}>
+        <Button variant="success" icon="🔊" onClick={() => playDirectionalSound()}>
           Play Sound
         </Button>
         <Slider
@@ -237,7 +251,7 @@ export function SpeakerDemo() {
 
       {!audioStore.audioInitialized() && (
         <div class={styles.banner}>
-          <p>🔊 <strong>Drag speakers</strong> to move or rotate them and enable audio</p>
+          <p>🔊 <strong>Click a speaker</strong> to play sound, or drag to move/rotate</p>
         </div>
       )}
 
@@ -260,51 +274,26 @@ export function SpeakerDemo() {
 
           {/* Speakers with sound cones */}
           <For each={speakers()}>
-            {(speaker) => {
-              const gain = () => getGainForSpeaker(speaker);
-              const isSelected = () => selectedSpeaker() === speaker.id;
-              const isRotating = () => isDraggingSpeaker() === speaker.id;
-              const isMoving = () => isMovingSpeaker() === speaker.id;
-              // Convert radians to degrees for CSS rotation
-              const facingDegrees = () => (speaker.facing * 180 / Math.PI);
-              
-              return (
-                <div
-                  class={`${styles.speaker} ${isSelected() ? styles.selected : ""} ${isRotating() ? styles.rotating : ""} ${isMoving() ? styles.moving : ""}`}
-                  style={{
-                    left: `${50 + speaker.position.x * 20}%`,
-                    top: `${50 + speaker.position.y * 20}%`,
-                    "--speaker-color": speaker.color,
-                  }}
-                >
-                  {/* Sound cone - drag to rotate */}
-                  <div
-                    class={styles.soundCone}
-                    style={{
-                      transform: `rotate(${facingDegrees()}deg)`,
-                      opacity: isSelected() ? 0.5 : 0.25,
-                    }}
-                    onMouseDown={(e) => handleSpeakerRotateStart(e, speaker)}
-                    title={`Drag cone to rotate • Angle: ${facingDegrees().toFixed(0)}°`}
-                  />
-                  {/* Speaker icon - drag to move */}
-                  <span 
-                    class={styles.speakerIcon}
-                    onMouseDown={(e) => handleSpeakerMoveStart(e, speaker)}
-                    title={`Drag to move • Gain: ${(gain() * 100).toFixed(0)}%`}
-                  >
-                    🎙️
-                  </span>
-                  {/* Gain indicator */}
-                  <div class={styles.gainBar}>
-                    <div
-                      class={styles.gainFill}
-                      style={{ width: `${gain() * 100}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            }}
+            {(speaker) => (
+              <Speaker
+                id={speaker.id}
+                position={speaker.position}
+                color={speaker.color}
+                facing={speaker.facing}
+                gain={getGainForSpeaker(speaker)}
+                isSelected={selectedSpeaker() === speaker.id}
+                isPlaying={playingSpeaker() === speaker.id}
+                isMoving={isMovingSpeaker() === speaker.id}
+                isRotating={isDraggingSpeaker() === speaker.id}
+                onClick={() => playDirectionalSound(speaker.id)}
+                onMoveStart={handleSpeakerMoveStart(speaker.id)}
+                onRotateStart={handleSpeakerRotateStart(speaker.id)}
+                style={{
+                  left: `${50 + speaker.position.x * 20}%`,
+                  top: `${50 + speaker.position.y * 20}%`,
+                }}
+              />
+            )}
           </For>
 
           {/* Grid lines */}
@@ -318,7 +307,7 @@ export function SpeakerDemo() {
           </span>
           <span>{speakers().length} speaker{speakers().length !== 1 ? "s" : ""}</span>
           <span class={styles.hint}>
-            Drag icon to move • Drag cone to rotate
+            Click to play • Drag icon to move • Drag cone to rotate
           </span>
         </div>
       </div>
@@ -331,9 +320,10 @@ export function SpeakerDemo() {
           <strong>quietest</strong> when facing away.
         </p>
         <ul>
-          <li>Drag the <strong>microphone icon</strong> to move speakers around</li>
-          <li>Drag the <strong>colored cone</strong> to rotate direction</li>
-          <li>Drag the <strong>listener</strong> to change your position</li>
+          <li><strong>Click</strong> the microphone icon to play a sound</li>
+          <li><strong>Drag</strong> the microphone icon to move speakers</li>
+          <li><strong>Drag</strong> the colored cone to rotate direction</li>
+          <li><strong>Drag</strong> the listener to change your position</li>
           <li>The gain bar shows how loud you'll hear that speaker</li>
         </ul>
       </div>
