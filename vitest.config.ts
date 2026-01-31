@@ -27,6 +27,9 @@ export default defineConfig({
       "solid-js": path.resolve(__dirname, "node_modules/solid-js"),
       // Resolve UI package to source for better DX
       "@clippis/ui": path.resolve(__dirname, "packages/ui/src"),
+      // App source alias
+      "@/": path.resolve(__dirname, "src/"),
+      "@": path.resolve(__dirname, "src"),
     },
   },
   test: {
