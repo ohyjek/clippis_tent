@@ -1,8 +1,13 @@
 # Technical Roadmap
 
-A phased technical roadmap covering logging/monitoring, UI library extraction with full test coverage, error handling, and future auth - prioritized for a team of up to 5 developers.
+A phased technical roadmap covering infrastructure (logging, error handling, testing), user experience (themes, localization), and future features (auth) - prioritized for a team of up to 5 developers.
 
 This roadmap is organized into phases that can be worked on incrementally. Each phase builds on the previous.
+
+**Status Overview**:
+- ✅ Phase 1-4: Infrastructure complete (logging, errors, UI library, testing)
+- 🔲 Phase 5-6: UX enhancements planned (themes, i18n)
+- 🔲 Phase 7: Auth foundation planned
 
 ---
 
@@ -370,11 +375,157 @@ test("can play scenario audio", async ({ electronApp }) => {
 
 ---
 
-## Phase 5: Auth Foundation (Later)
+## Phase 5: Theme System 🔲 PLANNED
+
+**Goal**: Support light/dark themes and custom color schemes.
+
+### 5.1 Theme Architecture
+
+```typescript
+// src/lib/theme/types.ts
+export type ThemeMode = "light" | "dark" | "system";
+
+export interface Theme {
+  mode: ThemeMode;
+  colors: {
+    bgPrimary: string;
+    bgSecondary: string;
+    bgTertiary: string;
+    textPrimary: string;
+    textSecondary: string;
+    textMuted: string;
+    border: string;
+    accentBlue: string;
+    accentGreen: string;
+    accentPurple: string;
+    accentRed: string;
+  };
+}
+```
+
+### 5.2 Implementation Plan
+
+1. **CSS Custom Properties** (already using)
+   - Extend `src/styles/variables.css` with light/dark variants
+   - Use `[data-theme="dark"]` / `[data-theme="light"]` selectors
+
+2. **Theme Store**
+   ```typescript
+   // src/stores/theme.ts
+   const [theme, setTheme] = createSignal<ThemeMode>("system");
+   
+   createEffect(() => {
+     const resolved = theme() === "system" 
+       ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+       : theme();
+     document.documentElement.dataset.theme = resolved;
+   });
+   ```
+
+3. **System Preference Detection**
+   - Listen to `prefers-color-scheme` media query
+   - Sync with OS theme when set to "system"
+
+4. **Persistence**
+   - Store preference in `electron-store` or localStorage
+   - Apply before first render to prevent flash
+
+### 5.3 UI Updates
+
+- Add theme toggle to Settings page
+- Update all CSS modules to use theme-aware variables
+- Ensure sufficient contrast in both modes
+
+---
+
+## Phase 6: Localization (i18n) 🔲 PLANNED
+
+**Goal**: Support multiple languages for global accessibility.
+
+### 6.1 Library Options
+
+| Library              | Pros                                   | Cons                    |
+| -------------------- | -------------------------------------- | ----------------------- |
+| **@solid-primitives/i18n** | SolidJS native, reactive, lightweight | Less ecosystem          |
+| **i18next**          | Mature, huge ecosystem, pluralization  | Heavier, React-focused  |
+| **Paraglide**        | Compile-time, type-safe, tiny runtime  | Newer                   |
+
+**Recommendation**: `@solid-primitives/i18n` for SolidJS-native reactivity, or Paraglide for type-safety.
+
+### 6.2 Translation Structure
+
+```
+src/
+├── locales/
+│   ├── en.json          # English (default)
+│   ├── es.json          # Spanish
+│   ├── ja.json          # Japanese
+│   └── index.ts         # Loader and types
+└── lib/
+    └── i18n.ts          # i18n setup and hooks
+```
+
+### 6.3 Translation File Format
+
+```json
+// src/locales/en.json
+{
+  "nav": {
+    "tent": "The Tent",
+    "scenarios": "Scenarios",
+    "voiceRoom": "Voice Room",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "audioDevices": "Audio Devices",
+    "outputDevice": "Output Device",
+    "inputDevice": "Input Device",
+    "audioProcessing": "Audio Processing",
+    "spatialAudio": "Spatial Audio",
+    "noiseSuppression": "Noise Suppression"
+  },
+  "common": {
+    "play": "Play",
+    "stop": "Stop",
+    "save": "Save",
+    "cancel": "Cancel"
+  }
+}
+```
+
+### 6.4 Usage Pattern
+
+```typescript
+// With @solid-primitives/i18n
+import { useI18n } from "@/lib/i18n";
+
+function Settings() {
+  const [t] = useI18n();
+  
+  return (
+    <Section title={t("settings.audioDevices")}>
+      <SelectField label={t("settings.outputDevice")} ... />
+    </Section>
+  );
+}
+```
+
+### 6.5 Implementation Steps
+
+1. Install i18n library
+2. Create translation files for English (extract all strings)
+3. Add language selector to Settings
+4. Persist language preference
+5. Add additional languages incrementally
+
+---
+
+## Phase 7: Auth Foundation 🔲 PLANNED
 
 **Goal**: Prepare architecture for auth without implementing yet.
 
-### 5.1 Auth-Ready Architecture
+### 7.1 Auth-Ready Architecture
 
 Create placeholder interfaces now:
 
@@ -384,6 +535,7 @@ export interface User {
   id: string;
   displayName: string;
   avatar?: string;
+  locale?: string;
 }
 
 export interface AuthState {
@@ -393,7 +545,7 @@ export interface AuthState {
 }
 ```
 
-### 5.2 Future Options
+### 7.2 Future Options
 
 | Provider        | Pros                              | Cons               |
 | --------------- | --------------------------------- | ------------------ |
@@ -431,4 +583,6 @@ export interface AuthState {
 - **Error Handling**: Zero unhandled exceptions in production, user-facing error messages
 - **UI Library**: 80%+ test coverage, Storybook docs for all components
 - **E2E**: Critical paths covered, < 2min total runtime
+- **Themes**: Light/dark modes, system preference sync, no flash on load
+- **Localization**: Type-safe translations, 2+ languages, persisted preference
 - **Auth**: (Future) Login flow, session persistence
