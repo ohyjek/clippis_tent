@@ -12,6 +12,7 @@ import { createSignal, onMount } from "solid-js";
 import { audioStore } from "@/stores/audio";
 import { Section, SelectField, Slider, Toggle } from "@/components/ui";
 import { logger } from "@/lib/logger";
+import { showToast } from "@/stores/toast";
 import styles from "./Settings.module.css";
 
 interface AudioDevice {
@@ -49,6 +50,10 @@ export function Settings() {
       );
     } catch (err) {
       logger.error("Failed to enumerate audio devices:", err);
+      showToast({ 
+        type: "warning", 
+        message: "Could not access audio devices. Check microphone permissions." 
+      });
     }
   });
 

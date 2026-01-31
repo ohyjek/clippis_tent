@@ -19,6 +19,7 @@ import {
   randomPosition,
 } from "../lib/spatial-audio";
 import { logger } from "../lib/logger";
+import { showToast } from "./toast";
 
 // Store AudioContext outside of reactive system
 let audioContext: AudioContext | null = null;
@@ -42,12 +43,18 @@ function createAudioStore() {
     createSignal(true);
 
   // Initialize audio context
-  const initializeAudio = () => {
+  const initializeAudio = (): boolean => {
     if (!audioInitialized()) {
-      audioContext = new AudioContext();
-      logger.audio.info("Audio context initialized");
-      setAudioInitialized(true);
-      return true;
+      try {
+        audioContext = new AudioContext();
+        logger.audio.info("Audio context initialized");
+        setAudioInitialized(true);
+        return true;
+      } catch (err) {
+        logger.audio.error("Failed to initialize audio context:", err);
+        showToast({ type: "error", message: "Could not initialize audio. Please check your audio settings." });
+        return false;
+      }
     }
     return false;
   };

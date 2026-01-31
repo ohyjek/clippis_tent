@@ -5,7 +5,8 @@
  * Sets up:
  * - SolidJS Router with App layout as root
  * - Lazy-loaded pages for code splitting
- * - Global CSS imports
+ * - Global error handlers
+ * - Toast notifications
  *
  * Routes:
  *   /          -> Tent (spatial audio demos)
@@ -17,9 +18,26 @@ import { render } from "solid-js/web";
 import { lazy } from "solid-js";
 import { Router, Route } from "@solidjs/router";
 import { App } from "@/components/layout";
+import { ErrorBoundary, ToastContainer } from "@/components/ui";
+import { logger } from "@/lib/logger";
+import { showToast } from "@/stores/toast";
 
 import "@/styles/variables.css";
 import "@/index.css";
+
+// Global error handlers
+window.onerror = (message, source, lineno, colno, error) => {
+  logger.error("Uncaught error:", { message, source, lineno, colno, error });
+  showToast({ type: "error", message: "An unexpected error occurred" });
+  return false; // Let the error propagate
+};
+
+window.onunhandledrejection = (event) => {
+  logger.error("Unhandled promise rejection:", event.reason);
+  showToast({ type: "error", message: "An unexpected error occurred" });
+};
+
+logger.info("Renderer starting");
 
 // Lazy load pages for code splitting
 const Tent = lazy(() => import("@/pages/Tent").then((m) => ({ default: m.Tent })));
@@ -37,13 +55,18 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 
 render(
   () => (
-    <Router root={App}>
-      <Route path="/" component={Tent} />
-      <Route path="/scenarios" component={Scenarios} />
-      <Route path="/voice" component={VoiceRoom} />
-      <Route path="/settings" component={Settings} />
-    </Router>
+    <ErrorBoundary>
+      <Router root={App}>
+        <Route path="/" component={Tent} />
+        <Route path="/scenarios" component={Scenarios} />
+        <Route path="/voice" component={VoiceRoom} />
+        <Route path="/settings" component={Settings} />
+      </Router>
+      <ToastContainer />
+    </ErrorBoundary>
   ),
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   root!
 );
+
+logger.info("Renderer initialized");
