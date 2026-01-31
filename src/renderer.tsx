@@ -13,6 +13,7 @@
  * Routes:
  *   /          -> Tent (spatial audio demos)
  *   /scenarios -> Scenarios (preset audio configurations)
+ *   /builder   -> RoomBuilder (room building tool)
  *   /voice     -> VoiceRoom (coming soon)
  *   /settings  -> Settings page
  */
@@ -49,6 +50,7 @@ const Tent = lazy(() => import("@/pages/Tent").then((m) => ({ default: m.Tent })
 const Scenarios = lazy(() => import("@/pages/Scenarios").then((m) => ({ default: m.Scenarios })));
 const VoiceRoom = lazy(() => import("@/pages/VoiceRoom").then((m) => ({ default: m.VoiceRoom })));
 const Settings = lazy(() => import("@/pages/Settings").then((m) => ({ default: m.Settings })));
+const RoomBuilder = lazy(() => import("@/pages/RoomBuilder").then((m) => ({ default: m.RoomBuilder })));
 
 const root = document.getElementById("root");
 
@@ -65,6 +67,7 @@ render(
         <Router root={App}>
           <Route path="/" component={Tent} />
           <Route path="/scenarios" component={Scenarios} />
+          <Route path="/builder" component={RoomBuilder} />
           <Route path="/voice" component={VoiceRoom} />
           <Route path="/settings" component={Settings} />
         </Router>
