@@ -103,13 +103,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  cursor: grab;
   z-index: 5;
   transition: transform var(--transition-fast);
-}
-
-.speaker:hover {
-  transform: translate(-50%, -50%) scale(1.05);
 }
 
 .speaker.selected {
@@ -125,8 +120,11 @@
   animation: pulse 1.5s ease-in-out infinite;
 }
 
-.speaker.dragging {
-  cursor: grabbing;
+.speaker.rotating {
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.speaker.moving {
   transform: translate(-50%, -50%) scale(1.1);
 }
 
@@ -136,6 +134,7 @@
 }
 
 /* Sound cone - triangular shape showing direction of audio projection */
+/* Drag to rotate the speaker's facing direction */
 .soundCone {
   position: absolute;
   width: 140px;
@@ -149,15 +148,37 @@
   );
   transform-origin: 50% 50%;
   transition: transform 0.1s ease-out, opacity var(--transition-fast);
-  pointer-events: none;
+  cursor: crosshair;
+  pointer-events: auto;
 }
 
+.soundCone:hover {
+  opacity: 0.6 !important;
+}
+
+.soundCone:active {
+  cursor: crosshair;
+}
+
+/* Speaker icon - drag to move the speaker position */
 .speakerIcon {
   font-size: 1.25rem;
   z-index: 1;
   background: var(--color-bg-secondary);
   border-radius: var(--radius-full);
-  padding: 4px;
+  padding: 8px;
+  cursor: grab;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.speakerIcon:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px var(--speaker-color);
+}
+
+.speakerIcon:active {
+  cursor: grabbing;
+  transform: scale(1.15);
 }
 
 .gainBar {
