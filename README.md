@@ -55,16 +55,19 @@ pnpm start
 
 ### Scripts
 
-| Command             | Description                             |
-| ------------------- | --------------------------------------- |
-| `pnpm start`        | Run in development mode with hot reload |
-| `pnpm package`      | Package the app for distribution        |
-| `pnpm make`         | Build platform-specific installers      |
-| `pnpm lint`         | Run ESLint                              |
-| `pnpm test`         | Run all unit tests (129 tests)          |
-| `pnpm test:watch`   | Run tests in watch mode                 |
-| `pnpm test:ui`      | Run UI component tests only             |
-| `pnpm typecheck`    | TypeScript type checking                |
+| Command              | Description                             |
+| -------------------- | --------------------------------------- |
+| `pnpm start`         | Run in development mode with hot reload |
+| `pnpm package`       | Package the app for distribution        |
+| `pnpm make`          | Build platform-specific installers      |
+| `pnpm lint`          | Run ESLint                              |
+| `pnpm test`          | Run all unit tests (129 tests)          |
+| `pnpm test:watch`    | Run tests in watch mode                 |
+| `pnpm test:ui`       | Run UI component tests only             |
+| `pnpm typecheck`     | TypeScript type checking                |
+| `pnpm storybook`     | Launch Storybook component explorer     |
+| `pnpm e2e`           | Run Playwright E2E tests                |
+| `pnpm e2e:ui`        | Run E2E tests with interactive UI       |
 
 ### Testing
 
