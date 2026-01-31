@@ -300,13 +300,15 @@ export function calculateListenerDirectionalGain(
  * @param walls - Array of walls for occlusion calculation
  * @param distanceModel - Distance attenuation model
  * @param masterVolume - Master volume multiplier
+ * @param attenuationPerWall - Volume multiplier per wall crossed (0-1, default 0.3)
  */
 export function calculateAudioParameters(
   source: SourceConfig,
   listener: Listener,
   walls: Wall[] = [],
   distanceModel: DistanceModel = "inverse",
-  masterVolume = 1
+  masterVolume = 1,
+  attenuationPerWall = 0.3
 ): AudioParameters {
   // Distance
   const distance = calculateDistance(source.position, listener.position);
@@ -327,7 +329,7 @@ export function calculateAudioParameters(
 
   // Wall occlusion
   const wallCount = countWallsBetween(source.position, listener.position, walls);
-  const wallAttenuation = calculateWallAttenuation(wallCount);
+  const wallAttenuation = calculateWallAttenuation(wallCount, attenuationPerWall);
 
   // Stereo pan (listener-relative)
   const pan = calculateStereoPan(listener, source.position);
