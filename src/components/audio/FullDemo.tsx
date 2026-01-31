@@ -63,6 +63,55 @@ const ROOM_COLORS = [
 
 const DEFAULT_ATTENUATION = 0.7;
 
+/**
+ * Musical note names with octave
+ * Maps common frequencies to their note names
+ */
+const FREQUENCY_NOTES: Record<number, string> = {
+  220: "A3",
+  233: "A#3",
+  247: "B3",
+  262: "C4",
+  277: "C#4",
+  294: "D4",
+  311: "D#4",
+  330: "E4",
+  349: "F4",
+  370: "F#4",
+  392: "G4",
+  415: "G#4",
+  440: "A4",
+  466: "A#4",
+  494: "B4",
+  523: "C5",
+  554: "C#5",
+  587: "D5",
+  622: "D#5",
+  659: "E5",
+  698: "F5",
+  740: "F#5",
+  784: "G5",
+  831: "G#5",
+  880: "A5",
+};
+
+/** Get closest note name for a frequency */
+function getNoteName(frequency: number): string {
+  // Find closest match
+  let closest = 440;
+  let minDiff = Math.abs(frequency - 440);
+
+  for (const freq of Object.keys(FREQUENCY_NOTES).map(Number)) {
+    const diff = Math.abs(frequency - freq);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closest = freq;
+    }
+  }
+
+  return FREQUENCY_NOTES[closest] ?? "A4";
+}
+
 /** Create walls from bounds */
 function createWallsFromBounds(bounds: { x: number; y: number; width: number; height: number }): Wall[] {
   const halfW = bounds.width / 2;
@@ -972,7 +1021,7 @@ export function FullDemo() {
 
                 <div class={styles.propertyGroup}>
                   <label class={styles.propertyLabel}>
-                    Frequency: {speaker().frequency} Hz
+                    Note: {getNoteName(speaker().frequency)} ({speaker().frequency} Hz)
                   </label>
                   <input
                     type="range"
@@ -983,6 +1032,10 @@ export function FullDemo() {
                     value={speaker().frequency}
                     onInput={(e) => updateFrequency(parseInt(e.currentTarget.value))}
                   />
+                  <div class={styles.sliderLabels}>
+                    <span>A3 (220)</span>
+                    <span>A5 (880)</span>
+                  </div>
                 </div>
 
                 <div class={styles.propertyGroup}>
@@ -1110,7 +1163,7 @@ export function FullDemo() {
                   >
                     <div class={styles.itemSwatch} style={{ background: speaker.color }} />
                     <span class={styles.itemName}>
-                      {speaker.frequency} Hz
+                      {getNoteName(speaker.frequency)} ({speaker.frequency} Hz)
                       {isPlaying(speaker.id) && " 🔊"}
                     </span>
                   </div>
