@@ -126,6 +126,7 @@ export function RoomBuilder() {
   const [rooms, setRooms] = createSignal<BuilderRoom[]>([]);
   const [selectedRoomId, setSelectedRoomId] = createSignal<string | null>(null);
   const [nextColorIndex, setNextColorIndex] = createSignal(0);
+  const [isDraggingRoom, setIsDraggingRoom] = createSignal<string | null>(null);
 
   // Drawing state
   const [drawingMode, setDrawingMode] = createSignal<DrawingMode>("rectangle");
@@ -257,6 +258,58 @@ export function RoomBuilder() {
     if (!id) return;
     setRooms((prev) => prev.filter((r) => r.id !== id));
     setSelectedRoomId(null);
+  };
+
+  /** Start dragging a room to reposition it */
+  const handleRoomDragStart = (roomId: string) => (e: MouseEvent) => {
+    // Only allow dragging in select mode
+    if (drawingMode() !== "select") return;
+    
+    e.stopPropagation();
+    e.preventDefault();
+    
+    setSelectedRoomId(roomId);
+    setIsDraggingRoom(roomId);
+
+    const room = rooms().find((r) => r.id === roomId);
+    if (!room) return;
+
+    // Track offset from click position to room center
+    const startPos = getPositionFromEvent(e);
+    const offsetX = room.bounds.x - startPos.x;
+    const offsetY = room.bounds.y - startPos.y;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const newPos = getPositionFromEvent(moveEvent);
+      const newCenterX = newPos.x + offsetX;
+      const newCenterY = newPos.y + offsetY;
+
+      // Clamp to keep room in bounds
+      const halfW = room.bounds.width / 2;
+      const halfH = room.bounds.height / 2;
+      const clampedX = Math.max(-2.4 + halfW, Math.min(2.4 - halfW, newCenterX));
+      const clampedY = Math.max(-2.4 + halfH, Math.min(2.4 - halfH, newCenterY));
+
+      const newBounds = { ...room.bounds, x: clampedX, y: clampedY };
+      const newWalls = createWallsFromBounds(newBounds);
+
+      setRooms((prev) =>
+        prev.map((r) =>
+          r.id === roomId
+            ? { ...r, bounds: newBounds, walls: newWalls, center: { x: clampedX, y: clampedY } }
+            : r
+        )
+      );
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingRoom(null);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
   };
 
   // ============================================================================
@@ -658,7 +711,7 @@ export function RoomBuilder() {
                 return (
                   <>
                     <div
-                      class={`${styles.roomArea} ${selectedRoomId() === room.id ? styles.selected : ""}`}
+                      class={`${styles.roomArea} ${selectedRoomId() === room.id ? styles.selected : ""} ${isDraggingRoom() === room.id ? styles.dragging : ""}`}
                       style={{
                         left: `${left}%`,
                         top: `${top}%`,
@@ -668,6 +721,7 @@ export function RoomBuilder() {
                         background: `${room.color}20`,
                       }}
                       onClick={handleRoomClick(room.id)}
+                      onMouseDown={handleRoomDragStart(room.id)}
                     >
                       <span class={styles.roomAreaLabel}>{room.label}</span>
                     </div>
@@ -772,7 +826,7 @@ export function RoomBuilder() {
             <span>{rooms().length} room{rooms().length !== 1 ? "s" : ""}</span>
             <span>{speakers().length} speaker{speakers().length !== 1 ? "s" : ""}</span>
             <span class={styles.hint}>
-              {drawingMode() === "rectangle" ? "Click and drag to draw" : "Click to select"}
+              {drawingMode() === "rectangle" ? "Click and drag to draw" : "Drag rooms to move"}
             </span>
           </div>
         </div>

@@ -111,7 +111,7 @@
   align-items: flex-start;
   justify-content: center;
   padding-top: var(--spacing-sm);
-  cursor: pointer;
+  cursor: grab;
   transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
@@ -123,6 +123,13 @@
   border-color: var(--color-accent-blue);
   background: rgba(59, 130, 246, 0.15);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.roomArea.dragging {
+  cursor: grabbing;
+  opacity: 0.8;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  z-index: 10;
 }
 
 .roomAreaLabel {
