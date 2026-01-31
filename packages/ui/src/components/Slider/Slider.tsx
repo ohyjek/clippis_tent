@@ -1,13 +1,15 @@
 /**
- * Slider.tsx - Range input with optional label and value display
+ * Slider.tsx - Accessible range input with label and value display
  *
- * Wraps a native range input with consistent styling.
- * Can show the current value formatted as percentage or custom format.
+ * Wraps a native range input with:
+ * - Proper label association via htmlFor/id
+ * - aria-valuetext for screen reader value announcements
+ * - Visible focus states
  *
  * @example
- * <Slider label="Volume" min={0} max={1} step={0.01} value={0.5} showValue />
+ * <Slider id="volume" label="Volume" min={0} max={1} step={0.01} value={0.5} showValue />
  */
-import { JSX, splitProps } from "solid-js";
+import { JSX, splitProps, createUniqueId } from "solid-js";
 import styles from "./Slider.module.css";
 
 interface SliderProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "type"> {
@@ -20,7 +22,9 @@ interface SliderProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "t
 }
 
 export function Slider(props: SliderProps) {
-  const [local, others] = splitProps(props, ["label", "showValue", "formatValue", "class"]);
+  const [local, others] = splitProps(props, ["label", "showValue", "formatValue", "class", "id"]);
+  const generatedId = createUniqueId();
+  const inputId = () => local.id ?? `slider-${generatedId}`;
   
   const displayValue = () => {
     const val = Number(props.value ?? 0);
@@ -29,13 +33,23 @@ export function Slider(props: SliderProps) {
 
   return (
     <div class={`${styles.container} ${local.class || ""}`}>
-      {local.label && <span class={styles.label}>{local.label}</span>}
+      {local.label && (
+        <label for={inputId()} class={styles.label}>
+          {local.label}
+        </label>
+      )}
       <input
+        id={inputId()}
         type="range"
         class={styles.slider}
+        aria-valuetext={displayValue()}
         {...others}
       />
-      {local.showValue && <span class={styles.value}>{displayValue()}</span>}
+      {local.showValue && (
+        <span class={styles.value} aria-hidden="true">
+          {displayValue()}
+        </span>
+      )}
     </div>
   );
 }

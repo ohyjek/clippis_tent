@@ -17,6 +17,12 @@
   opacity: 0.9;
 }
 
+.btn:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-accent-blue);
+}
+
 .btn:active {
   transform: scale(0.98);
 }

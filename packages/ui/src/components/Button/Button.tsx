@@ -1,11 +1,14 @@
 /**
- * Button.tsx - Reusable button component with style variants
+ * Button.tsx - Accessible button component with style variants
  *
  * Variants: primary (blue), success (green), purple, danger (red), outline
  * Supports optional emoji/icon prefix via the `icon` prop.
  *
+ * When using icon-only buttons, provide an aria-label for screen readers.
+ *
  * @example
  * <Button variant="success" icon="🔊" onClick={play}>Play</Button>
+ * <Button icon="✕" aria-label="Close" onClick={close} />
  */
 import { JSX, splitProps } from "solid-js";
 import styles from "./Button.module.css";
@@ -32,12 +35,19 @@ export function Button(props: ButtonProps) {
     }
   };
 
+  // Icon is decorative when there's text content
+  const hasTextContent = () => !!local.children;
+
   return (
     <button
       class={`${styles.btn} ${variantClass()} ${local.class || ""}`}
       {...others}
     >
-      {local.icon && <span class={styles.icon}>{local.icon}</span>}
+      {local.icon && (
+        <span class={styles.icon} aria-hidden={hasTextContent()}>
+          {local.icon}
+        </span>
+      )}
       {local.children}
     </button>
   );

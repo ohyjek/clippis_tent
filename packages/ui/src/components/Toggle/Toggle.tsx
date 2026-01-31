@@ -1,8 +1,8 @@
 /**
- * Toggle.tsx - Checkbox with label and optional description
+ * Toggle.tsx - Accessible checkbox with label and description
  *
  * Used for boolean settings like "Enable Spatial Audio".
- * Shows a title and smaller description text below it.
+ * Description is linked via aria-describedby for screen readers.
  *
  * @example
  * <Toggle
@@ -12,7 +12,7 @@
  *   onChange={handleChange}
  * />
  */
-import { JSX, splitProps } from "solid-js";
+import { JSX, splitProps, createUniqueId } from "solid-js";
 import styles from "./Toggle.module.css";
 
 interface ToggleProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "type"> {
@@ -23,15 +23,26 @@ interface ToggleProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "t
 }
 
 export function Toggle(props: ToggleProps) {
-  const [local, others] = splitProps(props, ["label", "description"]);
+  const [local, others] = splitProps(props, ["label", "description", "id"]);
+  const generatedId = createUniqueId();
+  const inputId = () => local.id ?? `toggle-${generatedId}`;
+  const descId = () => `${inputId()}-desc`;
 
   return (
-    <label class={styles.toggle}>
-      <input type="checkbox" class={styles.input} {...others} />
+    <label class={styles.toggle} for={inputId()}>
+      <input
+        id={inputId()}
+        type="checkbox"
+        class={styles.input}
+        aria-describedby={local.description ? descId() : undefined}
+        {...others}
+      />
       <span class={styles.text}>
         <strong class={styles.label}>{local.label}</strong>
         {local.description && (
-          <span class={styles.description}>{local.description}</span>
+          <span id={descId()} class={styles.description}>
+            {local.description}
+          </span>
         )}
       </span>
     </label>

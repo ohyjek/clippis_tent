@@ -16,8 +16,12 @@
   appearance: none;
   background: var(--color-bg-tertiary);
   border-radius: var(--radius-full);
-  outline: none;
   cursor: pointer;
+}
+
+.slider:focus-visible {
+  outline: 2px solid var(--color-accent-blue);
+  outline-offset: 4px;
 }
 
 .slider::-webkit-slider-thumb {

@@ -1,8 +1,12 @@
 /**
- * App.tsx - Main application layout shell
+ * App.tsx - Accessible application layout shell
  *
  * The root layout component that wraps all pages.
- * Renders the Sidebar on the left and page content on the right.
+ * Includes:
+ * - Skip-to-main-content link for keyboard users
+ * - Proper landmark regions (main, aside via Sidebar)
+ * - Labeled main content area
+ *
  * Used as the `root` prop for the SolidJS Router.
  */
 import { JSX } from "solid-js";
@@ -17,8 +21,11 @@ interface AppProps {
 export function App(props: AppProps) {
   return (
     <div class={styles.app}>
+      <a href="#main-content" class={styles.skipLink}>
+        Skip to main content
+      </a>
       <Sidebar />
-      <main class={styles.main}>
+      <main id="main-content" class={styles.main} aria-label="Page content">
         {props.children}
       </main>
     </div>

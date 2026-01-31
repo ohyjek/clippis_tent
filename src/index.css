@@ -6,6 +6,7 @@
  * - Body defaults (font, colors)
  * - List and link resets
  * - Focus styles for accessibility
+ * - Reduced motion support for accessibility
  * - Custom scrollbar styling
  *
  * Note: variables.css must be imported before this file.
@@ -51,6 +52,22 @@ a {
 :focus-visible {
   outline: 2px solid var(--color-accent-blue);
   outline-offset: 2px;
+}
+
+/**
+ * Reduced motion support
+ * Disable animations/transitions for users who prefer reduced motion.
+ * This is an accessibility feature for users with vestibular disorders.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Scrollbar styling */

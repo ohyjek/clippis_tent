@@ -1,7 +1,7 @@
 /**
- * SelectField.tsx - Labeled dropdown select input
+ * SelectField.tsx - Accessible labeled dropdown select
  *
- * Renders a <select> element with a label above it.
+ * Renders a <select> element with proper label association.
  * Used for choosing audio devices, presets, etc.
  *
  * @example
@@ -11,7 +11,7 @@
  *   placeholder="Select..."
  * />
  */
-import { JSX, For, splitProps } from "solid-js";
+import { JSX, For, splitProps, createUniqueId } from "solid-js";
 import styles from "./SelectField.module.css";
 
 export interface SelectOption {
@@ -29,12 +29,16 @@ interface SelectFieldProps extends Omit<JSX.SelectHTMLAttributes<HTMLSelectEleme
 }
 
 export function SelectField(props: SelectFieldProps) {
-  const [local, others] = splitProps(props, ["label", "options", "placeholder"]);
+  const [local, others] = splitProps(props, ["label", "options", "placeholder", "id"]);
+  const generatedId = createUniqueId();
+  const selectId = () => local.id ?? `select-${generatedId}`;
 
   return (
     <div class={styles.field}>
-      <label class={styles.label}>{local.label}</label>
-      <select class={styles.select} {...others}>
+      <label for={selectId()} class={styles.label}>
+        {local.label}
+      </label>
+      <select id={selectId()} class={styles.select} {...others}>
         {local.placeholder && <option value="">{local.placeholder}</option>}
         <For each={local.options}>
           {(option) => <option value={option.value}>{option.label}</option>}
