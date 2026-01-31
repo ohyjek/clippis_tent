@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@clippis/ui':
+        specifier: workspace:*
+        version: link:packages/ui
       '@solidjs/router':
         specifier: ^0.15.4
         version: 0.15.4(solid-js@1.9.10)
@@ -87,6 +90,19 @@ importers:
       vite-plugin-solid:
         specifier: ^2.11.10
         version: 2.11.10(solid-js@1.9.10)(vite@5.4.21(@types/node@25.0.9)(terser@5.46.0))
+      vitest:
+        specifier: ^4.0.18
+        version: 4.0.18(@types/node@25.0.9)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2)
+
+  packages/ui:
+    dependencies:
+      solid-js:
+        specifier: ^1.9.0
+        version: 1.9.10
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
       vitest:
         specifier: ^4.0.18
         version: 4.0.18(@types/node@25.0.9)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2)

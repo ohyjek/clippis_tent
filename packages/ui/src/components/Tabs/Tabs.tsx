@@ -1,7 +1,6 @@
 /**
  * Tabs.tsx - Horizontal tab navigation for switching views
  *
- * Used on The Tent page to switch between demo types.
  * Each tab can have an optional icon (emoji).
  *
  * @example
@@ -14,7 +13,7 @@
 import { For } from "solid-js";
 import styles from "./Tabs.module.css";
 
-interface Tab {
+export interface Tab {
   id: string;
   label: string;
   icon?: string;
