@@ -6,9 +6,10 @@ This roadmap is organized into phases that can be worked on incrementally. Each 
 
 **Status Overview**:
 - ✅ Phase 1-4: Infrastructure complete (logging, errors, UI library, testing)
-- 🔲 Phase 5: CI/CD pipeline planned
+- 🔲 Phase 5: CI/CD & versioning planned
 - 🔲 Phase 6-7: UX enhancements planned (themes, i18n)
 - 🔲 Phase 8: Auth foundation planned
+- 🔲 Phase 9: Analytics planned (late)
 
 ---
 
@@ -376,9 +377,9 @@ test("can play scenario audio", async ({ electronApp }) => {
 
 ---
 
-## Phase 5: CI/CD Pipeline 🔲 PLANNED
+## Phase 5: CI/CD Pipeline & Versioning 🔲 PLANNED
 
-**Goal**: Automated quality gates and deployment pipeline.
+**Goal**: Automated quality gates, deployment pipeline, and semantic versioning.
 
 ### 5.1 GitHub Actions Workflow
 
@@ -453,14 +454,69 @@ jobs:
 - **Chromatic**: Visual regression testing for Storybook
 - **Release Please**: Automated changelog and versioning
 
-### 5.5 Build & Release Pipeline (Future)
+### 5.5 Versioning Strategy
+
+Use **Semantic Versioning** (SemVer) with automated changelog generation.
+
+**Version Format**: `MAJOR.MINOR.PATCH`
+- **MAJOR**: Breaking changes (API changes, major UX overhauls)
+- **MINOR**: New features (backward compatible)
+- **PATCH**: Bug fixes, performance improvements
+
+**Tooling Options**:
+
+| Tool              | Pros                                    | Cons                   |
+| ----------------- | --------------------------------------- | ---------------------- |
+| **Release Please**| Google-maintained, conventional commits | Requires commit format |
+| **Changesets**    | Monorepo-friendly, manual control       | More manual work       |
+| **Standard Version** | Simple, works with npm version       | Less automated         |
+
+**Recommendation**: Release Please for automation with conventional commits.
+
+**Conventional Commit Format**:
+```
+feat: add spatial audio direction indicator
+fix: resolve audio crackling on Windows
+chore: update dependencies
+docs: add versioning strategy to roadmap
+BREAKING CHANGE: rename AudioContext API
+```
+
+**Automated Workflow**:
+1. PRs merged to `main` with conventional commits
+2. Release Please creates/updates a release PR
+3. Merging release PR triggers:
+   - Version bump in `package.json`
+   - Changelog generation
+   - Git tag creation
+   - GitHub release with notes
+
+### 5.6 Build & Release Pipeline (Future)
 
 ```yaml
 # .github/workflows/release.yml (future)
-# Triggered on version tags
-# - Build Electron app for Windows/Mac/Linux
-# - Create GitHub release with artifacts
-# - Upload to distribution channels
+# Triggered on version tags (v*)
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm make
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.os }}
+          path: out/make/**/*
 ```
 
 ---
@@ -648,6 +704,78 @@ export interface AuthState {
 
 ---
 
+## Phase 9: Analytics & Telemetry 🔲 PLANNED (LATE)
+
+**Goal**: Understand usage patterns to improve the product (privacy-respecting).
+
+**Important**: This phase is intentionally late - focus on building a great product first.
+
+### 9.1 Privacy-First Principles
+
+- **Opt-in only**: Users must explicitly consent
+- **Anonymized**: No PII, no user-identifying data
+- **Transparent**: Clear explanation of what's collected
+- **Local-first**: Aggregate locally when possible
+- **Minimal**: Only collect what's actionable
+
+### 9.2 What to Track
+
+**Usage Metrics** (anonymous):
+- Feature usage frequency (which demos, scenarios used)
+- Session duration
+- Error rates and types
+- Performance metrics (audio latency, frame drops)
+
+**Do NOT Track**:
+- Conversation content
+- User locations
+- Personal identifiers
+- Microphone/audio content
+
+### 9.3 Implementation Options
+
+| Provider          | Pros                                | Cons                    |
+| ----------------- | ----------------------------------- | ----------------------- |
+| **PostHog**       | Self-hostable, open source, free tier | Setup complexity      |
+| **Plausible**     | Privacy-focused, simple             | Limited features        |
+| **Aptabase**      | Built for desktop apps, privacy-first | Newer                 |
+| **Custom**        | Full control                        | Build & maintain        |
+
+**Recommendation**: Aptabase for Electron apps, or self-hosted PostHog for full control.
+
+### 9.4 Electron-Specific Considerations
+
+```typescript
+// src/lib/analytics.ts (future)
+import { analytics } from "@aptabase/electron";
+
+// Initialize only if user consented
+export function initAnalytics() {
+  const consent = store.get("analyticsConsent");
+  if (!consent) return;
+
+  analytics.init("APP_KEY", {
+    // Disable in development
+    enabled: !import.meta.env.DEV,
+  });
+}
+
+// Track feature usage
+export function trackEvent(name: string, props?: Record<string, unknown>) {
+  analytics.trackEvent(name, props);
+}
+```
+
+### 9.5 Consent UI
+
+Add to Settings page:
+- Clear explanation of what's collected
+- Toggle to enable/disable
+- Link to privacy policy
+- Option to view/delete collected data
+
+---
+
 ## Scripts to Add
 
 ```json
@@ -674,6 +802,8 @@ export interface AuthState {
 - **UI Library**: 80%+ test coverage, Storybook docs for all components
 - **E2E**: Critical paths covered, < 2min total runtime
 - **CI/CD**: All PRs pass quality gates, automated releases
+- **Versioning**: Semantic versions, automated changelog, conventional commits
 - **Themes**: Light/dark modes, system preference sync, no flash on load
 - **Localization**: Type-safe translations, 2+ languages, persisted preference
 - **Auth**: (Future) Login flow, session persistence
+- **Analytics**: (Future) Privacy-first, opt-in, actionable insights
