@@ -19,3 +19,8 @@
 .hint {
   color: var(--color-text-muted);
 }
+
+.perspective {
+  color: var(--color-accent-blue);
+  font-weight: bold;
+}

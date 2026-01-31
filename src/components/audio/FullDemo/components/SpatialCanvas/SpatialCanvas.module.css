@@ -131,3 +131,48 @@
 .pathLine.blocked {
   stroke: var(--color-accent-red);
 }
+
+/* Entity wrapper for perspective indication - positioned like Speaker */
+.entityWrapper {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Allow pointer events on children (the Speaker component) */
+.entityWrapper > * {
+  pointer-events: auto;
+  position: relative !important;
+  transform: none !important;
+}
+
+.entityWrapper.currentPerspective {
+  z-index: 20;
+}
+
+/* Glow ring around current perspective */
+.entityWrapper.currentPerspective::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80px;
+  height: 80px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
+  animation: perspectivePulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes perspectivePulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 0.4;
+  }
+}

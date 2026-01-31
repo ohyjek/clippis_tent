@@ -6,6 +6,7 @@ export type {
   DirectivityPattern,
   DistanceModel,
   WaveformType,
+  AudioSourceType,
   Speaker,
   SpeakerState,
   SourceConfig,

@@ -8,16 +8,22 @@ import type {
   Wall,
   DirectivityPattern,
   DistanceModel,
+  AudioSourceType,
   SpeakerState,
   DrawnRoom,
   DrawingMode,
   SelectOption,
 } from "@clippis/types";
 
-/** Audio nodes for continuous playback */
+/** Audio nodes for continuous playback - supports both oscillator and microphone sources */
 export interface AudioNodes {
-  oscillator: OscillatorNode;
+  /** Audio source - either oscillator or media stream source */
+  source: OscillatorNode | MediaStreamAudioSourceNode;
+  /** Source type for cleanup handling */
+  sourceType: AudioSourceType;
+  /** Gain node for volume control */
   gainNode: GainNode;
+  /** Stereo panner for spatial positioning */
   panner: StereoPannerNode;
 }
 
@@ -27,6 +33,7 @@ export type {
   Wall,
   DirectivityPattern,
   DistanceModel,
+  AudioSourceType,
   SpeakerState,
   DrawnRoom,
   DrawingMode,
