@@ -10,8 +10,8 @@ import { Sidebar } from "./Sidebar";
 import styles from "./App.module.css";
 
 interface AppProps {
-  /** Page content rendered by the router */
-  children: JSX.Element;
+  /** Page content rendered by the router (optional during route transitions) */
+  children?: JSX.Element;
 }
 
 export function App(props: AppProps) {
