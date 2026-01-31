@@ -42,8 +42,8 @@ test.describe("The Tent Page", () => {
   });
 
   test("should display listener icon in the room", async ({ page }) => {
-    // Look for listener element in the room (not in tabs or buttons)
-    const listenerInRoom = page.locator("[class*='listener']").filter({ hasText: "🎧" });
+    // Look for listener element in the room (using Speaker component with 🎧 icon)
+    const listenerInRoom = page.locator("[class*='speaker']").filter({ hasText: "🎧" });
     await expect(listenerInRoom.first()).toBeVisible();
   });
 
