@@ -5,9 +5,10 @@
  * Highlights the currently active route.
  *
  * Routes:
- *   /         -> The Tent (spatial audio demos)
- *   /voice    -> Voice Room (coming soon)
- *   /settings -> Settings page
+ *   /          -> The Tent (spatial audio demos)
+ *   /scenarios -> Scenarios (preset audio configs)
+ *   /voice     -> Voice Room (coming soon)
+ *   /settings  -> Settings page
  */
 import { A, useLocation } from "@solidjs/router";
 import { audioStore } from "@/stores/audio";
@@ -22,6 +23,7 @@ interface NavItem {
 /** Navigation items shown in the sidebar */
 const navItems: NavItem[] = [
   { path: "/", label: "The Tent", icon: "🎪" },
+  { path: "/scenarios", label: "Scenarios", icon: "🎬" },
   { path: "/voice", label: "Voice Room", icon: "🎙️" },
   { path: "/settings", label: "Settings", icon: "⚙️" },
 ];

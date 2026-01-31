@@ -8,9 +8,10 @@
  * - Global CSS imports
  *
  * Routes:
- *   /         -> Tent (spatial audio demos)
- *   /voice    -> VoiceRoom (coming soon)
- *   /settings -> Settings page
+ *   /          -> Tent (spatial audio demos)
+ *   /scenarios -> Scenarios (preset audio configurations)
+ *   /voice     -> VoiceRoom (coming soon)
+ *   /settings  -> Settings page
  */
 import { render } from "solid-js/web";
 import { lazy } from "solid-js";
@@ -22,6 +23,7 @@ import "@/index.css";
 
 // Lazy load pages for code splitting
 const Tent = lazy(() => import("@/pages/Tent").then((m) => ({ default: m.Tent })));
+const Scenarios = lazy(() => import("@/pages/Scenarios").then((m) => ({ default: m.Scenarios })));
 const VoiceRoom = lazy(() => import("@/pages/VoiceRoom").then((m) => ({ default: m.VoiceRoom })));
 const Settings = lazy(() => import("@/pages/Settings").then((m) => ({ default: m.Settings })));
 
@@ -37,6 +39,7 @@ render(
   () => (
     <Router root={App}>
       <Route path="/" component={Tent} />
+      <Route path="/scenarios" component={Scenarios} />
       <Route path="/voice" component={VoiceRoom} />
       <Route path="/settings" component={Settings} />
     </Router>
