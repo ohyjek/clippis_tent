@@ -69,6 +69,18 @@ function createAudioStore() {
     return movedSound;
   };
 
+  // Update a sound source's position (for dragging)
+  const updateSoundPosition = (soundId: string, position: Position) => {
+    setSounds((prev) =>
+      prev.map((s) => (s.id === soundId ? { ...s, position } : s))
+    );
+  };
+
+  // Get a sound by ID
+  const getSound = (soundId: string): SoundSource | undefined => {
+    return sounds().find((s) => s.id === soundId);
+  };
+
   // Remove all sounds
   const clearSounds = () => {
     setSounds([]);
@@ -104,6 +116,8 @@ function createAudioStore() {
     setListenerPos,
     addSound,
     moveSound,
+    updateSoundPosition,
+    getSound,
     clearSounds,
     resetListenerPosition,
     getAudioContext,

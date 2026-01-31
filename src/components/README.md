@@ -172,7 +172,7 @@ import { Listener } from "./components/audio";
 
 ### SoundSource
 
-A numbered circle representing a sound source in the room.
+A draggable numbered circle representing a sound source in the room.
 
 ```tsx
 import { SoundSource } from "./components/audio";
@@ -180,7 +180,9 @@ import { SoundSource } from "./components/audio";
 <SoundSource
   sound={{ id: "1", position: { x: 1, y: -1 }, frequency: 440 }}
   index={0}
-  onClick={handleClick}
+  getPositionFromEvent={(e) => convertToRoomCoords(e)}
+  onPositionChange={(pos) => updatePosition(pos)}
+  onDragEnd={() => playSound()}
 />
 ```
 
@@ -188,7 +190,9 @@ import { SoundSource } from "./components/audio";
 |------|------|-------------|
 | `sound` | `SoundSource` | Sound source data |
 | `index` | `number` | Display number (0-indexed) |
-| `onClick` | `() => void` | Click handler |
+| `getPositionFromEvent` | `(e: MouseEvent) => Position` | Converts mouse event to room coordinates |
+| `onPositionChange` | `(pos: Position) => void` | Called during drag with new position |
+| `onDragEnd` | `() => void` | Called when drag completes |
 
 ---
 

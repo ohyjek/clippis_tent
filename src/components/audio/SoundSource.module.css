@@ -8,14 +8,22 @@
   align-items: center;
   justify-content: center;
   border: 2px solid white;
-  cursor: pointer;
-  transition: all var(--transition-normal);
+  cursor: grab;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   font-weight: bold;
   font-size: 0.875rem;
   z-index: 5;
+  user-select: none;
 }
 
 .soundSource:hover {
   transform: translate(-50%, -50%) scale(1.15);
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+}
+
+.soundSource.dragging {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.2);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+  z-index: 10;
 }

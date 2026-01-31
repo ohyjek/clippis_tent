@@ -1,6 +1,6 @@
 import { For } from "solid-js";
 import { audioStore } from "../../stores/audio";
-import { calculateSpatialParams, CARDINAL_DIRECTIONS } from "../../lib/spatial-audio";
+import { calculateSpatialParams, CARDINAL_DIRECTIONS, Position } from "../../lib/spatial-audio";
 import { Button, Slider } from "../ui";
 import { Listener } from "./Listener";
 import { SoundSource } from "./SoundSource";
@@ -14,6 +14,23 @@ import styles from "./DemoRoom.module.css";
  * based on position (volume attenuation and stereo panning).
  */
 export function DemoRoom() {
+  let roomRef: HTMLDivElement | undefined;
+
+  /**
+   * Convert a mouse event to room coordinates (-2.5 to +2.5 range)
+   */
+  const getPositionFromEvent = (e: MouseEvent): Position => {
+    if (!roomRef) return { x: 0, y: 0 };
+    const rect = roomRef.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 5;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 5;
+    // Clamp to room bounds
+    return {
+      x: Math.max(-2.5, Math.min(2.5, x)),
+      y: Math.max(-2.5, Math.min(2.5, y)),
+    };
+  };
+
   // Play a tone at a specific position with spatial audio
   const playSoundAtPosition = (position: { x: number; y: number }, frequency: number) => {
     const audioContext = audioStore.getAudioContext();
@@ -49,21 +66,27 @@ export function DemoRoom() {
     }, 100);
   };
 
-  const handleMoveSound = (soundId: string) => {
-    const movedSound = audioStore.moveSound(soundId);
-    if (movedSound) {
-      playSoundAtPosition(movedSound.position, movedSound.frequency);
+  /**
+   * Update a sound's position during drag
+   */
+  const handleSoundPositionChange = (soundId: string, position: Position) => {
+    audioStore.updateSoundPosition(soundId, position);
+  };
+
+  /**
+   * Play sound when drag ends
+   */
+  const handleSoundDragEnd = (soundId: string) => {
+    const sound = audioStore.getSound(soundId);
+    if (sound) {
+      playSoundAtPosition(sound.position, sound.frequency);
     }
   };
 
   const handleRoomClick = (e: MouseEvent) => {
     audioStore.initializeAudio();
-
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 5;
-    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 5;
-
-    audioStore.setListenerPos({ x, y });
+    const position = getPositionFromEvent(e);
+    audioStore.setListenerPos(position);
   };
 
   const playSoundDemo = () => {
@@ -130,7 +153,7 @@ export function DemoRoom() {
           Demo Room {audioStore.audioInitialized() && "🔊"}
         </h2>
 
-        <div class={styles.room} onClick={handleRoomClick}>
+        <div class={styles.room} ref={roomRef} onClick={handleRoomClick}>
           <Listener position={audioStore.listenerPos()} />
 
           <For each={audioStore.sounds()}>
@@ -138,7 +161,9 @@ export function DemoRoom() {
               <SoundSource
                 sound={sound}
                 index={index()}
-                onClick={() => handleMoveSound(sound.id)}
+                getPositionFromEvent={getPositionFromEvent}
+                onPositionChange={(pos) => handleSoundPositionChange(sound.id, pos)}
+                onDragEnd={() => handleSoundDragEnd(sound.id)}
               />
             )}
           </For>
@@ -162,7 +187,7 @@ export function DemoRoom() {
             {audioStore.sounds().length !== 1 ? "s" : ""} active
           </span>
           <span class={styles.hint}>
-            Click room to move • Click numbers to relocate sounds
+            Click room to move listener • Drag sounds to reposition
           </span>
         </div>
       </div>
