@@ -64,7 +64,7 @@ pnpm start
 | `pnpm lint:fix`      | Run ESLint with auto-fix                |
 | `pnpm typecheck`     | TypeScript type checking                |
 | `pnpm check`         | Run both typecheck and lint             |
-| `pnpm test`          | Run all unit tests (129 tests)          |
+| `pnpm test`          | Run all unit tests                      |
 | `pnpm test:watch`    | Run tests in watch mode                 |
 | `pnpm test:ui`       | Run UI component tests only             |
 | `pnpm test:all`      | Run unit tests + E2E tests              |
@@ -76,10 +76,10 @@ pnpm start
 
 ### Testing
 
-The project has **129 unit tests** covering:
+The project has comprehensive unit test coverage:
 
-- **Spatial audio library** (`src/lib/spatial-audio.ts`) — 67 tests for distance, panning, and wall attenuation calculations
-- **UI components** (`packages/ui/`) — 62 tests for all 8 components using `@solidjs/testing-library`
+- **Spatial audio library** (`src/lib/spatial-audio.ts`) — Distance, panning, and wall attenuation calculations
+- **UI components** (`packages/ui/`) — All components tested with `@solidjs/testing-library`
 
 ```bash
 # Run all tests
@@ -179,7 +179,10 @@ Pan    = clamp(dx / 3, -1, 1)
 - [x] Logging and monitoring with `electron-log`
 - [x] Error handling with ErrorBoundary and Toast notifications
 - [x] UI library extraction to `@clippis/ui` package
-- [x] Unit tests for spatial audio and UI components (129 tests)
+- [x] Unit tests for spatial audio and UI components
+- [x] Theme system (light/dark/system)
+- [x] Localization infrastructure (i18n)
+- [x] Accessibility (WCAG 2.1)
 
 ### Phase 1: The Tent Enhancements
 - [x] Draggable sound sources
