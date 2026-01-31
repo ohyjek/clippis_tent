@@ -1,11 +1,11 @@
 /**
  * AudioSettingsPanel.tsx - Panel for audio settings
  *
- * Contains distance model selection, max distance, and rear gain settings.
+ * Contains distance model selection, max distance, rear gain, and visual settings.
  */
 import { For } from "solid-js";
 import type { DistanceModel } from "@/lib/spatial-audio-engine";
-import { Panel } from "@/components/ui";
+import { Panel, Toggle } from "@/components/ui";
 import { useDemoContext } from "../../context";
 import { DISTANCE_MODEL_OPTIONS } from "../../constants";
 import styles from "./panels.module.css";
@@ -18,6 +18,8 @@ export function AudioSettingsPanel() {
     setMaxDistance,
     rearGainFloor,
     setRearGainFloor,
+    showSoundPaths,
+    setShowSoundPaths,
   } = useDemoContext();
 
   return (
@@ -71,6 +73,15 @@ export function AudioSettingsPanel() {
           <span>{Math.round(rearGainFloor() * 100)}%</span>
           <span>Loud (80%)</span>
         </div>
+      </div>
+
+      <div class={styles.propertyGroup}>
+        <Toggle
+          label="Show Sound Paths"
+          description="Display lines between speakers and listener"
+          checked={showSoundPaths()}
+          onChange={(e) => setShowSoundPaths(e.currentTarget.checked)}
+        />
       </div>
     </Panel>
   );

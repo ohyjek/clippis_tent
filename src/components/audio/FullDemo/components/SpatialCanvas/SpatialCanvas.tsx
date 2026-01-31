@@ -48,6 +48,9 @@ export function SpatialCanvas() {
     getWallCount,
     isPlaying,
 
+    // Visual settings
+    showSoundPaths,
+
     // Handlers
     handleListenerMove,
     handleListenerRotate,
@@ -90,12 +93,14 @@ export function SpatialCanvas() {
       />
 
       {/* Sound path lines */}
-      <SoundPaths
-        speakers={speakers()}
-        listenerPos={listenerPos()}
-        selectedSpeakerId={selectedSpeaker()}
-        getWallCount={getWallCount}
-      />
+      <Show when={showSoundPaths()}>
+        <SoundPaths
+          speakers={speakers()}
+          listenerPos={listenerPos()}
+          selectedSpeakerId={selectedSpeaker()}
+          getWallCount={getWallCount}
+        />
+      </Show>
 
       {/* Speakers */}
       <For each={speakers()}>

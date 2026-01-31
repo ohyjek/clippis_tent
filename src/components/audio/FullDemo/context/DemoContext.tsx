@@ -79,6 +79,10 @@ interface DemoContextValue {
   playingSpeakers: Accessor<Set<string>>;
   isPlaying: (speakerId: string) => boolean;
 
+  // Visual settings
+  showSoundPaths: Accessor<boolean>;
+  setShowSoundPaths: Setter<boolean>;
+
   // Room ref for coordinate calculations
   roomRef: Accessor<HTMLDivElement | undefined>;
   setRoomRef: (ref: HTMLDivElement | undefined) => void;
@@ -189,6 +193,9 @@ export function DemoProvider(props: { children: JSX.Element }) {
   const [distanceModel, setDistanceModel] = createSignal<DistanceModel>("inverse");
   const [maxDistance, setMaxDistance] = createSignal(DEFAULT_MAX_DISTANCE);
   const [rearGainFloor, setRearGainFloor] = createSignal(DEFAULT_REAR_GAIN);
+
+  // Visual settings
+  const [showSoundPaths, setShowSoundPaths] = createSignal(true);
 
   // Playing state
   const [playingSpeakers, setPlayingSpeakers] = createSignal<Set<string>>(new Set());
@@ -703,6 +710,10 @@ export function DemoProvider(props: { children: JSX.Element }) {
     setRearGainFloor,
     playingSpeakers,
     isPlaying,
+
+    // Visual settings
+    showSoundPaths,
+    setShowSoundPaths,
 
     // Room ref
     roomRef,
