@@ -15,7 +15,8 @@ test.describe("Settings Page", () => {
   });
 
   test("should display audio device section", async ({ page }) => {
-    await expect(page.getByText("Audio Devices")).toBeVisible();
+    // Use heading role to be specific about the section header
+    await expect(page.getByRole("heading", { name: "Audio Devices" })).toBeVisible();
   });
 
   test("should have output device selector", async ({ page }) => {

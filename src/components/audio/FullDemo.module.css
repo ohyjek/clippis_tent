@@ -17,6 +17,15 @@
   align-items: center;
 }
 
+.settingsPanel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+}
+
 .banner {
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid var(--color-accent-blue);
@@ -110,9 +119,55 @@
   stroke: var(--color-accent-red);
 }
 
-/* Listener */
+/* Listener container for positioning */
+.listenerContainer {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+}
+
+.listenerContainer.active {
+  z-index: 20;
+}
+
+/* Listener facing direction wedge */
+.listenerDirection {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  /* Wedge shape using clip-path */
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.4) 0%,
+    rgba(59, 130, 246, 0.1) 100%
+  );
+  clip-path: polygon(50% 50%, 100% 20%, 100% 80%);
+  transition: opacity var(--transition-fast);
+}
+
+.listenerDirection:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.6) 0%,
+    rgba(59, 130, 246, 0.2) 100%
+  );
+}
+
+.listenerContainer.active .listenerDirection {
+  cursor: grabbing;
+}
+
+/* Listener icon */
 .listener {
   position: absolute;
+  top: 50%;
+  left: 50%;
   width: 48px;
   height: 48px;
   transform: translate(-50%, -50%);
@@ -121,7 +176,6 @@
   justify-content: center;
   font-size: 1.75rem;
   cursor: grab;
-  z-index: 15;
   border-radius: var(--radius-full);
   background: rgba(59, 130, 246, 0.2);
   border: 3px solid var(--color-accent-blue);

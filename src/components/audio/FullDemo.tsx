@@ -2,36 +2,54 @@
  * FullDemo.tsx - Complete Spatial Audio Playground (Tab 1 of The Tent)
  *
  * The comprehensive demo combining all spatial audio features:
- * - Draggable listener position
- * - Multiple speakers with position, direction, and click-to-play
- * - Continuous tone playback for real-time spatial audio demonstration
+ * - Draggable listener with facing direction
+ * - Multiple speakers with configurable directivity patterns
+ * - Continuous tone playback with real-time updates
  * - Room boundaries with wall attenuation
+ * - Multiple distance attenuation models
  *
- * This is the default/primary demo that showcases all the concepts together.
+ * Now powered by the advanced SpatialAudioEngine.
  */
 import { createSignal, createEffect, onCleanup, For } from "solid-js";
 import {
-  Speaker as SpeakerData,
   Position,
   Room,
   Wall,
   createRectangularRoom,
-  createSpeaker,
-  countWallsBetween,
-  calculateWallAttenuation,
-  calculateDirectionalGain,
-  calculateDistance,
-  calculatePan,
+  SPEAKER_COLORS,
 } from "@/lib/spatial-audio";
+import {
+  SpatialAudioEngine,
+  Listener,
+  SourceConfig,
+  DirectivityPattern,
+  DistanceModel,
+  calculateAudioParameters,
+  createListener,
+} from "@/lib/spatial-audio-engine";
 import { audioStore } from "@/stores/audio";
-import { Button, Slider, Speaker } from "@/components/ui";
+import { Button, Slider, Speaker, SelectField } from "@/components/ui";
 import styles from "./FullDemo.module.css";
 
-/** Audio nodes for a continuously playing speaker */
-interface ContinuousAudioNodes {
-  oscillator: OscillatorNode;
-  gainNode: GainNode;
-  panner: StereoPannerNode;
+/** Extended speaker data for UI state */
+interface SpeakerState {
+  id: string;
+  position: Position;
+  facing: number;
+  color: string;
+  directivity: DirectivityPattern;
+  frequency: number;
+  playing: boolean;
+}
+
+// Singleton audio engine instance
+let engine: SpatialAudioEngine | null = null;
+
+function getEngine(): SpatialAudioEngine {
+  if (!engine) {
+    engine = new SpatialAudioEngine();
+  }
+  return engine;
 }
 
 export function FullDemo() {
@@ -46,23 +64,50 @@ export function FullDemo() {
   // Get all walls from all rooms
   const allWalls = (): Wall[] => rooms().flatMap((r) => r.walls);
 
-  // State
-  const [listenerPos, setListenerPos] = createSignal<Position>({ x: 1.2, y: 0 });
-  const [speakers, setSpeakers] = createSignal<SpeakerData[]>([
-    { ...createSpeaker("speaker-1", 0), position: { x: -1.2, y: 0 } },
+  // Listener state with facing direction
+  const [listener, setListener] = createSignal<Listener>(
+    createListener({ x: 1.2, y: 0 }, 0)
+  );
+
+  // Speakers state
+  const [speakers, setSpeakers] = createSignal<SpeakerState[]>([
+    {
+      id: "speaker-1",
+      position: { x: -1.2, y: 0 },
+      facing: 0,
+      color: SPEAKER_COLORS[0],
+      directivity: "cardioid",
+      frequency: 440,
+      playing: false,
+    },
   ]);
+
+  // UI state
   const [selectedSpeaker, setSelectedSpeaker] = createSignal<string>("speaker-1");
   const [isDraggingListener, setIsDraggingListener] = createSignal(false);
+  const [isRotatingListener, setIsRotatingListener] = createSignal(false);
   const [isMovingSpeaker, setIsMovingSpeaker] = createSignal<string | null>(null);
   const [isRotatingSpeaker, setIsRotatingSpeaker] = createSignal<string | null>(null);
-  const [playingSpeaker, setPlayingSpeaker] = createSignal<string | null>(null);
-  
-  // Continuous playback state
-  const [continuousPlaying, setContinuousPlaying] = createSignal<Set<string>>(new Set());
-  const continuousAudioNodes = new Map<string, ContinuousAudioNodes>();
-  
-  // Check if a speaker is playing continuously
-  const isContinuousPlaying = (speakerId: string) => continuousPlaying().has(speakerId);
+
+  // Audio settings
+  const [distanceModel, setDistanceModel] = createSignal<DistanceModel>("inverse");
+
+  // Directivity pattern options
+  const directivityOptions = [
+    { value: "omnidirectional", label: "Omni (all directions)" },
+    { value: "cardioid", label: "Cardioid (heart-shaped)" },
+    { value: "supercardioid", label: "Supercardioid (tighter)" },
+    { value: "hypercardioid", label: "Hypercardioid (very tight)" },
+    { value: "figure8", label: "Figure-8 (front + back)" },
+    { value: "hemisphere", label: "Hemisphere (front only)" },
+  ];
+
+  // Distance model options
+  const distanceModelOptions = [
+    { value: "inverse", label: "Inverse (natural)" },
+    { value: "linear", label: "Linear (predictable)" },
+    { value: "exponential", label: "Exponential (dramatic)" },
+  ];
 
   // Convert mouse event to room coordinates
   const getPositionFromEvent = (e: MouseEvent): Position => {
@@ -77,25 +122,26 @@ export function FullDemo() {
   };
 
   // Get screen position for angle calculations
-  const getSpeakerScreenPosition = (speaker: SpeakerData): { x: number; y: number } => {
+  const getScreenPosition = (pos: Position): { x: number; y: number } => {
     if (!roomRef) return { x: 0, y: 0 };
     const rect = roomRef.getBoundingClientRect();
     return {
-      x: rect.left + (0.5 + speaker.position.x * 0.2) * rect.width,
-      y: rect.top + (0.5 + speaker.position.y * 0.2) * rect.height,
+      x: rect.left + (0.5 + pos.x * 0.2) * rect.width,
+      y: rect.top + (0.5 + pos.y * 0.2) * rect.height,
     };
   };
 
   // Convert room coordinates to percentage for rendering
   const toPercent = (val: number) => 50 + val * 20;
 
-  // Listener drag handling
+  // Listener drag handling (move)
   const handleListenerDrag = (e: MouseEvent) => {
     e.stopPropagation();
     setIsDraggingListener(true);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      setListenerPos(getPositionFromEvent(moveEvent));
+      const pos = getPositionFromEvent(moveEvent);
+      setListener((prev) => ({ ...prev, position: pos }));
     };
 
     const handleMouseUp = () => {
@@ -108,17 +154,44 @@ export function FullDemo() {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
+  // Listener rotation handling
+  const handleListenerRotate = (e: MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setIsRotatingListener(true);
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const listenerScreen = getScreenPosition(listener().position);
+      const angle = Math.atan2(
+        moveEvent.clientY - listenerScreen.y,
+        moveEvent.clientX - listenerScreen.x
+      );
+      setListener((prev) => ({ ...prev, facing: angle }));
+    };
+
+    const handleMouseUp = () => {
+      setIsRotatingListener(false);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
   // Speaker move handling
   const handleSpeakerMoveStart = (speakerId: string) => (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    audioStore.initializeAudio();
+    initializeEngine();
     setSelectedSpeaker(speakerId);
     setIsMovingSpeaker(speakerId);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const pos = getPositionFromEvent(moveEvent);
-      setSpeakers((prev) => prev.map((s) => (s.id === speakerId ? { ...s, position: pos } : s)));
+      setSpeakers((prev) =>
+        prev.map((s) => (s.id === speakerId ? { ...s, position: pos } : s))
+      );
     };
 
     const handleMouseUp = () => {
@@ -135,240 +208,207 @@ export function FullDemo() {
   const handleSpeakerRotateStart = (speakerId: string) => (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    audioStore.initializeAudio();
+    initializeEngine();
     setSelectedSpeaker(speakerId);
     setIsRotatingSpeaker(speakerId);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const currentSpeaker = speakers().find((s) => s.id === speakerId);
-      if (!currentSpeaker) return;
+      const speaker = speakers().find((s) => s.id === speakerId);
+      if (!speaker) return;
 
-      const speakerScreen = getSpeakerScreenPosition(currentSpeaker);
+      const speakerScreen = getScreenPosition(speaker.position);
       const angle = Math.atan2(
         moveEvent.clientY - speakerScreen.y,
         moveEvent.clientX - speakerScreen.x
       );
 
-      setSpeakers((prev) => prev.map((s) => (s.id === speakerId ? { ...s, facing: angle } : s)));
+      setSpeakers((prev) =>
+        prev.map((s) => (s.id === speakerId ? { ...s, facing: angle } : s))
+      );
     };
 
     const handleMouseUp = () => {
       setIsRotatingSpeaker(null);
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
-      playSound(speakerId);
     };
 
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  // Room click to initialize audio
-  const handleRoomClick = () => {
-    audioStore.initializeAudio();
+  // Initialize engine
+  const initializeEngine = () => {
+    const eng = getEngine();
+    if (!eng.isInitialized()) {
+      eng.initialize();
+      audioStore.initializeAudio();
+    }
   };
 
-  /**
-   * Start continuous playback for a speaker
-   * Creates a looping oscillator that updates in real-time
-   */
-  const startContinuousPlayback = (speakerId: string) => {
-    audioStore.initializeAudio();
-    const audioContext = audioStore.getAudioContext();
-    if (!audioContext) return;
+  // Room click to initialize
+  const handleRoomClick = () => {
+    initializeEngine();
+  };
 
-    // Stop if already playing
-    if (continuousAudioNodes.has(speakerId)) {
-      stopContinuousPlayback(speakerId);
-      return;
-    }
+  // Convert speaker state to engine source config
+  const toSourceConfig = (speaker: SpeakerState): SourceConfig => ({
+    id: speaker.id,
+    position: speaker.position,
+    facing: speaker.facing,
+    directivity: speaker.directivity,
+    volume: 1,
+    frequency: speaker.frequency,
+    waveform: "sine",
+    playing: speaker.playing,
+  });
 
+  // Toggle continuous playback for a speaker
+  const toggleSpeaker = (speakerId: string) => {
+    initializeEngine();
+    const eng = getEngine();
     const speaker = speakers().find((s) => s.id === speakerId);
     if (!speaker) return;
 
-    // Create audio nodes
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    const panner = audioContext.createStereoPanner();
+    // Update engine walls and listener
+    eng.setWalls(allWalls());
+    eng.setListener(listener());
+    eng.setDistanceModel(distanceModel());
+    eng.setMasterVolume(audioStore.masterVolume());
 
-    oscillator.connect(panner);
-    panner.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    // Toggle
+    const config = toSourceConfig(speaker);
+    eng.setSource(config);
+    const nowPlaying = eng.toggleSource(speakerId);
 
-    // Set initial values
-    oscillator.frequency.value = 440;
-    oscillator.type = "sine";
-    
-    // Calculate initial audio parameters
-    const { volume, pan } = calculateAudioParams(speaker);
-    gainNode.gain.value = volume;
-    panner.pan.value = pan;
-
-    // Start the oscillator
-    oscillator.start();
-
-    // Store the nodes
-    continuousAudioNodes.set(speakerId, { oscillator, gainNode, panner });
-    setContinuousPlaying((prev) => new Set([...prev, speakerId]));
+    // Update UI state
+    setSpeakers((prev) =>
+      prev.map((s) => (s.id === speakerId ? { ...s, playing: nowPlaying } : s))
+    );
   };
 
-  /**
-   * Stop continuous playback for a speaker
-   */
-  const stopContinuousPlayback = (speakerId: string) => {
-    const nodes = continuousAudioNodes.get(speakerId);
-    if (nodes) {
-      nodes.oscillator.stop();
-      nodes.oscillator.disconnect();
-      nodes.gainNode.disconnect();
-      nodes.panner.disconnect();
-      continuousAudioNodes.delete(speakerId);
-    }
-    setContinuousPlaying((prev) => {
-      const next = new Set(prev);
-      next.delete(speakerId);
-      return next;
-    });
-  };
-
-  /**
-   * Stop all continuous playback
-   */
-  const stopAllContinuous = () => {
-    for (const speakerId of continuousAudioNodes.keys()) {
-      stopContinuousPlayback(speakerId);
-    }
-  };
-
-  /**
-   * Calculate audio parameters for a speaker based on current positions
-   */
-  const calculateAudioParams = (speaker: SpeakerData) => {
-    const directionalGain = calculateDirectionalGain(speaker.facing, speaker.position, listenerPos());
-    const wallCount = countWallsBetween(speaker.position, listenerPos(), allWalls());
-    const wallAttenuation = calculateWallAttenuation(wallCount);
-    const distance = calculateDistance(speaker.position, listenerPos());
-    const baseVolume = 1 / (1 + distance);
-    const dx = speaker.position.x - listenerPos().x;
-    const pan = calculatePan(dx);
-    
-    const volume = baseVolume * directionalGain * wallAttenuation * audioStore.masterVolume() * 0.15;
-    return { volume, pan };
-  };
-
-  // Update continuous audio in real-time when positions change
-  createEffect(() => {
-    // Dependencies: listener position, speakers, master volume
-    const listener = listenerPos();
-    const speakerList = speakers();
-    const masterVol = audioStore.masterVolume();
-    
-    // Suppress unused variable warnings - these are reactive dependencies
-    void listener;
-    void masterVol;
-
-    // Update all playing speakers
-    for (const speaker of speakerList) {
-      const nodes = continuousAudioNodes.get(speaker.id);
-      if (nodes) {
-        const { volume, pan } = calculateAudioParams(speaker);
-        // Smooth transition for gain changes
-        nodes.gainNode.gain.linearRampToValueAtTime(
-          volume,
-          audioStore.getAudioContext()?.currentTime ?? 0 + 0.05
-        );
-        nodes.panner.pan.value = pan;
-      }
-    }
-  });
-
-  // Cleanup on unmount
-  onCleanup(() => {
-    stopAllContinuous();
-  });
-
-  // Calculate effective gain for a speaker (direction + walls + distance)
-  const calculateEffectiveGain = (speaker: SpeakerData): number => {
-    const directionGain = calculateDirectionalGain(speaker.facing, speaker.position, listenerPos());
-    const wallCount = countWallsBetween(speaker.position, listenerPos(), allWalls());
-    const wallAttenuation = calculateWallAttenuation(wallCount);
-    return directionGain * wallAttenuation;
-  };
-
-  // Play sound from a speaker
-  const playSound = (speakerId?: string) => {
-    audioStore.initializeAudio();
-    const audioContext = audioStore.getAudioContext();
-    if (!audioContext) return;
-
+  // Play one-shot beep
+  const playBeep = (speakerId?: string) => {
+    initializeEngine();
+    const eng = getEngine();
     const targetId = speakerId ?? selectedSpeaker();
     const speaker = speakers().find((s) => s.id === targetId);
     if (!speaker) return;
 
-    setPlayingSpeaker(targetId);
-    setSelectedSpeaker(targetId);
+    eng.setWalls(allWalls());
+    eng.setListener(listener());
+    eng.setDistanceModel(distanceModel());
+    eng.setMasterVolume(audioStore.masterVolume());
 
-    // Calculate all audio factors
-    const directionalGain = calculateDirectionalGain(speaker.facing, speaker.position, listenerPos());
-    const wallCount = countWallsBetween(speaker.position, listenerPos(), allWalls());
-    const wallAttenuation = calculateWallAttenuation(wallCount);
-    const distance = calculateDistance(speaker.position, listenerPos());
-    const baseVolume = 1 / (1 + distance);
-    const dx = speaker.position.x - listenerPos().x;
-    const pan = calculatePan(dx);
+    const config = toSourceConfig(speaker);
+    eng.setSource(config);
+    eng.playOneShot(targetId, 0.3);
+  };
 
-    // Final volume combines everything
-    const finalVolume = baseVolume * directionalGain * wallAttenuation * audioStore.masterVolume() * 0.3;
+  // Update engine in real-time when positions/settings change
+  createEffect(() => {
+    const eng = getEngine();
+    if (!eng.isInitialized()) return;
 
-    // Create and play the sound
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    const panner = audioContext.createStereoPanner();
+    const currentListener = listener();
+    const currentSpeakers = speakers();
+    const currentDistanceModel = distanceModel();
+    const masterVol = audioStore.masterVolume();
 
-    oscillator.connect(panner);
-    panner.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    // Update engine state
+    eng.setListener(currentListener);
+    eng.setWalls(allWalls());
+    eng.setDistanceModel(currentDistanceModel);
+    eng.setMasterVolume(masterVol);
 
-    oscillator.frequency.value = 440;
-    oscillator.type = "sine";
-    gainNode.gain.value = finalVolume;
-    panner.pan.value = pan;
+    // Update all source positions/facings
+    for (const speaker of currentSpeakers) {
+      if (speaker.playing) {
+        eng.setSourcePosition(speaker.id, speaker.position);
+        eng.setSourceFacing(speaker.id, speaker.facing);
+      }
+    }
+  });
 
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.3);
-
-    setTimeout(() => setPlayingSpeaker(null), 300);
+  // Calculate display gain for UI
+  const calculateDisplayGain = (speaker: SpeakerState): number => {
+    const config = toSourceConfig(speaker);
+    const params = calculateAudioParameters(
+      config,
+      listener(),
+      allWalls(),
+      distanceModel(),
+      audioStore.masterVolume()
+    );
+    return params.directionalGain * params.wallAttenuation;
   };
 
   // Add a new speaker
   const addSpeaker = () => {
     const index = speakers().length;
-    const newSpeaker = {
-      ...createSpeaker(undefined, index),
-      // Random position in the room
+    const newSpeaker: SpeakerState = {
+      id: `speaker-${Date.now()}`,
       position: {
         x: (Math.random() - 0.5) * 4,
         y: (Math.random() - 0.5) * 3,
       },
+      facing: 0,
+      color: SPEAKER_COLORS[index % SPEAKER_COLORS.length],
+      directivity: "cardioid",
+      frequency: 440 + index * 110, // Different frequencies for each
+      playing: false,
     };
     setSpeakers((prev) => [...prev, newSpeaker]);
     setSelectedSpeaker(newSpeaker.id);
   };
 
-  // Reset to initial state
-  const resetDemo = () => {
-    stopAllContinuous();
-    setListenerPos({ x: 1.2, y: 0 });
-    setSpeakers([{ ...createSpeaker("speaker-1", 0), position: { x: -1.2, y: 0 } }]);
-    setSelectedSpeaker("speaker-1");
+  // Update selected speaker's directivity
+  const updateDirectivity = (pattern: DirectivityPattern) => {
+    const speakerId = selectedSpeaker();
+    setSpeakers((prev) =>
+      prev.map((s) => (s.id === speakerId ? { ...s, directivity: pattern } : s))
+    );
   };
 
-  // Get wall count for status display
-  const getSelectedWallCount = () => {
-    const speaker = speakers().find((s) => s.id === selectedSpeaker());
-    if (!speaker) return 0;
-    return countWallsBetween(speaker.position, listenerPos(), allWalls());
+  // Reset to initial state
+  const resetDemo = () => {
+    const eng = getEngine();
+    eng.stopAll();
+    setListener(createListener({ x: 1.2, y: 0 }, 0));
+    setSpeakers([
+      {
+        id: "speaker-1",
+        position: { x: -1.2, y: 0 },
+        facing: 0,
+        color: SPEAKER_COLORS[0],
+        directivity: "cardioid",
+        frequency: 440,
+        playing: false,
+      },
+    ]);
+    setSelectedSpeaker("speaker-1");
+    setDistanceModel("inverse");
   };
+
+  // Get selected speaker info
+  const getSelectedSpeaker = () => speakers().find((s) => s.id === selectedSpeaker());
+
+  // Cleanup on unmount
+  onCleanup(() => {
+    getEngine().stopAll();
+  });
+
+  // Get wall count for status
+  const getWallCount = (speakerId: string) => {
+    const speaker = speakers().find((s) => s.id === speakerId);
+    if (!speaker) return 0;
+    const config = toSourceConfig(speaker);
+    const params = calculateAudioParameters(config, listener(), allWalls());
+    return params.wallCount;
+  };
+
+  // Count playing speakers
+  const playingCount = () => speakers().filter((s) => s.playing).length;
 
   return (
     <div class={styles.container}>
@@ -376,14 +416,14 @@ export function FullDemo() {
         <Button variant="primary" icon="➕" onClick={addSpeaker}>
           Add Speaker
         </Button>
-        <Button 
-          variant={isContinuousPlaying(selectedSpeaker()) ? "danger" : "success"} 
-          icon={isContinuousPlaying(selectedSpeaker()) ? "⏹️" : "🔊"} 
-          onClick={() => startContinuousPlayback(selectedSpeaker())}
+        <Button
+          variant={getSelectedSpeaker()?.playing ? "danger" : "success"}
+          icon={getSelectedSpeaker()?.playing ? "⏹️" : "🔊"}
+          onClick={() => toggleSpeaker(selectedSpeaker())}
         >
-          {isContinuousPlaying(selectedSpeaker()) ? "Stop Tone" : "Play Tone"}
+          {getSelectedSpeaker()?.playing ? "Stop" : "Play"}
         </Button>
-        <Button variant="outline" icon="🔔" onClick={() => playSound()}>
+        <Button variant="outline" icon="🔔" onClick={() => playBeep()}>
           Beep
         </Button>
         <Slider
@@ -400,10 +440,27 @@ export function FullDemo() {
         </Button>
       </div>
 
-      {!audioStore.audioInitialized() && (
+      {/* Audio settings panel */}
+      <div class={styles.settingsPanel}>
+        <SelectField
+          label="Distance Model"
+          options={distanceModelOptions}
+          value={distanceModel()}
+          onChange={(e) => setDistanceModel(e.currentTarget.value as DistanceModel)}
+        />
+        <SelectField
+          label="Speaker Pattern"
+          options={directivityOptions}
+          value={getSelectedSpeaker()?.directivity ?? "cardioid"}
+          onChange={(e) => updateDirectivity(e.currentTarget.value as DirectivityPattern)}
+        />
+      </div>
+
+      {!getEngine().isInitialized() && (
         <div class={styles.banner}>
           <p>
-            🔊 <strong>Click a speaker</strong> to start a continuous tone, then drag to hear real-time changes!
+            🔊 <strong>Click a speaker</strong> to start a continuous tone, then drag
+            to hear real-time changes!
           </p>
         </div>
       )}
@@ -450,17 +507,17 @@ export function FullDemo() {
             )}
           </For>
 
-          {/* Sound path lines from speakers to listener */}
+          {/* Sound path lines */}
           <svg class={styles.pathSvg}>
             <For each={speakers()}>
               {(speaker) => {
-                const wallCount = countWallsBetween(speaker.position, listenerPos(), allWalls());
+                const wallCount = getWallCount(speaker.id);
                 return (
                   <line
                     x1={`${toPercent(speaker.position.x)}%`}
                     y1={`${toPercent(speaker.position.y)}%`}
-                    x2={`${toPercent(listenerPos().x)}%`}
-                    y2={`${toPercent(listenerPos().y)}%`}
+                    x2={`${toPercent(listener().position.x)}%`}
+                    y2={`${toPercent(listener().position.y)}%`}
                     class={`${styles.pathLine} ${wallCount > 0 ? styles.blocked : ""}`}
                     stroke-dasharray={wallCount > 0 ? "5,5" : "none"}
                     opacity={selectedSpeaker() === speaker.id ? 1 : 0.3}
@@ -478,14 +535,14 @@ export function FullDemo() {
                 position={speaker.position}
                 color={speaker.color}
                 facing={speaker.facing}
-                gain={calculateEffectiveGain(speaker)}
+                gain={calculateDisplayGain(speaker)}
                 isSelected={selectedSpeaker() === speaker.id}
-                isPlaying={playingSpeaker() === speaker.id || isContinuousPlaying(speaker.id)}
+                isPlaying={speaker.playing}
                 isMoving={isMovingSpeaker() === speaker.id}
                 isRotating={isRotatingSpeaker() === speaker.id}
                 onClick={() => {
                   setSelectedSpeaker(speaker.id);
-                  startContinuousPlayback(speaker.id);
+                  toggleSpeaker(speaker.id);
                 }}
                 onMoveStart={handleSpeakerMoveStart(speaker.id)}
                 onRotateStart={handleSpeakerRotateStart(speaker.id)}
@@ -497,58 +554,68 @@ export function FullDemo() {
             )}
           </For>
 
-          {/* Listener */}
+          {/* Listener with facing direction */}
           <div
-            class={`${styles.listener} ${isDraggingListener() ? styles.dragging : ""}`}
+            class={`${styles.listenerContainer} ${isDraggingListener() || isRotatingListener() ? styles.active : ""}`}
             style={{
-              left: `${toPercent(listenerPos().x)}%`,
-              top: `${toPercent(listenerPos().y)}%`,
+              left: `${toPercent(listener().position.x)}%`,
+              top: `${toPercent(listener().position.y)}%`,
             }}
-            onMouseDown={handleListenerDrag}
-            title="Drag to move your listening position"
           >
-            🎧
+            {/* Facing direction indicator */}
+            <div
+              class={styles.listenerDirection}
+              style={{
+                transform: `rotate(${(listener().facing * 180) / Math.PI}deg)`,
+              }}
+              onMouseDown={handleListenerRotate}
+              title="Drag to rotate your facing direction"
+            />
+            {/* Listener icon */}
+            <div
+              class={`${styles.listener} ${isDraggingListener() ? styles.dragging : ""}`}
+              onMouseDown={handleListenerDrag}
+              title="Drag to move • The wedge shows your facing direction"
+            >
+              🎧
+            </div>
           </div>
         </div>
 
         <div class={styles.statusBar}>
           <span>
-            Listener: ({listenerPos().x.toFixed(1)}, {listenerPos().y.toFixed(1)})
+            Pos: ({listener().position.x.toFixed(1)}, {listener().position.y.toFixed(1)})
           </span>
+          <span>Facing: {((listener().facing * 180) / Math.PI).toFixed(0)}°</span>
           <span>
             {speakers().length} speaker{speakers().length !== 1 ? "s" : ""}
-            {continuousPlaying().size > 0 && ` (${continuousPlaying().size} playing)`}
+            {playingCount() > 0 && ` (${playingCount()} playing)`}
           </span>
-          <span class={getSelectedWallCount() > 0 ? styles.attenuated : ""}>
-            Walls: {getSelectedWallCount()}
-          </span>
-          <span class={styles.hint}>Click to toggle tone • Drag to move</span>
+          <span class={styles.hint}>Drag icon to move • Drag wedge to rotate</span>
         </div>
       </div>
 
       <div class={styles.legend}>
-        <h4>Full Spatial Audio Demo</h4>
+        <h4>Advanced Spatial Audio Demo</h4>
         <p>
-          This demo combines <strong>distance</strong>, <strong>direction</strong>, and{" "}
-          <strong>room boundaries</strong> - all the factors that affect how we hear sound in
-          real spaces. Click a speaker to start a <strong>continuous tone</strong> and move
-          around to hear how the volume and panning change in real-time!
+          This demo uses the <strong>advanced audio engine</strong> with listener facing
+          direction, configurable directivity patterns, and multiple distance models.
         </p>
         <ul>
           <li>
-            <strong>Click</strong> a speaker to toggle continuous tone (click again to stop)
+            <strong>Listener</strong>: Drag icon to move, drag the wedge to change facing
+            direction (affects stereo panning)
           </li>
           <li>
-            <strong>Drag the microphone icon</strong> to move speakers
+            <strong>Speakers</strong>: Click to toggle, drag icon to move, drag cone to
+            rotate
           </li>
           <li>
-            <strong>Drag the colored cone</strong> to change speaker direction
+            <strong>Distance Model</strong>: Changes how sound falls off with distance
           </li>
           <li>
-            <strong>Drag the headphones</strong> to move and hear real-time audio changes
-          </li>
-          <li>
-            <strong>Walls</strong> between speaker and listener reduce sound by 70% each
+            <strong>Directivity Pattern</strong>: Changes the speaker's sound projection
+            shape
           </li>
         </ul>
       </div>
