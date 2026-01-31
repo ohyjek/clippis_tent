@@ -20,6 +20,7 @@ test.describe("The Tent Page", () => {
   test("should display tab navigation", async ({ page }) => {
     // Check for the tablist and tabs (using role="tab" for accessibility)
     await expect(page.getByRole("tablist")).toBeVisible();
+    await expect(page.getByRole("tab", { name: /full demo/i })).toBeVisible();
     await expect(page.getByRole("tab", { name: /listener/i })).toBeVisible();
     await expect(page.getByRole("tab", { name: /speaker/i })).toBeVisible();
     await expect(page.getByRole("tab", { name: /room/i })).toBeVisible();
