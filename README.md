@@ -15,6 +15,7 @@ Clippis demonstrates spatial audio positioning where sound sources have virtual 
   - **Listener Demo** — Move around and hear how distance/panning affects sound
   - **Speaker Direction** — Directional audio where facing affects who hears you
   - **Room Boundaries** — Walls that attenuate sound between rooms
+- **Scenarios** — Preset configurations (surround, stereo, distance, campfire, orchestra)
 - **Voice Room** — (Coming soon) Real-time voice chat with WebRTC
 - **Settings** — Configure audio devices, volume, and processing options
 - **Modern Architecture** — Lazy-loaded routes, global state, CSS Modules, `@/` path aliases
@@ -88,6 +89,7 @@ src/
 │       └── Sidebar.tsx        # Navigation sidebar
 ├── pages/                     # Route pages (lazy-loaded)
 │   ├── Tent.tsx               # The Tent - spatial audio playground
+│   ├── Scenarios.tsx          # Preset spatial audio configurations
 │   ├── VoiceRoom.tsx          # Voice chat page (placeholder)
 │   └── Settings.tsx           # Audio settings page
 ├── stores/
@@ -139,10 +141,10 @@ Pan    = clamp(dx / 3, -1, 1)
 - [x] Speaking direction (cardioid pattern)
 - [x] Room boundaries with wall attenuation
 - [x] Tabbed demo navigation
+- [x] Preset scenarios (surround, stereo, distance, campfire, orchestra)
 - [ ] Waveform options (sine, square, sawtooth, triangle)
 - [ ] Looping/continuous sound sources
 - [ ] Keyboard controls for listener movement
-- [ ] Preset scenarios (surround test, stereo test)
 
 ### Phase 2: Voice Integration
 - [ ] Microphone input capture
