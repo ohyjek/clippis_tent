@@ -12,7 +12,6 @@
  *
  * Routes:
  *   /         -> Tent (spatial audio demo)
- *   /builder  -> RoomBuilder (room building tool)
  *   /settings -> Settings page
  */
 import { render } from "solid-js/web";
@@ -50,9 +49,6 @@ const Tent = lazy(() =>
 const Settings = lazy(() =>
   import("@/pages/Settings").then((m) => ({ default: m.Settings }))
 );
-const RoomBuilder = lazy(() =>
-  import("@/pages/RoomBuilder").then((m) => ({ default: m.RoomBuilder }))
-);
 
 const root = document.getElementById("root");
 
@@ -68,7 +64,6 @@ render(
       <I18nProvider>
         <Router root={App}>
           <Route path="/" component={Tent} />
-          <Route path="/builder" component={RoomBuilder} />
           <Route path="/settings" component={Settings} />
         </Router>
         <ToastContainer />

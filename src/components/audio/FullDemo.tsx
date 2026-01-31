@@ -10,11 +10,7 @@
  * - Multiple distance attenuation models
  */
 import { createSignal, createEffect, onCleanup, For, Show } from "solid-js";
-import {
-  Position,
-  Wall,
-  SPEAKER_COLORS,
-} from "@/lib/spatial-audio";
+import { Position, Wall, SPEAKER_COLORS } from "@/lib/spatial-audio";
 import {
   DirectivityPattern,
   DistanceModel,
@@ -57,8 +53,14 @@ type DrawingMode = "select" | "draw";
 
 // Room colors
 const ROOM_COLORS = [
-  "#8b5cf6", "#3b82f6", "#10b981", "#f59e0b",
-  "#ef4444", "#ec4899", "#6366f1", "#14b8a6",
+  "#8b5cf6",
+  "#3b82f6",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#ec4899",
+  "#6366f1",
+  "#14b8a6",
 ];
 
 const DEFAULT_ATTENUATION = 0.7;
@@ -113,7 +115,12 @@ function getNoteName(frequency: number): string {
 }
 
 /** Create walls from bounds */
-function createWallsFromBounds(bounds: { x: number; y: number; width: number; height: number }): Wall[] {
+function createWallsFromBounds(bounds: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}): Wall[] {
   const halfW = bounds.width / 2;
   const halfH = bounds.height / 2;
   const left = bounds.x - halfW;
@@ -130,7 +137,12 @@ function createWallsFromBounds(bounds: { x: number; y: number; width: number; he
 }
 
 /** Create room from two corners */
-function createRoomFromCorners(start: Position, end: Position, id: string, color: string): DrawnRoom {
+function createRoomFromCorners(
+  start: Position,
+  end: Position,
+  id: string,
+  color: string
+): DrawnRoom {
   const minX = Math.min(start.x, end.x);
   const maxX = Math.max(start.x, end.x);
   const minY = Math.min(start.y, end.y);
@@ -251,17 +263,25 @@ export function FullDemo() {
   ]);
 
   // UI state
-  const [selectedSpeaker, setSelectedSpeaker] = createSignal<string>("speaker-1");
+  const [selectedSpeaker, setSelectedSpeaker] =
+    createSignal<string>("speaker-1");
   const [isDraggingListener, setIsDraggingListener] = createSignal(false);
   const [isRotatingListener, setIsRotatingListener] = createSignal(false);
-  const [isMovingSpeaker, setIsMovingSpeaker] = createSignal<string | null>(null);
-  const [isRotatingSpeaker, setIsRotatingSpeaker] = createSignal<string | null>(null);
+  const [isMovingSpeaker, setIsMovingSpeaker] = createSignal<string | null>(
+    null
+  );
+  const [isRotatingSpeaker, setIsRotatingSpeaker] = createSignal<string | null>(
+    null
+  );
 
   // Audio settings
-  const [distanceModel, setDistanceModel] = createSignal<DistanceModel>("inverse");
+  const [distanceModel, setDistanceModel] =
+    createSignal<DistanceModel>("inverse");
 
   // Playing state - manage audio nodes directly for proper reactivity
-  const [playingSpeakers, setPlayingSpeakers] = createSignal<Set<string>>(new Set());
+  const [playingSpeakers, setPlayingSpeakers] = createSignal<Set<string>>(
+    new Set()
+  );
   const audioNodes = new Map<string, AudioNodes>();
 
   // Calculate effective attenuation per wall
@@ -444,7 +464,10 @@ export function FullDemo() {
     const handleMouseUp = () => {
       setIsRotatingListener(false);
       // Normalize angle to [-π, π] when done
-      const normalized = Math.atan2(Math.sin(currentAngle), Math.cos(currentAngle));
+      const normalized = Math.atan2(
+        Math.sin(currentAngle),
+        Math.cos(currentAngle)
+      );
       setListenerFacing(normalized);
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
@@ -517,14 +540,19 @@ export function FullDemo() {
       prevRawAngle = rawAngle;
 
       setSpeakers((prev) =>
-        prev.map((s) => (s.id === speakerId ? { ...s, facing: currentAngle } : s))
+        prev.map((s) =>
+          s.id === speakerId ? { ...s, facing: currentAngle } : s
+        )
       );
     };
 
     const handleMouseUp = () => {
       setIsRotatingSpeaker(null);
       // Normalize angle to [-π, π] when done
-      const normalized = Math.atan2(Math.sin(currentAngle), Math.cos(currentAngle));
+      const normalized = Math.atan2(
+        Math.sin(currentAngle),
+        Math.cos(currentAngle)
+      );
       setSpeakers((prev) =>
         prev.map((s) => (s.id === speakerId ? { ...s, facing: normalized } : s))
       );
@@ -741,18 +769,14 @@ export function FullDemo() {
   const updateRoomLabel = (label: string) => {
     const id = selectedRoomId();
     if (!id) return;
-    setRooms((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, label } : r))
-    );
+    setRooms((prev) => prev.map((r) => (r.id === id ? { ...r, label } : r)));
   };
 
   // Update room color
   const updateRoomColor = (color: string) => {
     const id = selectedRoomId();
     if (!id) return;
-    setRooms((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, color } : r))
-    );
+    setRooms((prev) => prev.map((r) => (r.id === id ? { ...r, color } : r)));
   };
 
   // Reset to initial state
@@ -779,7 +803,8 @@ export function FullDemo() {
   };
 
   // Get selected speaker
-  const getSelectedSpeaker = () => speakers().find((s) => s.id === selectedSpeaker());
+  const getSelectedSpeaker = () =>
+    speakers().find((s) => s.id === selectedSpeaker());
 
   // Check if playing
   const isPlaying = (speakerId: string) => playingSpeakers().has(speakerId);
@@ -825,7 +850,9 @@ export function FullDemo() {
             max={1}
             step={0.01}
             value={audioStore.masterVolume()}
-            onInput={(e) => audioStore.updateMasterVolume(parseFloat(e.currentTarget.value))}
+            onInput={(e) =>
+              audioStore.updateMasterVolume(parseFloat(e.currentTarget.value))
+            }
             showValue
           />
         </div>
@@ -837,7 +864,8 @@ export function FullDemo() {
       {!audioStore.audioInitialized() && (
         <div class={styles.banner}>
           <p>
-            🔊 <strong>Click anywhere</strong> to enable audio, then click a speaker to start!
+            🔊 <strong>Click anywhere</strong> to enable audio, then click a
+            speaker to start!
           </p>
         </div>
       )}
@@ -847,7 +875,9 @@ export function FullDemo() {
         {/* Canvas area */}
         <div class={styles.canvasWrapper}>
           <h3 class={styles.canvasTitle}>
-            {drawingMode() === "draw" ? "Click and drag to draw a room" : "Spatial Audio Playground"}
+            {drawingMode() === "draw"
+              ? "Click and drag to draw a room"
+              : "Spatial Audio Playground"}
           </h3>
 
           <div
@@ -864,7 +894,11 @@ export function FullDemo() {
 
             {/* Drawing preview */}
             <Show when={isDrawing() && drawStart()}>
-              <DrawingPreview start={drawStart} end={drawEnd} toPercent={toPercent} />
+              <DrawingPreview
+                start={drawStart}
+                end={drawEnd}
+                toPercent={toPercent}
+              />
             </Show>
 
             {/* Room boundaries */}
@@ -905,7 +939,8 @@ export function FullDemo() {
                             style={{
                               left: `${toPercent(Math.min(wall.start.x, wall.end.x))}%`,
                               top: `${toPercent(Math.min(wall.start.y, wall.end.y))}%`,
-                              [isVertical ? "height" : "width"]: `${length * 20}%`,
+                              [isVertical ? "height" : "width"]:
+                                `${length * 20}%`,
                               background: room.color,
                             }}
                           />
@@ -986,14 +1021,21 @@ export function FullDemo() {
           </div>
 
           <div class={styles.statusBar}>
-            <span>🎧 ({listenerPos().x.toFixed(1)}, {listenerPos().y.toFixed(1)})</span>
-            <span>{rooms().length} room{rooms().length !== 1 ? "s" : ""}</span>
+            <span>
+              🎧 ({listenerPos().x.toFixed(1)}, {listenerPos().y.toFixed(1)})
+            </span>
+            <span>
+              {rooms().length} room{rooms().length !== 1 ? "s" : ""}
+            </span>
             <span>
               {speakers().length} speaker{speakers().length !== 1 ? "s" : ""}
-              {playingSpeakers().size > 0 && ` (${playingSpeakers().size} playing)`}
+              {playingSpeakers().size > 0 &&
+                ` (${playingSpeakers().size} playing)`}
             </span>
             <span class={styles.hint}>
-              {drawingMode() === "draw" ? "Click and drag to draw" : "Drag to move • Click to select"}
+              {drawingMode() === "draw"
+                ? "Click and drag to draw"
+                : "Drag to move • Click to select"}
             </span>
           </div>
         </div>
@@ -1011,7 +1053,11 @@ export function FullDemo() {
                   <select
                     class={styles.propertySelect}
                     value={speaker().directivity}
-                    onChange={(e) => updateDirectivity(e.currentTarget.value as DirectivityPattern)}
+                    onChange={(e) =>
+                      updateDirectivity(
+                        e.currentTarget.value as DirectivityPattern
+                      )
+                    }
                   >
                     <For each={directivityOptions}>
                       {(opt) => <option value={opt.value}>{opt.label}</option>}
@@ -1021,7 +1067,8 @@ export function FullDemo() {
 
                 <div class={styles.propertyGroup}>
                   <label class={styles.propertyLabel}>
-                    Note: {getNoteName(speaker().frequency)} ({speaker().frequency} Hz)
+                    Note: {getNoteName(speaker().frequency)} (
+                    {speaker().frequency} Hz)
                   </label>
                   <input
                     type="range"
@@ -1030,7 +1077,9 @@ export function FullDemo() {
                     max="880"
                     step="10"
                     value={speaker().frequency}
-                    onInput={(e) => updateFrequency(parseInt(e.currentTarget.value))}
+                    onInput={(e) =>
+                      updateFrequency(parseInt(e.currentTarget.value))
+                    }
                   />
                   <div class={styles.sliderLabels}>
                     <span>A3 (220)</span>
@@ -1048,7 +1097,9 @@ export function FullDemo() {
                           style={{ background: color }}
                           onClick={() => {
                             setSpeakers((prev) =>
-                              prev.map((s) => (s.id === speaker().id ? { ...s, color } : s))
+                              prev.map((s) =>
+                                s.id === speaker().id ? { ...s, color } : s
+                              )
                             );
                           }}
                         />
@@ -1066,7 +1117,11 @@ export function FullDemo() {
                     {isPlaying(speaker().id) ? "Stop" : "Play"}
                   </Button>
                   <Show when={speakers().length > 1}>
-                    <Button variant="danger" icon="🗑️" onClick={deleteSelectedSpeaker}>
+                    <Button
+                      variant="danger"
+                      icon="🗑️"
+                      onClick={deleteSelectedSpeaker}
+                    >
                       Delete
                     </Button>
                   </Show>
@@ -1116,7 +1171,11 @@ export function FullDemo() {
                     min="0"
                     max="100"
                     value={room().attenuation * 100}
-                    onInput={(e) => updateRoomAttenuation(parseInt(e.currentTarget.value) / 100)}
+                    onInput={(e) =>
+                      updateRoomAttenuation(
+                        parseInt(e.currentTarget.value) / 100
+                      )
+                    }
                   />
                   <div class={styles.sliderLabels}>
                     <span>Transparent</span>
@@ -1125,7 +1184,11 @@ export function FullDemo() {
                 </div>
 
                 <div class={styles.propertyGroup}>
-                  <Button variant="danger" icon="🗑️" onClick={deleteSelectedRoom}>
+                  <Button
+                    variant="danger"
+                    icon="🗑️"
+                    onClick={deleteSelectedRoom}
+                  >
                     Delete Room
                   </Button>
                 </div>
@@ -1142,7 +1205,9 @@ export function FullDemo() {
               <select
                 class={styles.propertySelect}
                 value={distanceModel()}
-                onChange={(e) => setDistanceModel(e.currentTarget.value as DistanceModel)}
+                onChange={(e) =>
+                  setDistanceModel(e.currentTarget.value as DistanceModel)
+                }
               >
                 <For each={distanceModelOptions}>
                   {(opt) => <option value={opt.value}>{opt.label}</option>}
@@ -1161,7 +1226,10 @@ export function FullDemo() {
                     class={`${styles.listItem} ${selectedSpeaker() === speaker.id ? styles.selected : ""}`}
                     onClick={() => setSelectedSpeaker(speaker.id)}
                   >
-                    <div class={styles.itemSwatch} style={{ background: speaker.color }} />
+                    <div
+                      class={styles.itemSwatch}
+                      style={{ background: speaker.color }}
+                    />
                     <span class={styles.itemName}>
                       {getNoteName(speaker.frequency)} ({speaker.frequency} Hz)
                       {isPlaying(speaker.id) && " 🔊"}
@@ -1177,7 +1245,9 @@ export function FullDemo() {
             <h4 class={styles.panelTitle}>🚪 Rooms</h4>
             <Show
               when={rooms().length > 0}
-              fallback={<div class={styles.emptyState}>No rooms yet. Draw one!</div>}
+              fallback={
+                <div class={styles.emptyState}>No rooms yet. Draw one!</div>
+              }
             >
               <div class={styles.itemList}>
                 <For each={rooms()}>
@@ -1186,7 +1256,10 @@ export function FullDemo() {
                       class={`${styles.listItem} ${selectedRoomId() === room.id ? styles.selected : ""}`}
                       onClick={() => setSelectedRoomId(room.id)}
                     >
-                      <div class={styles.itemSwatch} style={{ background: room.color }} />
+                      <div
+                        class={styles.itemSwatch}
+                        style={{ background: room.color }}
+                      />
                       <span class={styles.itemName}>{room.label}</span>
                     </div>
                   )}
