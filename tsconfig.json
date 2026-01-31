@@ -28,6 +28,6 @@
       "@clippis/ui": ["./packages/ui/src"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts", "forge.env.d.ts", "vitest.config.ts", "packages/ui/src/**/*.ts", "packages/ui/src/**/*.tsx"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts", "forge.env.d.ts", "vitest.config.ts", "packages/ui/src/**/*.ts", "packages/ui/src/**/*.tsx", "packages/ui/test/**/*.ts", "packages/ui/test/**/*.d.ts"]
   // "references": [{ "path": "./tsconfig.node.json" }]
 }
