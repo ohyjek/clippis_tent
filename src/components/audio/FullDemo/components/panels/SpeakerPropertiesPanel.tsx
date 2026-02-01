@@ -4,7 +4,7 @@
  * Allows changing source type (oscillator/microphone), directivity pattern, frequency, and color.
  */
 import { Show, For } from "solid-js";
-import { SPEAKER_COLORS } from "@/lib/spatial-audio";
+import { SPEAKER_COLORS } from "@lib/spatial-audio";
 import type { DirectivityPattern, AudioSourceType } from "@clippis/types";
 import {
   Button,
@@ -14,10 +14,10 @@ import {
   SliderField,
   FieldGroup,
   ButtonRow,
-} from "@/components/ui";
-import { useDemoContext } from "../../context";
-import { DIRECTIVITY_OPTIONS, SOURCE_TYPE_OPTIONS } from "../../constants";
-import { getNoteName } from "../../utils";
+} from "@components/ui";
+import { useDemoContext } from "@components/audio/FullDemo/context";
+import { DIRECTIVITY_OPTIONS, SOURCE_TYPE_OPTIONS } from "@components/audio/FullDemo/constants";
+import { getNoteName } from "@components/audio/FullDemo/utils";
 
 export function SpeakerPropertiesPanel() {
   const {

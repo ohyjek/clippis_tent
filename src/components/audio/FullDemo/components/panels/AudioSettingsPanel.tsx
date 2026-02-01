@@ -5,9 +5,9 @@
  */
 import { For, Index } from "solid-js";
 import type { DistanceModel } from "@clippis/types";
-import { Panel, Toggle, DropdownField, SliderField, FieldGroup } from "@/components/ui";
-import { useDemoContext } from "../../context";
-import { DISTANCE_MODEL_OPTIONS } from "../../constants";
+import { Panel, Toggle, DropdownField, SliderField, FieldGroup } from "@components/ui";
+import { useDemoContext } from "@components/audio/FullDemo/context";
+import { DISTANCE_MODEL_OPTIONS } from "@components/audio/FullDemo/constants";
 
 export function AudioSettingsPanel() {
   const {

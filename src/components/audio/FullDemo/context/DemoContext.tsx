@@ -13,15 +13,15 @@ import {
   type JSX,
 } from "solid-js";
 import type { DistanceModel } from "@clippis/types";
-import { calculateAudioParameters, createListener } from "@/lib/spatial-audio-engine";
-import { audioStore } from "@/stores/audio";
+import { calculateAudioParameters, createListener } from "@lib/spatial-audio-engine";
+import { audioStore } from "@stores/audio";
 import {
   useMicrophone,
   useAudioPlayback,
   useRoomManager,
   useSpeakerManager,
   useCanvasDrawing,
-} from "@/lib/hooks";
+} from "@lib/hooks";
 import type { SpeakerState, Position, AudioSourceType, DemoContextValue } from "./types";
 import {
   ROOM_COLORS,
@@ -30,8 +30,8 @@ import {
   DEFAULT_SPEAKERS,
 } from "../constants";
 import { getPositionFromEvent, getScreenPosition, DEFAULT_ATTENUATION } from "../utils";
-import { showToast } from "@/stores/toast";
-import { logger } from "@/lib/logger";
+import { showToast } from "@stores/toast";
+import { logger } from "@lib/logger";
 
 // ============================================================================
 // SolidJS Context Value

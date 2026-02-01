@@ -12,8 +12,8 @@
  *   /settings -> Settings page
  */
 import { A, useLocation } from "@solidjs/router";
-import { audioStore } from "@/stores/audio";
-import { useI18n } from "@/lib/i18n";
+import { audioStore } from "@stores/audio";
+import { useI18n } from "@lib/i18n";
 import styles from "./Sidebar.module.css";
 
 interface NavItem {

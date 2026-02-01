@@ -3,9 +3,9 @@
  *
  * Shows each speaker with its note/frequency and playing status.
  */
-import { Panel, ItemList } from "@/components/ui";
-import { useDemoContext } from "../../context";
-import { getNoteName } from "../../utils";
+import { Panel, ItemList } from "@components/ui";
+import { useDemoContext } from "@components/audio/FullDemo/context";
+import { getNoteName } from "@components/audio/FullDemo/utils";
 
 export function SpeakersListPanel() {
   const { speakers, selectedSpeaker, setSelectedSpeaker, isPlaying } = useDemoContext();

@@ -5,7 +5,7 @@
  */
 import { JSX } from "solid-js";
 import { ErrorBoundary as UIErrorBoundary } from "@clippis/ui";
-import { logger } from "@/lib/logger";
+import { logger } from "@lib/logger";
 
 interface ErrorBoundaryProps {
   /** Child components to wrap */

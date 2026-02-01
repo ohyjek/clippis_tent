@@ -20,7 +20,7 @@ export default defineConfig({
   resolve: {
     alias: {
       // Root src directory
-      "@": resolver("./src"),
+      "@src": resolver("./src"),
 
       // Main project directories
       "@components": resolver("./src/components"),

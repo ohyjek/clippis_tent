@@ -6,7 +6,7 @@
  *
  * We do this because if we have to change from @clippis/types to a different package, we only have to change it in one place.
  */
-import type { CalculateAudioParameters } from "@/lib/spatial-audio-engine";
+import type { CalculateAudioParameters } from "@lib/spatial-audio-engine";
 import type {
   AudioSourceType,
   DirectivityPattern,

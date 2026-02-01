@@ -11,7 +11,7 @@ export {
   getPositionFromEvent,
   getScreenPosition,
   DEFAULT_ATTENUATION,
-} from "@/lib/spatial-utils";
+} from "@lib/spatial-utils";
 
 import { FREQUENCY_NOTES } from "./constants";
 

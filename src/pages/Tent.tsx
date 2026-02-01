@@ -9,7 +9,7 @@
  *
  * This is the home page (/) of the app.
  */
-import { FullDemo } from "@/components/audio";
+import { FullDemo } from "@components/audio";
 import styles from "./Tent.module.css";
 
 export function Tent() {

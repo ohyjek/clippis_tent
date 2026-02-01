@@ -4,7 +4,8 @@
     // Path aliases for the main app
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
+      "@src/*": ["./src/*"],
+      "@components/*": ["./src/components/*"],
       "@stores/*": ["./src/stores/*"],
       "@lib/*": ["./src/lib/*"],
       "@locales/*": ["./src/locales/*"],

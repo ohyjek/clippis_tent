@@ -10,7 +10,7 @@ import {
   isValidRoomSize,
   updateItemById,
   DEFAULT_ATTENUATION,
-} from "@/lib/spatial-utils";
+} from "@lib/spatial-utils";
 
 /** Room creation configuration */
 export interface RoomConfig {

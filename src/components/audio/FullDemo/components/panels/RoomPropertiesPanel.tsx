@@ -12,9 +12,9 @@ import {
   SliderField,
   FieldGroup,
   ButtonRow,
-} from "@/components/ui";
-import { useDemoContext } from "../../context";
-import { ROOM_COLORS } from "../../constants";
+} from "@components/ui";
+import { useDemoContext } from "@components/audio/FullDemo/context";
+import { ROOM_COLORS } from "@components/audio/FullDemo/constants";
 
 export function RoomPropertiesPanel() {
   const {

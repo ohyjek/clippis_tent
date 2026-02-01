@@ -13,8 +13,8 @@
  */
 import { createSignal, createRoot } from "solid-js";
 import type { SoundSource, Position } from "@clippis/types";
-import { createSoundSource, randomPosition } from "@/lib/spatial-audio";
-import { logger } from "@/lib/logger";
+import { createSoundSource, randomPosition } from "@lib/spatial-audio";
+import { logger } from "@lib/logger";
 import { showToast } from "@stores/toast";
 
 // Store AudioContext outside of reactive system

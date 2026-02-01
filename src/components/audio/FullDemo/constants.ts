@@ -4,7 +4,7 @@
  * Contains color palettes, default values, and configuration options.
  * Note: DEFAULT_ATTENUATION is defined in @/lib/spatial-utils.ts
  */
-import { SPEAKER_COLORS } from "@/lib/spatial-audio";
+import { SPEAKER_COLORS } from "@lib/spatial-audio";
 import type { SelectOption, SpeakerState } from "./context/types";
 
 /** Color palette for rooms */

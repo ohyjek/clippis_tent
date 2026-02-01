@@ -47,8 +47,8 @@ export default defineConfig({
       "@clippis/ui": resolver("packages/ui/src"),
       "@clippis/types": resolver("packages/types/src"),
       // App source alias
-      "@/": resolver("src/"),
-      "@": resolver("src"),
+      "@src/": resolver("src/"),
+      "@src": resolver("src"),
       "@stores": resolver("src/stores"),
       "@lib": resolver("src/lib"),
       "@locales": resolver("src/locales"),

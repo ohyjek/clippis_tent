@@ -7,12 +7,12 @@
  * - Switch perspective (who you are)
  */
 import { Show, For } from "solid-js";
-import { Speaker } from "@/components/ui";
-import { useDemoContext } from "../../context";
-import { toPercent } from "../../utils";
-import { DrawingPreview } from "./DrawingPreview";
-import { RoomRenderer } from "./RoomRenderer";
-import { SoundPaths } from "./SoundPaths";
+import { Speaker } from "@components/ui";
+import { useDemoContext } from "@components/audio/FullDemo/context";
+import { toPercent } from "@components/audio/FullDemo/utils";
+import { DrawingPreview } from "@components/audio/FullDemo/components/SpatialCanvas/DrawingPreview";
+import { RoomRenderer } from "@components/audio/FullDemo/components/SpatialCanvas/RoomRenderer";
+import { SoundPaths } from "@components/audio/FullDemo/components/SpatialCanvas/SoundPaths";
 import styles from "./SpatialCanvas.module.css";
 
 export function SpatialCanvas() {

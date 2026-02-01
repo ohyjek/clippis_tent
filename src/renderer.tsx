@@ -17,16 +17,16 @@
 import { render } from "solid-js/web";
 import { lazy } from "solid-js";
 import { Router, Route } from "@solidjs/router";
-import { App } from "@/components/layout";
-import { ErrorBoundary, ToastContainer } from "@/components/ui";
-import { I18nProvider } from "@/lib/i18n";
-import { logger } from "@/lib/logger";
-import { showToast } from "@/stores/toast";
+import { App } from "@components/layout";
+import { ErrorBoundary, ToastContainer } from "@components/ui";
+import { I18nProvider } from "@lib/i18n";
+import { logger } from "@lib/logger";
+import { showToast } from "@stores/toast";
 // Initialize theme store (applies theme before first render)
-import "@/stores/theme";
+import "@stores/theme";
 
-import "@/styles/variables.css";
-import "@/index.css";
+import "./styles/variables.css";
+import "./index.css";
 
 const GENERIC_ERROR_MESSAGE = "An unexpected error occurred";
 
@@ -45,8 +45,8 @@ window.onunhandledrejection = (event) => {
 logger.info("Renderer starting");
 
 // Lazy load pages for code splitting
-const Tent = lazy(() => import("@/pages/Tent").then((m) => ({ default: m.Tent })));
-const Settings = lazy(() => import("@/pages/Settings").then((m) => ({ default: m.Settings })));
+const Tent = lazy(() => import("@pages/Tent").then((m) => ({ default: m.Tent })));
+const Settings = lazy(() => import("@pages/Settings").then((m) => ({ default: m.Settings })));
 
 const root = document.getElementById("root");
 
