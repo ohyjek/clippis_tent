@@ -31,7 +31,7 @@ import {
   SOUND_FREQUENCIES,
   CARDINAL_DIRECTIONS,
   SPEAKER_COLORS,
-} from "./spatial-audio";
+} from "@lib/spatial-audio";
 
 describe("spatial-audio utilities", () => {
   describe("calculateDistance", () => {

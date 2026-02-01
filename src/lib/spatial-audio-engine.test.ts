@@ -10,7 +10,7 @@ import {
   calculateAudioParameters,
   createSourceConfig,
   createListener,
-} from "./spatial-audio-engine";
+} from "@lib/spatial-audio-engine";
 
 describe("Directivity Patterns", () => {
   describe("omnidirectional", () => {
