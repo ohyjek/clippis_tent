@@ -31,7 +31,7 @@ import {
 } from "../constants";
 import { getPositionFromEvent, getScreenPosition, DEFAULT_ATTENUATION } from "../utils";
 import { showToast } from "@/stores/toast";
-import logger from "@/lib/logger";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // SolidJS Context Value

@@ -13,9 +13,9 @@
  */
 import { createSignal, createRoot } from "solid-js";
 import type { SoundSource, Position } from "@clippis/types";
-import { createSoundSource, randomPosition } from "../lib/spatial-audio";
-import { logger } from "../lib/logger";
-import { showToast } from "./toast";
+import { createSoundSource, randomPosition } from "@/lib/spatial-audio";
+import { logger } from "@/lib/logger";
+import { showToast } from "@stores/toast";
 
 // Store AudioContext outside of reactive system
 let audioContext: AudioContext | null = null;
@@ -44,24 +44,27 @@ function createAudioStore() {
    * Initialize the AudioContext Browser API.
    *
    * @note This is a browser API! (This is NOT a solid/reactive context)
-   * @returns True if the audio context was initialized, false otherwise.
+   * @returns {boolean} true if the audio context was initialized
+   * @returns {boolean} false if it was already initialized
+   * @returns {boolean} false if it failed to initialize
    */
   const initializeAudio = (): boolean => {
     if (!audioInitialized()) {
       try {
         audioContext = new AudioContext(); // This is a browser API!
-        logger.audio.info("Audio context initialized");
         setAudioInitialized(true);
+        logger.audio.info("Audio context initialized");
         return true;
       } catch (err) {
-        logger.audio.error("Failed to initialize audio context:", err);
         showToast({
           type: "error",
           message: "Could not initialize audio. Please check your audio settings.",
         });
+        logger.audio.error("Failed to initialize audio context:", err);
         return false;
       }
     }
+    logger.audio.warn("Audio context already initialized");
     return false;
   };
 
