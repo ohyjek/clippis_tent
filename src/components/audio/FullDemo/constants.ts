@@ -4,7 +4,8 @@
  * Contains color palettes, default values, and configuration options.
  * Note: DEFAULT_ATTENUATION is defined in @/lib/spatial-utils.ts
  */
-import type { SelectOption } from "./context/types";
+import { SPEAKER_COLORS } from "@/lib/spatial-audio";
+import type { SelectOption, SpeakerState } from "./context/types";
 
 /** Color palette for rooms */
 export const ROOM_COLORS = [
@@ -77,4 +78,27 @@ export const DISTANCE_MODEL_OPTIONS: SelectOption[] = [
   { value: "inverse", label: "Inverse (natural)" },
   { value: "linear", label: "Linear (predictable)" },
   { value: "exponential", label: "Exponential (dramatic)" },
+];
+
+export const OBSERVER_ID = "observer";
+
+export const DEFAULT_SPEAKERS: SpeakerState[] = [
+  {
+    id: OBSERVER_ID,
+    position: { x: 0, y: 0 },
+    facing: 0,
+    color: "#3b82f6",
+    directivity: "omnidirectional",
+    frequency: 440,
+    sourceType: "oscillator",
+  },
+  {
+    id: "speaker-1",
+    position: { x: -1, y: 0 },
+    facing: 0,
+    color: SPEAKER_COLORS[0],
+    directivity: "cardioid",
+    frequency: 440,
+    sourceType: "oscillator",
+  },
 ];

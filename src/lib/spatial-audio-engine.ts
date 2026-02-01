@@ -19,8 +19,6 @@ import type {
   DirectivityPattern,
   DistanceModel,
   SourceConfig,
-  Material,
-  AcousticWall,
   AudioParameters,
   AudioParameterOptions,
 } from "@clippis/types";
@@ -34,19 +32,20 @@ import {
 } from "./spatial-audio";
 
 // ============================================================================
-// PREDEFINED MATERIALS
+// RETURN TYPE EXPORTS
+// (So we don't have to import the functions themselves in type files)
 // ============================================================================
 
-export const MATERIALS: Record<string, Material> = {
-  concrete: { name: "Concrete", absorption: 0.02, transmission: 0.05 },
-  brick: { name: "Brick", absorption: 0.03, transmission: 0.08 },
-  drywall: { name: "Drywall", absorption: 0.1, transmission: 0.3 },
-  glass: { name: "Glass", absorption: 0.03, transmission: 0.2 },
-  wood: { name: "Wood", absorption: 0.1, transmission: 0.15 },
-  curtain: { name: "Curtain", absorption: 0.5, transmission: 0.6 },
-  acoustic_panel: { name: "Acoustic Panel", absorption: 0.8, transmission: 0.1 },
-  open: { name: "Open", absorption: 1.0, transmission: 1.0 },
-};
+export type CalculateAudioParameters = ReturnType<typeof calculateAudioParameters>;
+export type CalculateDistanceAttenuation = ReturnType<typeof calculateDistanceAttenuation>;
+export type CalculateStereoPan = ReturnType<typeof calculateStereoPan>;
+export type CalculateListenerDirectionalGain = ReturnType<typeof calculateListenerDirectionalGain>;
+
+export type CalculateWallAttenuation = ReturnType<typeof calculateWallAttenuation>;
+export type CalculateWallsBetween = ReturnType<typeof countWallsBetween>;
+export type CalculateAngleToPoint = ReturnType<typeof calculateAngleToPoint>;
+export type CalculateDistance = ReturnType<typeof calculateDistance>;
+export type NormalizeAngle = ReturnType<typeof normalizeAngle>;
 
 // ============================================================================
 // DIRECTIVITY FUNCTIONS
@@ -602,15 +601,4 @@ export function createSourceConfig(id?: string, options: Partial<SourceConfig> =
  */
 export function createListener(position: Position = { x: 0, y: 0 }, facing = 0): Listener {
   return { position, facing };
-}
-
-/**
- * Create an acoustic wall with material
- */
-export function createAcousticWall(
-  start: Position,
-  end: Position,
-  material: Material = MATERIALS.drywall
-): AcousticWall {
-  return { start, end, material };
 }

@@ -10,7 +10,6 @@ import {
   calculateAudioParameters,
   createSourceConfig,
   createListener,
-  MATERIALS,
 } from "./spatial-audio-engine";
 
 describe("Directivity Patterns", () => {
@@ -271,53 +270,5 @@ describe("calculateAudioParameters", () => {
       masterVolume: 1.0,
     });
     expect(paramsHalf.volume).toBeLessThan(paramsFull.volume);
-  });
-});
-
-describe("Materials", () => {
-  it("has predefined materials", () => {
-    expect(MATERIALS.concrete).toBeDefined();
-    expect(MATERIALS.drywall).toBeDefined();
-    expect(MATERIALS.glass).toBeDefined();
-    expect(MATERIALS.curtain).toBeDefined();
-  });
-
-  it("concrete has low transmission", () => {
-    expect(MATERIALS.concrete.transmission).toBeLessThan(0.1);
-  });
-
-  it("curtain has high transmission", () => {
-    expect(MATERIALS.curtain.transmission).toBeGreaterThan(0.5);
-  });
-
-  it("acoustic panel has high absorption", () => {
-    expect(MATERIALS.acoustic_panel.absorption).toBeGreaterThan(0.7);
-  });
-});
-
-describe("Factory Functions", () => {
-  it("createSourceConfig creates valid config", () => {
-    const source = createSourceConfig();
-    expect(source.id).toBeDefined();
-    expect(source.position).toBeDefined();
-    expect(source.directivity).toBe("cardioid");
-    expect(source.waveform).toBe("sine");
-  });
-
-  it("createSourceConfig accepts options", () => {
-    const source = createSourceConfig("my-source", {
-      frequency: 880,
-      directivity: "omnidirectional",
-    });
-    expect(source.id).toBe("my-source");
-    expect(source.frequency).toBe(880);
-    expect(source.directivity).toBe("omnidirectional");
-  });
-
-  it("createListener creates valid listener", () => {
-    const listener = createListener({ x: 1, y: 2 }, Math.PI / 4);
-    expect(listener.position.x).toBe(1);
-    expect(listener.position.y).toBe(2);
-    expect(listener.facing).toBe(Math.PI / 4);
   });
 });

@@ -11,11 +11,8 @@ import {
   createEffect,
   onCleanup,
   type JSX,
-  type Accessor,
-  type Setter,
 } from "solid-js";
-import type { DirectivityPattern, DistanceModel } from "@clippis/types";
-import { SPEAKER_COLORS } from "@/lib/spatial-audio";
+import type { DistanceModel } from "@clippis/types";
 import { calculateAudioParameters, createListener } from "@/lib/spatial-audio-engine";
 import { audioStore } from "@/stores/audio";
 import {
@@ -25,135 +22,30 @@ import {
   useSpeakerManager,
   useCanvasDrawing,
 } from "@/lib/hooks";
-import type {
-  SpeakerState,
-  DrawnRoom,
-  DrawingMode,
-  Position,
-  Wall,
-  AudioSourceType,
-} from "./types";
-import { ROOM_COLORS, DEFAULT_MAX_DISTANCE, DEFAULT_REAR_GAIN } from "../constants";
+import type { SpeakerState, Position, AudioSourceType, DemoContextValue } from "./types";
+import {
+  ROOM_COLORS,
+  DEFAULT_MAX_DISTANCE,
+  DEFAULT_REAR_GAIN,
+  DEFAULT_SPEAKERS,
+} from "../constants";
 import { getPositionFromEvent, getScreenPosition, DEFAULT_ATTENUATION } from "../utils";
+import { showToast } from "@/stores/toast";
+import logger from "@/lib/logger";
 
 // ============================================================================
-// CONTEXT TYPES
+// SolidJS Context Value
+//
+// The value that contains the Provider Component and that can be used with useContext
 // ============================================================================
-
-/** Context value type - exposes all state and actions to components */
-interface DemoContextValue {
-  // Room state
-  rooms: Accessor<DrawnRoom[]>;
-  setRooms: Setter<DrawnRoom[]>;
-  selectedRoomId: Accessor<string | null>;
-  setSelectedRoomId: Setter<string | null>;
-  selectedRoom: () => DrawnRoom | undefined;
-  allWalls: () => Wall[];
-
-  // Drawing state
-  drawingMode: Accessor<DrawingMode>;
-  setDrawingMode: Setter<DrawingMode>;
-  isDrawing: Accessor<boolean>;
-  setIsDrawing: Setter<boolean>;
-  drawStart: Accessor<Position | null>;
-  setDrawStart: Setter<Position | null>;
-  drawEnd: Accessor<Position | null>;
-  setDrawEnd: Setter<Position | null>;
-
-  // Speaker state
-  speakers: Accessor<SpeakerState[]>;
-  setSpeakers: Setter<SpeakerState[]>;
-  selectedSpeaker: Accessor<string>;
-  setSelectedSpeaker: Setter<string>;
-  getSelectedSpeaker: () => SpeakerState | undefined;
-  getSpeakerById: (id: string) => SpeakerState | undefined;
-
-  // Perspective state
-  currentPerspective: Accessor<string>;
-  setCurrentPerspective: Setter<string>;
-  isCurrentPerspective: (id: string) => boolean;
-  getPerspectivePosition: () => Position;
-  getPerspectiveFacing: () => number;
-
-  // Interaction state
-  isMovingSpeaker: Accessor<string | null>;
-  setIsMovingSpeaker: Setter<string | null>;
-  isRotatingSpeaker: Accessor<string | null>;
-  setIsRotatingSpeaker: Setter<string | null>;
-
-  // Audio state
-  distanceModel: Accessor<DistanceModel>;
-  setDistanceModel: Setter<DistanceModel>;
-  maxDistance: Accessor<number>;
-  setMaxDistance: Setter<number>;
-  rearGainFloor: Accessor<number>;
-  setRearGainFloor: Setter<number>;
-  playingSpeakers: Accessor<Set<string>>;
-  isPlaying: (speakerId: string) => boolean;
-
-  // Visual settings
-  showSoundPaths: Accessor<boolean>;
-  setShowSoundPaths: Setter<boolean>;
-
-  // Self-hearing setting
-  hearSelf: Accessor<boolean>;
-  setHearSelf: Setter<boolean>;
-
-  // Room ref for coordinate calculations
-  roomRef: Accessor<HTMLDivElement | undefined>;
-  setRoomRef: (ref: HTMLDivElement | undefined) => void;
-
-  // Room actions
-  addRoom: (start: Position, end: Position) => void;
-  deleteSelectedRoom: () => void;
-  updateRoomAttenuation: (attenuation: number, roomId?: string) => void;
-  updateRoomLabel: (label: string) => void;
-  updateRoomColor: (color: string) => void;
-  handleRoomClick: (roomId: string) => (e: MouseEvent) => void;
-
-  // Speaker actions
-  addSpeaker: () => void;
-  deleteSelectedSpeaker: () => void;
-  updateDirectivity: (pattern: DirectivityPattern) => void;
-  updateFrequency: (frequency: number) => void;
-  updateSpeakerColor: (color: string) => void;
-  updateSourceType: (sourceType: AudioSourceType) => void;
-
-  // Microphone state
-  microphoneStream: Accessor<MediaStream | null>;
-  microphoneEnabled: Accessor<boolean>;
-  requestMicrophone: () => Promise<boolean>;
-  stopMicrophone: () => void;
-
-  // Audio actions
-  startPlayback: (speakerId: string) => void;
-  stopPlayback: (speakerId: string) => void;
-  togglePlayback: (speakerId: string) => void;
-  stopAllPlayback: () => void;
-
-  // Computed values
-  getAudioParams: (speaker: SpeakerState) => ReturnType<typeof calculateAudioParameters>;
-  calculateDisplayGain: (speaker: SpeakerState) => number;
-  getWallCount: (speaker: SpeakerState) => number;
-
-  // Interaction handlers
-  handleSpeakerMoveStart: (speakerId: string) => (e: MouseEvent) => void;
-  handleSpeakerRotateStart: (speakerId: string) => (e: MouseEvent) => void;
-  handleCanvasClick: () => void;
-  handleCanvasMouseDown: (e: MouseEvent) => void;
-  handleCanvasMouseMove: (e: MouseEvent) => void;
-  handleCanvasMouseUp: () => void;
-
-  // Reset
-  resetDemo: () => void;
-
-  // Color index for new rooms
-  nextColorIndex: Accessor<number>;
-}
 
 const DemoContext = createContext<DemoContextValue>();
 
-/** Hook to access the demo context */
+/**
+ * Hook to access the demo context
+ * @returns The demo context value.
+ * @throws An error if the hook is used outside of a DemoProvider.
+ */
 export function useDemoContext() {
   const context = useContext(DemoContext);
   if (!context) {
@@ -163,37 +55,33 @@ export function useDemoContext() {
 }
 
 // ============================================================================
-// CONSTANTS
-// ============================================================================
-
-const OBSERVER_ID = "observer";
-
-const DEFAULT_SPEAKERS: SpeakerState[] = [
-  {
-    id: OBSERVER_ID,
-    position: { x: 0, y: 0 },
-    facing: 0,
-    color: "#3b82f6",
-    directivity: "omnidirectional",
-    frequency: 440,
-    sourceType: "oscillator",
-  },
-  {
-    id: "speaker-1",
-    position: { x: -1, y: 0 },
-    facing: 0,
-    color: SPEAKER_COLORS[0],
-    directivity: "cardioid",
-    frequency: 440,
-    sourceType: "oscillator",
-  },
-];
-
-// ============================================================================
 // PROVIDER
 // ============================================================================
 
-/** Provider component that wraps demo components */
+/**
+ * Provider component for the demo context.
+ *
+ * Provides shared state and actions for all demo components.
+ * Composes specialized hooks for
+ * - room management
+ * - speaker management
+ * - audio playback management
+ * - canvas drawing
+ * - microphone management
+ * - audio parameter calculations
+ * - display gain calculations
+ * - wall count calculations
+ * - room actions
+ * - speaker actions
+ * - audio actions
+ * - interaction handlers
+ * - reset
+ * - effects
+ * - context value
+ *
+ * @param props - The props for the provider.
+ * @returns The provider component.
+ */
 export function DemoProvider(props: { children: JSX.Element }) {
   // Room ref for coordinate calculations
   let roomRefValue: HTMLDivElement | undefined;
@@ -250,7 +138,7 @@ export function DemoProvider(props: { children: JSX.Element }) {
   });
 
   // ============================================================================
-  // LOCAL STATE
+  // LOCAL STATE (not in a store!)
   // ============================================================================
 
   // Interaction state
@@ -269,9 +157,13 @@ export function DemoProvider(props: { children: JSX.Element }) {
   const [hearSelf, setHearSelf] = createSignal(false);
 
   // ============================================================================
-  // COMPUTED VALUES
+  // COMPUTED VALUES (from store managers) TODO: memoize ??
   // ============================================================================
 
+  /**
+   * Calculate the effective attenuation for the current room list.
+   * @returns The average attenuation of the current room list.
+   */
   const effectiveAttenuation = (): number => {
     const roomList = roomManager.rooms();
     if (roomList.length === 0) return DEFAULT_ATTENUATION;
@@ -279,6 +171,11 @@ export function DemoProvider(props: { children: JSX.Element }) {
     return sum / roomList.length;
   };
 
+  /**
+   * Calculate the audio parameters for a speaker.
+   * @param speaker - The speaker to calculate the audio parameters for.
+   * @returns The audio parameters for the speaker.
+   */
   const getAudioParams = (speaker: SpeakerState) => {
     const listener = createListener(
       speakerManager.getPerspectivePosition(),
@@ -304,11 +201,21 @@ export function DemoProvider(props: { children: JSX.Element }) {
     });
   };
 
+  /**
+   * Calculate the display gain for a speaker.
+   * @param speaker - The speaker to calculate the display gain for.
+   * @returns The display gain for the speaker.
+   */
   const calculateDisplayGain = (speaker: SpeakerState): number => {
     const params = getAudioParams(speaker);
     return params.directionalGain * params.wallAttenuation;
   };
 
+  /**
+   * Get the wall count for a speaker.
+   * @param speaker - The speaker to get the wall count for.
+   * @returns The wall count for the speaker.
+   */
   const getWallCount = (speaker: SpeakerState): number => {
     return getAudioParams(speaker).wallCount;
   };
@@ -317,29 +224,58 @@ export function DemoProvider(props: { children: JSX.Element }) {
   // ROOM ACTIONS (delegated to hook)
   // ============================================================================
 
-  const addRoom = (start: Position, end: Position) => {
+  /**
+   * Add a room to the room manager.
+   * @param start - The start position of the room.
+   * @param end - The end position of the room.
+   */
+  const addRoom = (start: Position, end: Position): void => {
     const color = ROOM_COLORS[nextColorIndex() % ROOM_COLORS.length];
     const id = `room-${Date.now()}`;
     if (roomManager.addRoom(start, end, { id, color, attenuation: DEFAULT_ATTENUATION })) {
       setNextColorIndex((i) => i + 1);
+    } else {
+      showToast({
+        type: "error",
+        message: "Failed to add room. Please try again.",
+      });
+      logger.error("Failed to add room. Please try again.");
     }
   };
 
+  /**
+   * Update the attenuation for a room.
+   * @param attenuation - The attenuation to set for the room.
+   * @param roomId - The ID of the room to update.
+   */
   const updateRoomAttenuation = (attenuation: number, roomId?: string) => {
     const id = roomId ?? roomManager.selectedRoomId();
     if (id) roomManager.updateRoom(id, { attenuation });
   };
 
+  /**
+   * Update the label for a room.
+   * @param label - The label to set for the room.
+   */
   const updateRoomLabel = (label: string) => {
     const id = roomManager.selectedRoomId();
     if (id) roomManager.updateRoom(id, { label });
   };
 
+  /**
+   * Update the color for a room.
+   * @param color - The color to set for the room.
+   */
   const updateRoomColor = (color: string) => {
     const id = roomManager.selectedRoomId();
     if (id) roomManager.updateRoom(id, { color });
   };
 
+  /**
+   * Handle the click event for a room.
+   * @param roomId - The ID of the room to handle the click event for.
+   * @returns The event handler for the click event.
+   */
   const handleRoomClick = (roomId: string) => (e: MouseEvent) => {
     e.stopPropagation();
     if (drawing.drawingMode() === "select") {
@@ -351,11 +287,19 @@ export function DemoProvider(props: { children: JSX.Element }) {
   // SPEAKER ACTIONS (delegated to hook)
   // ============================================================================
 
+  /**
+   * Update the frequency for a speaker.
+   * @param frequency - The frequency to set for the speaker.
+   */
   const updateFrequency = (frequency: number) => {
     speakerManager.updateFrequency(frequency);
     audioPlayback.updateFrequency(speakerManager.selectedSpeaker(), frequency);
   };
 
+  /**
+   * Update the source type for a speaker.
+   * @param sourceType - The source type to set for the speaker.
+   */
   const updateSourceType = (sourceType: AudioSourceType) => {
     const speakerId = speakerManager.selectedSpeaker();
     const wasPlaying = audioPlayback.isPlaying(speakerId);
@@ -375,6 +319,10 @@ export function DemoProvider(props: { children: JSX.Element }) {
   // AUDIO ACTIONS
   // ============================================================================
 
+  /**
+   * Start playback for a speaker.
+   * @param speakerId - The ID of the speaker to start playback for.
+   */
   const startPlayback = async (speakerId: string) => {
     audioStore.initializeAudio();
     const speaker = speakerManager.getSpeakerById(speakerId);
@@ -400,6 +348,10 @@ export function DemoProvider(props: { children: JSX.Element }) {
     });
   };
 
+  /**
+   * Toggle playback for a speaker.
+   * @param speakerId - The ID of the speaker to toggle playback for.
+   */
   const togglePlayback = (speakerId: string) => {
     if (audioPlayback.isPlaying(speakerId)) {
       audioPlayback.stop(speakerId);
@@ -408,6 +360,9 @@ export function DemoProvider(props: { children: JSX.Element }) {
     }
   };
 
+  /**
+   * Stop all playback.
+   */
   const stopAllPlayback = () => {
     audioPlayback.stopAll();
     microphone.stop();
@@ -417,6 +372,20 @@ export function DemoProvider(props: { children: JSX.Element }) {
   // INTERACTION HANDLERS
   // ============================================================================
 
+  /**
+   * Handle the start of a speaker move.
+   * @param speakerId - The ID of the speaker to handle the start of the move for.
+   * @returns The event handler for the start of the move.
+   * @note stops the propagation and prevents the default behavior of the event
+   * @note initializes the audio context
+   * @note sets the selected speaker
+   * @note sets the is moving speaker state
+   * @note creates the event handler for the mouse move event
+   * @note creates the event handler for the mouse up event
+   * @note adds the event listeners for the mouse move and mouse up events
+   * @note removes the event listeners for the mouse move and mouse up events
+   * @note removes the event listeners for the mouse move and mouse up events
+   */
   const handleSpeakerMoveStart = (speakerId: string) => (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -424,11 +393,19 @@ export function DemoProvider(props: { children: JSX.Element }) {
     speakerManager.setSelectedSpeaker(speakerId);
     setIsMovingSpeaker(speakerId);
 
+    /**
+     * Handle the mouse move event for the speaker.
+     * @param moveEvent - The mouse move event.
+     */
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const pos = getPositionFromEvent(moveEvent, roomRefValue);
       speakerManager.updatePosition(speakerId, pos);
     };
 
+    /**
+     * Handle the mouse up event for the speaker.
+     * @note also removes the event listeners for the mouse move and mouse up events
+     */
     const handleMouseUp = () => {
       setIsMovingSpeaker(null);
       document.removeEventListener("mousemove", handleMouseMove);
@@ -439,6 +416,11 @@ export function DemoProvider(props: { children: JSX.Element }) {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
+  /**
+   * Curried function to handle the start of a speaker rotation. (we curry to capture the speakerId in the closure)
+   * @param speakerId - The ID of the speaker to handle the start of the rotation for.
+   * @returns The event handler for the start of the rotation.
+   */
   const handleSpeakerRotateStart = (speakerId: string) => (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -485,6 +467,9 @@ export function DemoProvider(props: { children: JSX.Element }) {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
+  /**
+   * Handle the click event for the canvas.
+   */
   const handleCanvasClick = () => {
     if (drawing.drawingMode() === "select") {
       audioStore.initializeAudio();
@@ -496,6 +481,15 @@ export function DemoProvider(props: { children: JSX.Element }) {
   // RESET
   // ============================================================================
 
+  /**
+   * Reset the demo.
+   * - Stops all playback
+   * - Clears the rooms
+   * - Resets the color index
+   * - Sets the drawing mode to select
+   * - Resets the speakers
+   * - Resets the distance model
+   */
   const resetDemo = () => {
     stopAllPlayback();
     roomManager.clearRooms();
@@ -530,6 +524,7 @@ export function DemoProvider(props: { children: JSX.Element }) {
 
     if (!audioContext) return;
 
+    // TODO: analysis and optimizations
     for (const speaker of speakerList) {
       if (!audioPlayback.isPlaying(speaker.id)) continue;
 
@@ -555,9 +550,8 @@ export function DemoProvider(props: { children: JSX.Element }) {
   });
 
   // ============================================================================
-  // CONTEXT VALUE
+  // Reactive Provider Context Value for DOM
   // ============================================================================
-
   const value: DemoContextValue = {
     // Room state (from hook)
     rooms: roomManager.rooms,
