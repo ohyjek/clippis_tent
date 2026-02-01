@@ -20,6 +20,10 @@ import { showToast } from "./toast";
 // Store AudioContext outside of reactive system
 let audioContext: AudioContext | null = null;
 
+/**
+ * Create the audio store.
+ * @returns The audio store.
+ */
 function createAudioStore() {
   // Audio state
   const [audioInitialized, setAudioInitialized] = createSignal(false);
@@ -36,11 +40,16 @@ function createAudioStore() {
   const [noiseSuppressionEnabled, setNoiseSuppressionEnabled] = createSignal(true);
   const [echoCancellationEnabled, setEchoCancellationEnabled] = createSignal(true);
 
-  // Initialize audio context
+  /**
+   * Initialize the AudioContext Browser API.
+   *
+   * @note This is a browser API! (This is NOT a solid/reactive context)
+   * @returns True if the audio context was initialized, false otherwise.
+   */
   const initializeAudio = (): boolean => {
     if (!audioInitialized()) {
       try {
-        audioContext = new AudioContext();
+        audioContext = new AudioContext(); // This is a browser API!
         logger.audio.info("Audio context initialized");
         setAudioInitialized(true);
         return true;
@@ -56,12 +65,18 @@ function createAudioStore() {
     return false;
   };
 
-  // Update master volume
+  /**
+   * Update the master volume.
+   * @param value - The new master volume value.
+   */
   const updateMasterVolume = (value: number) => {
     setMasterVolume(value);
   };
 
-  // Add a new sound source
+  /**
+   * Add a new sound source.
+   * @returns The new sound source.
+   */
   const addSound = () => {
     initializeAudio();
     const newSound = createSoundSource();
@@ -69,7 +84,11 @@ function createAudioStore() {
     return newSound;
   };
 
-  // Move a sound source to a new random position
+  /**
+   * Move a sound source to a new random position.
+   * @param soundId - The ID of the sound source to move.
+   * @returns The moved sound source.
+   */
   const moveSound = (soundId: string) => {
     let movedSound: SoundSource | undefined;
 
@@ -86,27 +105,42 @@ function createAudioStore() {
     return movedSound;
   };
 
-  // Update a sound source's position (for dragging)
+  /**
+   * Update a sound source's position (for dragging).
+   * @param soundId - The ID of the sound source to update.
+   * @param position - The new position of the sound source.
+   */
   const updateSoundPosition = (soundId: string, position: Position) => {
     setSounds((prev) => prev.map((s) => (s.id === soundId ? { ...s, position } : s)));
   };
 
-  // Get a sound by ID
+  /**
+   * Get a sound by ID.
+   * @param soundId - The ID of the sound source to get.
+   * @returns The sound source.
+   */
   const getSound = (soundId: string): SoundSource | undefined => {
     return sounds().find((s) => s.id === soundId);
   };
 
-  // Remove all sounds
+  /**
+   * Remove all sounds.
+   */
   const clearSounds = () => {
     setSounds([]);
   };
 
-  // Reset listener position
+  /**
+   * Reset listener position.
+   */
   const resetListenerPosition = () => {
     setListenerPos({ x: 0, y: 0 });
   };
 
-  // Get audio context
+  /**
+   * Get the audio context.
+   * @returns The audio context.
+   */
   const getAudioContext = (): AudioContext | null => {
     return audioContext;
   };
@@ -148,3 +182,5 @@ function createAudioStore() {
 
 // Create singleton store
 export const audioStore = createRoot(createAudioStore);
+// Export the type of the audio store for convenience
+export type AudioStore = ReturnType<typeof createAudioStore>;

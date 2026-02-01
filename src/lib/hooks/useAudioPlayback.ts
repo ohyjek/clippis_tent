@@ -39,7 +39,12 @@ export interface AudioPlaybackState {
 }
 
 /**
- * Hook for managing audio playback across multiple speakers
+ * Hook for managing audio playback across multiple speakers.
+ *
+ * - Uses a signal of string set to keep track of the currently playing speakers.
+ * - Uses a map to keep track of the audio nodes for each speaker.
+ *
+ * @returns The audio playback state.
  */
 export function useAudioPlayback(): AudioPlaybackState {
   const [playingSpeakers, setPlayingSpeakers] = createSignal<Set<string>>(new Set());
