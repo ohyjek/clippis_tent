@@ -29,7 +29,7 @@ import {
   normalizeAngle,
   countWallsBetween,
   calculateWallAttenuation,
-} from "./spatial-audio";
+} from "@lib/spatial-audio";
 
 // ============================================================================
 // RETURN TYPE EXPORTS

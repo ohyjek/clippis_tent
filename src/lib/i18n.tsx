@@ -17,7 +17,7 @@ import { createSignal, createContext, useContext, JSX } from "solid-js";
 import * as i18n from "@solid-primitives/i18n";
 
 // Import translation files
-import en from "@/locales/en.json";
+import en from "@locales/en.json";
 
 // Available dictionaries
 const dictionaries = { en } as const;
