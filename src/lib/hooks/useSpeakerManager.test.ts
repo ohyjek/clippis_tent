@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createRoot } from "solid-js";
-import { useSpeakerManager, type SpeakerManagerState } from "./useSpeakerManager";
+import { useSpeakerManager, type SpeakerManagerState } from "@lib/hooks/useSpeakerManager";
 import type { SpeakerState } from "@clippis/types";
 
 // Mock SPEAKER_COLORS

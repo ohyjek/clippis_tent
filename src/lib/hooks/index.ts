@@ -11,7 +11,7 @@
  */
 
 // Interaction hooks
-export { useDragHandler, useRotationHandler } from "./useDragHandler";
+export { useDragHandler, useRotationHandler } from "@lib/hooks/useDragHandler";
 
 // Audio hooks
 export {
@@ -20,17 +20,21 @@ export {
   type PlaybackParams,
   type AudioPlaybackState,
 } from "./useAudioPlayback";
-export { useMicrophone, type MicrophoneOptions, type MicrophoneState } from "./useMicrophone";
+export {
+  useMicrophone,
+  type MicrophoneOptions,
+  type MicrophoneState,
+} from "@lib/hooks/useMicrophone";
 
 // State management hooks
-export { useRoomManager, type RoomConfig, type RoomManagerState } from "./useRoomManager";
+export { useRoomManager, type RoomConfig, type RoomManagerState } from "@lib/hooks/useRoomManager";
 export {
   useSpeakerManager,
   type SpeakerManagerOptions,
   type SpeakerManagerState,
-} from "./useSpeakerManager";
+} from "@lib/hooks/useSpeakerManager";
 export {
   useCanvasDrawing,
   type CanvasDrawingOptions,
   type CanvasDrawingState,
-} from "./useCanvasDrawing";
+} from "@lib/hooks/useCanvasDrawing";

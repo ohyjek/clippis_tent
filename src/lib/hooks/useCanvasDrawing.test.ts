@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createRoot } from "solid-js";
-import { useCanvasDrawing, type CanvasDrawingState } from "./useCanvasDrawing";
+import { useCanvasDrawing, type CanvasDrawingState } from "@lib/hooks/useCanvasDrawing";
 
 describe("useCanvasDrawing", () => {
   let drawing: CanvasDrawingState;

@@ -4,7 +4,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createRoot } from "solid-js";
-import { useAudioPlayback, type AudioPlaybackState } from "./useAudioPlayback";
+import { useAudioPlayback, type AudioPlaybackState } from "@lib/hooks/useAudioPlayback";
 
 // Mock audio context and nodes
 const mockGainNode = {

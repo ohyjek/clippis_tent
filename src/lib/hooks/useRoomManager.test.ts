@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createRoot } from "solid-js";
-import { useRoomManager, type RoomManagerState } from "./useRoomManager";
+import { useRoomManager, type RoomManagerState } from "@lib/hooks/useRoomManager";
 
 describe("useRoomManager", () => {
   let manager: RoomManagerState;
