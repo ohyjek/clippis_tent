@@ -7,16 +7,16 @@ import { useMicrophone, type MicrophoneState } from "@lib/hooks/useMicrophone";
 
 // Note: logger is mocked globally in src/test/setup.ts
 
-// Mock the audio store
-vi.mock("@/stores/audio", () => ({
+// Mock the audio store (must match exact import path in source)
+vi.mock("@stores/audio", () => ({
   audioStore: {
     echoCancellationEnabled: () => true,
     noiseSuppressionEnabled: () => true,
   },
 }));
 
-// Mock the toast store
-vi.mock("@/stores/toast", () => ({
+// Mock the toast store (must match exact import path in source)
+vi.mock("@stores/toast", () => ({
   showToast: vi.fn(),
 }));
 

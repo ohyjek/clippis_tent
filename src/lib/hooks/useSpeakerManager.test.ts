@@ -6,8 +6,8 @@ import { createRoot } from "solid-js";
 import { useSpeakerManager, type SpeakerManagerState } from "@lib/hooks/useSpeakerManager";
 import type { SpeakerState } from "@clippis/types";
 
-// Mock SPEAKER_COLORS
-vi.mock("@/lib/spatial-audio", () => ({
+// Mock SPEAKER_COLORS (must match exact import path in source)
+vi.mock("@lib/spatial-audio", () => ({
   SPEAKER_COLORS: ["#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899"],
 }));
 

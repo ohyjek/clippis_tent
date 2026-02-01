@@ -7,7 +7,8 @@
 import { vi } from "vitest";
 
 // Mock electron-log (doesn't work outside Electron)
-vi.mock("@/lib/logger", () => ({
+
+vi.mock("@lib/logger", () => ({
   logger: {
     info: vi.fn(),
     warn: vi.fn(),

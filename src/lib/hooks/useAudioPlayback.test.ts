@@ -42,8 +42,8 @@ const mockAudioContext = {
   createMediaStreamSource: vi.fn(() => ({ ...mockMediaStreamSource })),
 };
 
-// Mock the audio store
-vi.mock("@/stores/audio", () => ({
+// Mock the audio store (must match exact import path in source)
+vi.mock("@stores/audio", () => ({
   audioStore: {
     initializeAudio: vi.fn(),
     getAudioContext: vi.fn(() => mockAudioContext),
