@@ -23,20 +23,20 @@ export default defineConfig({
       "@": resolver("./src"),
 
       // Main project directories
-      "@components": resolver("@/components"),
-      "@lib": resolver("@/lib"),
-      "@locales": resolver("@/locales"),
-      "@pages": resolver("@/pages"),
-      "@assets": resolver("@/assets"),
-      "@hooks": resolver("@/hooks"),
-      "@stores": resolver("@/stores"),
-      "@types": resolver("@/types"),
-      "@utils": resolver("@/utils"),
-      "@styles": resolver("@/styles"),
+      "@components": resolver("./src/components"),
+      "@lib": resolver("./src/lib"),
+      "@locales": resolver("./src/locales"),
+      "@pages": resolver("./src/pages"),
+      "@assets": resolver("./src/assets"),
+      "@hooks": resolver("./src/hooks"),
+      "@stores": resolver("./src/stores"),
+      "@types": resolver("./src/types"),
+      "@utils": resolver("./src/utils"),
+      "@styles": resolver("./src/styles"),
 
-      // Workspace packages
-      "@clippis/ui": resolver("@/packages/ui/src"),
-      "@clippis/types": resolver("@/packages/types/src"),
+      // Workspace packages (resolve to source for HMR)
+      "@clippis/ui": resolver("./packages/ui/src"),
+      "@clippis/types": resolver("./packages/types/src"),
     },
   },
   build: {
