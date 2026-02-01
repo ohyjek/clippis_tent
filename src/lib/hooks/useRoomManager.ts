@@ -50,6 +50,7 @@ export interface RoomManagerState {
 
 /**
  * Hook for managing room state
+ * @returns RoomManagerState
  */
 export function useRoomManager(): RoomManagerState {
   const [rooms, setRooms] = createSignal<DrawnRoom[]>([]);
@@ -58,6 +59,13 @@ export function useRoomManager(): RoomManagerState {
   const selectedRoom = () => rooms().find((r) => r.id === selectedRoomId());
   const allWalls = (): Wall[] => rooms().flatMap((r) => r.walls);
 
+  /**
+   * Add a room from corner positions
+   * @param start - Start position
+   * @param end - End position
+   * @param config - Room configuration
+   * @returns True if the room was added, false if the room is too small
+   */
   const addRoom = (start: Position, end: Position, config: RoomConfig): boolean => {
     if (!isValidRoomSize(start, end)) {
       return false;
@@ -75,6 +83,10 @@ export function useRoomManager(): RoomManagerState {
     return true;
   };
 
+  /**
+   * Delete a room by ID
+   * @param id - The ID of the room to delete
+   */
   const deleteRoom = (id: string) => {
     setRooms((prev) => prev.filter((r) => r.id !== id));
     if (selectedRoomId() === id) {
@@ -82,11 +94,19 @@ export function useRoomManager(): RoomManagerState {
     }
   };
 
+  /**
+   * Delete the currently selected room if it exists
+   */
   const deleteSelectedRoom = () => {
     const id = selectedRoomId();
     if (id) deleteRoom(id);
   };
 
+  /**
+   * Update a room by ID
+   * @param id - The ID of the room to update
+   * @param updates - The updates to apply to the room
+   */
   const updateRoom = (
     id: string,
     updates: Partial<Pick<DrawnRoom, "label" | "color" | "attenuation">>
@@ -94,6 +114,9 @@ export function useRoomManager(): RoomManagerState {
     setRooms((prev) => updateItemById(prev, id, updates));
   };
 
+  /**
+   * Clear all rooms and reset the selected room ID
+   */
   const clearRooms = () => {
     setRooms([]);
     setSelectedRoomId(null);
