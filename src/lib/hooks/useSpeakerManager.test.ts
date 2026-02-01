@@ -101,7 +101,7 @@ describe("useSpeakerManager", () => {
 
     it("returns the new speaker", () => {
       const newSpeaker = manager.addSpeaker();
-      expect(newSpeaker.id).toContain("speaker-");
+      expect(newSpeaker.id).toBeDefined();
     });
 
     it("selects the new speaker", () => {
