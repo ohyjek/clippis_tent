@@ -30,6 +30,7 @@ import {
   countWallsBetween,
   calculateWallAttenuation,
 } from "@lib/spatial-audio";
+// import { logger } from "@lib/logger";
 
 // ============================================================================
 // RETURN TYPE EXPORTS
@@ -241,6 +242,15 @@ export function calculateListenerDirectionalGain(
  * @param listener - Listener configuration
  * @param walls - Array of walls for occlusion calculation
  * @param options - Audio calculation options
+ * @returns Audio parameters
+ * @example
+ * const params = calculateAudioParameters(source, listener, walls, {
+ *   distanceModel: "inverse",
+ *   masterVolume: 1,
+ *   attenuationPerWall: 0.3,
+ *   maxDistance: 5,
+ *   rearGainFloor: 0.3,
+ * });
  */
 export function calculateAudioParameters(
   source: SourceConfig,
@@ -248,6 +258,7 @@ export function calculateAudioParameters(
   walls: Wall[] = [],
   options: AudioParameterOptions = {}
 ): AudioParameters {
+  // logger.audio.debug("calculating audio parameters...", { source, listener, walls, options });
   const {
     distanceModel = "inverse",
     masterVolume = 1,

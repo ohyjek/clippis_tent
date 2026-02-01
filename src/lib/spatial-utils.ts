@@ -14,7 +14,8 @@
  * - Y increases downward
  */
 
-import type { Position, Wall, Bounds, DrawnRoom } from "@clippis/types";
+import type { Position, Wall, Bounds, DrawnRoom, SpeakerState } from "@clippis/types";
+import { createUniqueId } from "solid-js";
 
 // ============================================================================
 // CONSTANTS
@@ -36,8 +37,8 @@ export const MIN_ROOM_SIZE = 0.2;
  * @param prefix - ID prefix (e.g., "room", "speaker", "source")
  * @returns Unique ID string
  */
-export function generateId(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+export function generateId(): string {
+  return createUniqueId();
 }
 
 // ============================================================================
@@ -253,6 +254,36 @@ export function isValidRoomSize(start: Position, end: Position): boolean {
   const height = Math.abs(end.y - start.y);
   return width > MIN_ROOM_SIZE && height > MIN_ROOM_SIZE;
 }
+
+/**
+ * Check if a speaker is inside a room
+ *
+ * @param room - The room to check
+ * @param speaker - The speaker to check
+ * @returns true if the speaker is inside the room
+ * @returns false if the speaker is outside the room
+ */
+export const isSpeakerInsideRoom = (room: DrawnRoom, speaker: SpeakerState) => {
+  const speakerPosition = speaker.position;
+  const roomBounds = room.bounds;
+  const roomWidth = roomBounds.width;
+  const roomHeight = roomBounds.height;
+  const roomX = roomBounds.x;
+  const roomY = roomBounds.y;
+  const roomMinX = roomX - roomWidth / 2;
+  const roomMaxX = roomX + roomWidth / 2;
+  const roomMinY = roomY - roomHeight / 2;
+  const roomMaxY = roomY + roomHeight / 2;
+  if (
+    speakerPosition.x >= roomMinX &&
+    speakerPosition.x <= roomMaxX &&
+    speakerPosition.y >= roomMinY &&
+    speakerPosition.y <= roomMaxY
+  ) {
+    return true;
+  }
+  return false;
+};
 
 // ============================================================================
 // COLLECTION HELPERS

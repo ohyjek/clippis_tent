@@ -64,7 +64,7 @@ function createAudioStore() {
         return false;
       }
     }
-    logger.audio.warn("Audio context already initialized");
+    logger.audio.silly("Audio context already initialized");
     return false;
   };
 

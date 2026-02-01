@@ -108,7 +108,7 @@ export function useSpeakerManager(options?: SpeakerManagerOptions): SpeakerManag
     const currentSpeakers = speakers();
     const index = currentSpeakers.length;
     const newSpeaker: SpeakerState = {
-      id: generateId("speaker"),
+      id: generateId(),
       position: {
         x: (Math.random() - 0.5) * 4,
         y: (Math.random() - 0.5) * 3,

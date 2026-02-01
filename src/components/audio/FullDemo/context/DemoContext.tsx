@@ -32,6 +32,7 @@ import {
 import { getPositionFromEvent, getScreenPosition, DEFAULT_ATTENUATION } from "../utils";
 import { showToast } from "@stores/toast";
 import { logger } from "@lib/logger";
+import { isSpeakerInsideRoom } from "@lib/spatial-utils";
 
 // ============================================================================
 // SolidJS Context Value
@@ -161,14 +162,28 @@ export function DemoProvider(props: { children: JSX.Element }) {
   // ============================================================================
 
   /**
-   * Calculate the effective attenuation for the current room list.
-   * @returns The average attenuation of the current room list.
+   * Calculate the effective attenuation for the current speaker.
+   *
+   * @returns The effective attenuation for the current speaker.
    */
-  const effectiveAttenuation = (): number => {
+  const effectiveAttenuation = (speaker: SpeakerState): number => {
     const roomList = roomManager.rooms();
     if (roomList.length === 0) return DEFAULT_ATTENUATION;
-    const sum = roomList.reduce((acc, r) => acc + r.attenuation, 0);
-    return sum / roomList.length;
+
+    let sum = 0;
+    let count = 0;
+    for (const room of roomList) {
+      // logger.audio.debug("Room:", room.id, room.attenuation);
+      if (isSpeakerInsideRoom(room, speaker)) {
+        sum += room.attenuation;
+        count++;
+      }
+    }
+
+    // logger.audio.debug("Sum:", sum);
+    // logger.audio.debug("Length:", roomList.length);
+    // logger.audio.debug("Average:", sum / roomList.length);
+    return count ? sum / count : 0;
   };
 
   /**
@@ -177,6 +192,7 @@ export function DemoProvider(props: { children: JSX.Element }) {
    * @returns The audio parameters for the speaker.
    */
   const getAudioParams = (speaker: SpeakerState) => {
+    // logger.audio.debug("Getting audio params for speaker:", speaker.id);
     const listener = createListener(
       speakerManager.getPerspectivePosition(),
       speakerManager.getPerspectiveFacing()
@@ -191,14 +207,18 @@ export function DemoProvider(props: { children: JSX.Element }) {
       waveform: "sine" as const,
       playing: true,
     };
-    const transmission = 1 - effectiveAttenuation();
-    return calculateAudioParameters(sourceConfig, listener, roomManager.allWalls(), {
+    const transmission = 1 - effectiveAttenuation(speaker);
+    // logger.audio.debug("Transmission Value:", transmission);
+    const params = calculateAudioParameters(sourceConfig, listener, roomManager.allWalls(), {
       distanceModel: distanceModel(),
       masterVolume: audioStore.masterVolume(),
       attenuationPerWall: transmission,
       maxDistance: maxDistance(),
       rearGainFloor: rearGainFloor(),
     });
+
+    // logger.audio.debug("Audio Parameters:", { speakerId: speaker.id }, params);
+    return params;
   };
 
   /**
