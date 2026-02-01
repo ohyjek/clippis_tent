@@ -12,7 +12,7 @@
  * This component serves as a thin shell that composes all sub-components
  * and wraps them with the DemoProvider context.
  */
-import { audioStore } from "@/stores/audio";
+import { audioStore } from "@stores/audio";
 import { DemoProvider, useDemoContext } from "./context";
 import { Toolbar, SpatialCanvas, StatusBar, Sidebar } from "./components";
 import styles from "./FullDemo.module.css";

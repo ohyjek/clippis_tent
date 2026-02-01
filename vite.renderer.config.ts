@@ -12,25 +12,46 @@ import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 import path from "path";
 
+// Helper to create absolute paths
+const resolver = (dir: string) => path.resolve(__dirname, dir);
+
 export default defineConfig({
   plugins: [solidPlugin()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-      // Resolve workspace package
-      "@clippis/ui": path.resolve(__dirname, "./packages/ui/src"),
+      // Root src directory
+      "@": resolver("./src"),
+
+      // Main project directories
+      "@components": resolver("@/components"),
+      "@lib": resolver("@/lib"),
+      "@locales": resolver("@/locales"),
+      "@pages": resolver("@/pages"),
+      "@assets": resolver("@/assets"),
+      "@hooks": resolver("@/hooks"),
+      "@stores": resolver("@/stores"),
+      "@types": resolver("@/types"),
+      "@utils": resolver("@/utils"),
+      "@styles": resolver("@/styles"),
+
+      // Workspace packages
+      "@clippis/ui": resolver("@/packages/ui/src"),
+      "@clippis/types": resolver("@/packages/types/src"),
     },
   },
   build: {
     target: "esnext",
     // Enable minification
     minify: "esbuild",
+    sourcemap: true,
     // Chunk splitting for better caching
     rollupOptions: {
       output: {
         manualChunks: {
           // Vendor chunk for framework code
           "solid-vendor": ["solid-js", "solid-js/web", "@solidjs/router"],
+          // Workspace chunks for shared dependencies
+          workspace: ["@clippis/ui", "@clippis/types"],
         },
       },
     },

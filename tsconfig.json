@@ -5,7 +5,15 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@clippis/ui": ["./packages/ui/src"]
+      "@stores/*": ["./src/stores/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@locales/*": ["./src/locales/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@types/*": ["./src/types/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@styles/*": ["./src/styles/*"]
     }
   },
   "include": [
