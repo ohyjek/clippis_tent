@@ -20,7 +20,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx}\" \"packages/**/*.{ts,tsx}\" \"e2e/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"packages/**/*.{ts,tsx}\" \"e2e/**/*.ts\"",
     "typecheck": "tsc --noEmit",
-    "check": "pnpm typecheck && pnpm lint && pnpm format:check",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -30,6 +30,7 @@
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",
     "clean": "rimraf .vite out dist",
+    "clean:test": "rimraf playwright-report",
     "prepare": "husky"
   },
   "lint-staged": {
