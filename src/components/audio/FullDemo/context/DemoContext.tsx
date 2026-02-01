@@ -68,7 +68,6 @@ export function useDemoContext() {
  * - audio playback management
  * - canvas drawing
  * - microphone management
- * - audio playback management
  * - audio parameter calculations
  * - display gain calculations
  * - wall count calculations
