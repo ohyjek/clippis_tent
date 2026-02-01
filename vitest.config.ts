@@ -25,6 +25,9 @@ import { defineConfig } from "vitest/config";
 import solid from "vite-plugin-solid";
 import path from "path";
 
+// Helper to create absolute paths
+const resolver = (dir: string) => path.resolve(__dirname, dir);
+
 export default defineConfig({
   plugins: [
     solid({
@@ -37,14 +40,24 @@ export default defineConfig({
     alias: {
       // Deduplicate solid-js: force all imports to resolve to root node_modules
       // This prevents "multiple instances of Solid" warnings in monorepo
-      "solid-js/web": path.resolve(__dirname, "node_modules/solid-js/web"),
-      "solid-js/store": path.resolve(__dirname, "node_modules/solid-js/store"),
-      "solid-js": path.resolve(__dirname, "node_modules/solid-js"),
+      "solid-js/web": resolver("node_modules/solid-js/web"),
+      "solid-js/store": resolver("node_modules/solid-js/store"),
+      "solid-js": resolver("node_modules/solid-js"),
       // Resolve UI package to source for better DX
-      "@clippis/ui": path.resolve(__dirname, "packages/ui/src"),
+      "@clippis/ui": resolver("packages/ui/src"),
+      "@clippis/types": resolver("packages/types/src"),
       // App source alias
-      "@/": path.resolve(__dirname, "src/"),
-      "@": path.resolve(__dirname, "src"),
+      "@/": resolver("src/"),
+      "@": resolver("src"),
+      "@stores": resolver("src/stores"),
+      "@lib": resolver("src/lib"),
+      "@locales": resolver("src/locales"),
+      "@pages": resolver("src/pages"),
+      "@assets": resolver("src/assets"),
+      "@hooks": resolver("src/hooks"),
+      "@types": resolver("src/types"),
+      "@utils": resolver("src/utils"),
+      "@styles": resolver("src/styles"),
     },
   },
   test: {
