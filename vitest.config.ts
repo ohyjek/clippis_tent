@@ -2,8 +2,23 @@
  * vitest.config.ts - Test runner configuration
  *
  * Configures Vitest for unit testing across the monorepo.
- * Tests are in src/ (app) and packages/ui/src/ (UI library).
- * Run with: pnpm test
+ *
+ * Test locations:
+ * - src/**\/*.test.ts      - App hooks and utilities
+ * - packages/ui/**\/*.test.tsx - UI component tests
+ *
+ * Scripts:
+ * - pnpm test          - Run all tests once
+ * - pnpm test:watch    - Watch mode
+ * - pnpm test:coverage - With coverage report
+ * - pnpm test:hooks    - Run only hook tests
+ * - pnpm test:spatial  - Run only spatial audio tests
+ *
+ * Performance optimizations:
+ * - Thread pool for parallel execution
+ * - 5s timeout catches hanging tests
+ * - Global mocks for Electron APIs (logger, ipc)
+ * - Solid-js deduplication prevents multiple instance issues
  */
 // eslint-disable-next-line import/no-unresolved
 import { defineConfig } from "vitest/config";
@@ -36,13 +51,22 @@ export default defineConfig({
     globals: true,
     include: ["src/**/*.test.ts", "packages/ui/src/**/*.test.tsx"],
     environment: "jsdom",
-    setupFiles: ["./packages/ui/test/setup.ts"],
+    // Setup files: app-level mocks + UI component mocks
+    setupFiles: ["./src/test/setup.ts", "./packages/ui/test/setup.ts"],
+    // Performance: use threads pool for faster parallel execution
+    pool: "threads",
+    // Catch hanging tests early (5s per test, 10s per hook)
+    testTimeout: 5000,
+    hookTimeout: 10000,
+    // Faster test isolation
+    isolate: true,
     // Silence the "multiple instances" warning - we've deduplicated above
     silent: false,
     onConsoleLog(log) {
-      // Filter out the known Solid warning that's a false positive due to test isolation
+      // Filter out known warnings that are false positives in test isolation
       if (log.includes("multiple instances of Solid")) return false;
       if (log.includes("computations created outside")) return false;
+      if (log.includes("electron-log")) return false;
       return true;
     },
     server: {

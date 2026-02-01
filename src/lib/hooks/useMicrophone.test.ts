@@ -5,6 +5,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createRoot } from "solid-js";
 import { useMicrophone, type MicrophoneState } from "./useMicrophone";
 
+// Note: logger is mocked globally in src/test/setup.ts
+
 // Mock the audio store
 vi.mock("@/stores/audio", () => ({
   audioStore: {

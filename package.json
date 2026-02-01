@@ -24,6 +24,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:hooks": "vitest run src/lib/hooks",
+    "test:spatial": "vitest run src/lib/spatial",
     "test:ui": "pnpm --filter @clippis/ui test",
     "test:all": "pnpm test && pnpm e2e",
     "e2e": "playwright test",
