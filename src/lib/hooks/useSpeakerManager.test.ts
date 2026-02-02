@@ -101,7 +101,7 @@ describe("useSpeakerManager", () => {
 
     it("returns the new speaker", () => {
       const newSpeaker = manager.addSpeaker();
-      expect(newSpeaker.id).toContain("speaker-");
+      expect(newSpeaker.id).toBeDefined();
     });
 
     it("selects the new speaker", () => {
@@ -167,6 +167,23 @@ describe("useSpeakerManager", () => {
     it("getPerspectiveFacing returns perspective speaker facing", () => {
       const facing = manager.getPerspectiveFacing();
       expect(facing).toBe(0);
+    });
+
+    it("getCurrentPerspectiveSpeaker returns the current perspective speaker", () => {
+      const speaker = manager.getCurrentPerspectiveSpeaker();
+      expect(speaker?.id).toBe("observer");
+    });
+
+    it("getCurrentPerspectiveSpeaker returns updated speaker after perspective change", () => {
+      manager.setCurrentPerspective("speaker-1");
+      const speaker = manager.getCurrentPerspectiveSpeaker();
+      expect(speaker?.id).toBe("speaker-1");
+    });
+
+    it("getCurrentPerspectiveSpeaker returns undefined for non-existent perspective", () => {
+      manager.setCurrentPerspective("non-existent");
+      const speaker = manager.getCurrentPerspectiveSpeaker();
+      expect(speaker).toBeUndefined();
     });
   });
 

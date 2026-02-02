@@ -15,8 +15,19 @@ import path from "path";
 // Helper to create absolute paths
 const resolver = (dir: string) => path.resolve(__dirname, dir);
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [solidPlugin()],
+  // Use inline source maps for better debugger support in dev
+  css: {
+    devSourcemap: true,
+  },
+  server: {
+    sourcemapIgnoreList: false,
+  },
+  // Force inline source maps in dev for debugger compatibility
+  esbuild: {
+    sourcemap: mode === "development" ? "inline" : true,
+  },
   resolve: {
     alias: {
       // Root src directory
@@ -60,4 +71,4 @@ export default defineConfig({
   optimizeDeps: {
     include: ["solid-js", "@solidjs/router"],
   },
-});
+}));
