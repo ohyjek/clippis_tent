@@ -19,7 +19,7 @@ export {
   type AudioNodes,
   type PlaybackParams,
   type AudioPlaybackState,
-} from "./useAudioPlayback";
+} from "@lib/hooks/useAudioPlayback";
 export {
   useMicrophone,
   type MicrophoneOptions,
@@ -33,6 +33,7 @@ export {
   type SpeakerManagerOptions,
   type SpeakerManagerState,
 } from "@lib/hooks/useSpeakerManager";
+export { useRemoteSpeaker, type UseRemoteSpeakerReturn } from "@lib/hooks/useRemoteSpeaker";
 export {
   useCanvasDrawing,
   type CanvasDrawingOptions,
