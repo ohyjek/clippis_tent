@@ -4,7 +4,7 @@ A desktop application prototype recreating **Dolby Axon**-style spatial voice ch
 
 ## Overview
 
-Clippis demonstrates spatial audio positioning where sound sources have virtual positions in a 2D room. The listener (you) can move around, and audio volume/panning adjusts based on:
+Clippi's tent demonstrates spatial audio positioning where sound sources have virtual positions in a 2D room. The listener (you) can move around, and audio volume/panning adjusts based on:
 
 - **Distance attenuation** — Sounds get quieter as they move further away (linear, inverse, exponential models)
 - **Stereo panning** — Sounds pan left/right based on horizontal position relative to the listener
