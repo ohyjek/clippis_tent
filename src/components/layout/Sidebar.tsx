@@ -18,13 +18,14 @@ import styles from "./Sidebar.module.css";
 
 interface NavItem {
   path: string;
-  labelKey: "nav.tent" | "nav.settings";
+  labelKey: "nav.tent" | "nav.webrtc" | "nav.settings";
   icon: string;
 }
 
 /** Navigation items shown in the sidebar */
 const navItems: NavItem[] = [
   { path: "/", labelKey: "nav.tent", icon: "🎪" },
+  { path: "/webrtc", labelKey: "nav.webrtc", icon: "🌐" },
   { path: "/settings", labelKey: "nav.settings", icon: "⚙️" },
 ];
 

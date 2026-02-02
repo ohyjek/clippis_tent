@@ -226,7 +226,7 @@ export function DemoProvider(props: { children: JSX.Element }) {
       rearGainFloor: rearGainFloor(),
     });
 
-    // logger.audio.debug("Audio Parameters:", { speakerId: speaker.id }, params);
+    //logger.audio.debug("Audio Parameters:", { speakerId: speaker.id }, params);
     return params;
   };
 

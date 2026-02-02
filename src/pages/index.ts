@@ -6,3 +6,4 @@
  */
 export { Tent } from "./Tent";
 export { Settings } from "./Settings";
+export { WebRTC } from "./WebRTC";
