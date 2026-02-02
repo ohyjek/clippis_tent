@@ -1,37 +1,3 @@
----
-name: Multiplayer Proof of Concept Plan
-overview: Implement a basic P2P multiplayer proof-of-concept using raw WebRTC with manual signaling, enabling two users to hear each other spatially and see each other's speaker positions in real-time.
-todos:
-  - id: types
-    content: Add multiplayer types to packages/types/src/audio.ts (PeerConnectionState, RemotePeerState, DataChannelMessage)
-    status: pending
-  - id: useWebRTC
-    content: Create useWebRTC hook for RTCPeerConnection management with manual SDP exchange
-    status: pending
-  - id: useRemoteSpeaker
-    content: Create useRemoteSpeaker hook to route remote audio through spatial audio system
-    status: pending
-  - id: connectionPanel
-    content: Create ConnectionPanel component with SDP copy/paste UI
-    status: pending
-  - id: sidebar
-    content: Add Connection tab to Sidebar component
-    status: pending
-  - id: demoContext
-    content: Integrate WebRTC and remote speaker hooks into DemoContext
-    status: pending
-  - id: canvas
-    content: Update SpatialCanvas to render remote peer speaker
-    status: pending
-  - id: tests
-    content: Add unit tests for useWebRTC and useRemoteSpeaker hooks
-    status: pending
-  - id: documentation
-    content: Create MULTIPLAYER_POC.md in docs/ folder with this plan
-    status: pending
-isProject: false
----
-
 # Multiplayer POC Implementation Plan
 
 A step-by-step guide for implementing peer-to-peer spatial audio between two users using raw WebRTC with manual SDP exchange.
