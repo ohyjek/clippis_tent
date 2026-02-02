@@ -54,8 +54,33 @@ export function createWebRTCStore(): WebRTCStoreState {
   const initializePeerConnection = () => {
     if (!peerConnection()) {
       try {
-        const newPeerConnection = new RTCPeerConnection({ iceServers: DEFAULT_ICE_SERVERS });
-        setPeerConnection(newPeerConnection);
+        const rtcpc = new RTCPeerConnection({ iceServers: DEFAULT_ICE_SERVERS });
+
+        rtcpc.onicecandidate = (event) => {
+          logger.info("ICE candidate: ", event);
+        };
+
+        rtcpc.onconnectionstatechange = (event) => {
+          logger.info("Connection state change: ", event);
+        };
+
+        rtcpc.oniceconnectionstatechange = (event) => {
+          logger.info("ICE connection state change: ", event);
+        };
+
+        rtcpc.onicegatheringstatechange = (event) => {
+          logger.info("ICE gathering state change: ", event);
+        };
+
+        rtcpc.ontrack = (event) => {
+          logger.info("Track added: ", event);
+        };
+
+        rtcpc.onicecandidateerror = (event) => {
+          logger.info("ICE candidate error: ", event);
+        };
+
+        setPeerConnection(rtcpc);
         logger.info("Peer connection initialized");
         return true;
       } catch (error) {
@@ -64,13 +89,18 @@ export function createWebRTCStore(): WebRTCStoreState {
         return false;
       }
     }
-    logger.store.silly("Peer connection already initialized");
+    logger.debug("Peer connection already initialized");
     return false;
   };
 
   // ------------------------------------------------------------
   // RTC Actions
   // ------------------------------------------------------------
+  /**
+   * Create an offer.
+   * @returns {Promise<void>} void
+   * @returns {Promise<void>} void if it failed to create an offer
+   */
   const createOffer = async () => {
     const currentPeerConnection = peerConnection();
     if (currentPeerConnection) {
@@ -82,14 +112,44 @@ export function createWebRTCStore(): WebRTCStoreState {
       logger.error("Failed to create offer: no peer connection");
       showToast({ type: "error", message: "Failed to create offer" });
     }
-  };
-
-  const setRemoteSdp = async (_sdp: string) => {
-    logger.info("todo: implement setRemoteSdp");
     return;
   };
+
+  /**
+   * Set the remote SDP.
+   * @param sdp - The remote SDP to set.
+   * @returns {Promise<void>} void
+   * @returns {Promise<void>} void if it failed to set the remote SDP
+   */
+  const setRemoteSdp = async (sdp: string) => {
+    const currentPeerConnection = peerConnection();
+    if (currentPeerConnection) {
+      await currentPeerConnection.setRemoteDescription(
+        new RTCSessionDescription({ type: "answer", sdp: sdp })
+      );
+      logger.info("Remote SDP set");
+    } else {
+      logger.error("Failed to set remote SDP: no peer connection");
+      showToast({ type: "error", message: "Failed to set remote SDP" });
+    }
+    return;
+  };
+
+  /**
+   * Disconnect the peer connection.
+   * @returns {void} void
+   * @returns {void} void if it failed to disconnect
+   */
   const disconnect = () => {
-    logger.info("todo: implement disconnect");
+    const currentPeerConnection = peerConnection();
+    if (currentPeerConnection) {
+      currentPeerConnection.close();
+      setPeerConnection(null);
+      logger.info("Peer connection disconnected");
+    } else {
+      logger.error("Failed to disconnect: no peer connection");
+      showToast({ type: "error", message: "Failed to disconnect" });
+    }
     return;
   };
 

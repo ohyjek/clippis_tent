@@ -19,7 +19,7 @@ export {
   type AudioNodes,
   type PlaybackParams,
   type AudioPlaybackState,
-} from "./useAudioPlayback";
+} from "@lib/hooks/useAudioPlayback";
 export {
   useMicrophone,
   type MicrophoneOptions,
