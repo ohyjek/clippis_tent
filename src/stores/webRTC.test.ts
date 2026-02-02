@@ -1,5 +1,5 @@
 /**
- * useWebRTC.test.ts - Unit tests for WebRTC connection management hook
+ * webRTC.test.ts - Unit tests for WebRTC store
  *
  * Tests cover:
  * - Initial state
@@ -11,7 +11,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createRoot } from "solid-js";
-import { useWebRTC, type UseWebRTCReturn } from "@lib/hooks/useWebRTC";
+import { createWebRTCStore, type WebRTCStoreState } from "@src/stores/webRTC";
 
 // Note: logger is mocked globally in src/test/setup.ts
 
@@ -87,16 +87,22 @@ beforeEach(() => {
   mockDataChannel = createMockDataChannel();
   mockPeerConnection = createMockPeerConnection();
 
-  // Mock RTCPeerConnection constructor
+  // Mock RTCPeerConnection constructor - must be a function/class for `new` to work
   vi.stubGlobal(
     "RTCPeerConnection",
-    vi.fn().mockImplementation(() => mockPeerConnection)
+    vi.fn(function (this: MockRTCPeerConnection) {
+      Object.assign(this, mockPeerConnection);
+      return this;
+    })
   );
 
   // Mock RTCSessionDescription constructor
   vi.stubGlobal(
     "RTCSessionDescription",
-    vi.fn().mockImplementation((init) => init)
+    vi.fn(function (this: RTCSessionDescriptionInit, init: RTCSessionDescriptionInit) {
+      Object.assign(this, init);
+      return this;
+    })
   );
 });
 
@@ -110,12 +116,12 @@ afterEach(() => {
 // =============================================================================
 
 describe("useWebRTC", () => {
-  let webrtc: UseWebRTCReturn;
+  let webrtc: WebRTCStoreState;
   let dispose: () => void;
 
   const createWebRTC = () => {
     dispose = createRoot((d) => {
-      webrtc = useWebRTC();
+      webrtc = createWebRTCStore();
       return d;
     });
   };
@@ -146,13 +152,14 @@ describe("useWebRTC", () => {
 
   describe("createOffer (initiator flow)", () => {
     beforeEach(() => createWebRTC());
+    beforeEach(() => webrtc.initializePeerConnection());
 
     it("creates an offer and sets local description", async () => {
       await webrtc.createOffer();
 
       // When implemented, these should be called
-      // expect(mockPeerConnection.createOffer).toHaveBeenCalled();
-      // expect(mockPeerConnection.setLocalDescription).toHaveBeenCalled();
+      expect(mockPeerConnection.createOffer).toHaveBeenCalled();
+      expect(mockPeerConnection.setLocalDescription).toHaveBeenCalled();
     });
 
     it("generates local SDP after creating offer", async () => {
