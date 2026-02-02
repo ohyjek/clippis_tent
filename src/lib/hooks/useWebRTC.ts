@@ -3,7 +3,7 @@ import { Accessor } from "solid-js";
 import type { PeerConnectionState, RemotePeerState, Position } from "@clippis/types";
 import { logger } from "@lib/logger";
 
-interface UseWebRTCReturn {
+export interface UseWebRTCReturn {
   // Connection state
   connectionState: Accessor<PeerConnectionState>;
   localSdp: Accessor<string>; // SDP to copy

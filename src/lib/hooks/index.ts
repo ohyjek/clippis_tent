@@ -33,8 +33,8 @@ export {
   type SpeakerManagerOptions,
   type SpeakerManagerState,
 } from "@lib/hooks/useSpeakerManager";
-export { useWebRTC } from "@lib/hooks/useWebRTC";
-export { useRemoteSpeaker } from "@lib/hooks/useRemoteSpeaker";
+export { useWebRTC, type UseWebRTCReturn } from "@lib/hooks/useWebRTC";
+export { useRemoteSpeaker, type UseRemoteSpeakerReturn } from "@lib/hooks/useRemoteSpeaker";
 export {
   useCanvasDrawing,
   type CanvasDrawingOptions,

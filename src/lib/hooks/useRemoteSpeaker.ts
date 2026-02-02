@@ -3,7 +3,7 @@ import { Position, AudioParameters } from "@clippis/types";
 import { Accessor } from "solid-js";
 import { logger } from "@lib/logger";
 
-interface UseRemoteSpeakerReturn {
+export interface UseRemoteSpeakerReturn {
   // Bind remote stream to audio output
   setRemoteStream: (stream: MediaStream | null) => void;
 

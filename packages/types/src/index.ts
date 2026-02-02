@@ -2,7 +2,7 @@
 export type { Position, Wall, Bounds } from "./geometry";
 
 // WebRTC types
-export type { PeerConnectionState, RemotePeerState } from "./webRTC";
+export type { PeerConnectionState, RemotePeerState, DataChannelMessage } from "./webRTC";
 
 // Audio types
 export type {
