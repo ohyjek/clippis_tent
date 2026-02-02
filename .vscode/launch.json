@@ -39,6 +39,6 @@
   "skipFiles": [
     "<node_internals>/**",
     "${workspaceFolder}/node_modules/**",
-    "${workspaceFolder}/.vite/**" // Skip Vite internal files
+    "${workspaceFolder}/.vite/**"
   ]
 }
