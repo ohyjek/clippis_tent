@@ -26,7 +26,8 @@ export interface SpeakerManagerState {
   /** Current perspective (who "you" are) */
   currentPerspective: Accessor<string>;
   setCurrentPerspective: Setter<string>;
-
+  /** Get the currently selected perspective speaker */
+  getCurrentPerspectiveSpeaker: () => SpeakerState | undefined;
   /** Get the currently selected speaker */
   getSelectedSpeaker: () => SpeakerState | undefined;
   /** Get a speaker by ID */
@@ -94,6 +95,7 @@ export function useSpeakerManager(options?: SpeakerManagerOptions): SpeakerManag
   const getSpeakerById = (id: string) => speakers().find((s) => s.id === id);
   const isCurrentPerspective = (id: string) => currentPerspective() === id;
 
+  const getCurrentPerspectiveSpeaker = () => getSpeakerById(currentPerspective());
   const getPerspectivePosition = (): Position => {
     const speaker = getSpeakerById(currentPerspective());
     return speaker?.position ?? { x: 0, y: 0 };
@@ -189,6 +191,7 @@ export function useSpeakerManager(options?: SpeakerManagerOptions): SpeakerManag
     setCurrentPerspective,
     getSelectedSpeaker,
     getSpeakerById,
+    getCurrentPerspectiveSpeaker,
     isCurrentPerspective,
     getPerspectivePosition,
     getPerspectiveFacing,

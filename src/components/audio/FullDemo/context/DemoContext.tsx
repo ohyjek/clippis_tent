@@ -164,26 +164,35 @@ export function DemoProvider(props: { children: JSX.Element }) {
   /**
    * Calculate the effective attenuation for the current speaker.
    *
+   * Uses the MAXIMUM attenuation of all rooms containing the speaker and the perspective speaker.
+   * This ensures that a fully-blocking inner room can't be "diluted" by
+   * adding a less-blocking outer room around it.
+   *
+   * If the speaker is not inside any room, returns DEFAULT_ATTENUATION
+   * so that walls still block sound properly.
+   *
    * @returns The effective attenuation for the current speaker.
    */
   const effectiveAttenuation = (speaker: SpeakerState): number => {
     const roomList = roomManager.rooms();
     if (roomList.length === 0) return DEFAULT_ATTENUATION;
+    const perspectiveSpeaker = speakerManager.getCurrentPerspectiveSpeaker();
+    if (!perspectiveSpeaker) return DEFAULT_ATTENUATION;
 
-    let sum = 0;
-    let count = 0;
+    let maxAttenuation = -1;
     for (const room of roomList) {
       // logger.audio.debug("Room:", room.id, room.attenuation);
+
+      if (isSpeakerInsideRoom(room, perspectiveSpeaker)) {
+        maxAttenuation = Math.max(maxAttenuation, room.attenuation);
+      }
       if (isSpeakerInsideRoom(room, speaker)) {
-        sum += room.attenuation;
-        count++;
+        maxAttenuation = Math.max(maxAttenuation, room.attenuation);
       }
     }
 
-    // logger.audio.debug("Sum:", sum);
-    // logger.audio.debug("Length:", roomList.length);
-    // logger.audio.debug("Average:", sum / roomList.length);
-    return count ? sum / count : 0;
+    // logger.audio.debug("Info", { maxAttenuation });
+    return maxAttenuation >= 0 ? maxAttenuation : DEFAULT_ATTENUATION;
   };
 
   /**
