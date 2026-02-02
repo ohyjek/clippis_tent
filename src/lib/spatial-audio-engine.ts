@@ -30,7 +30,6 @@ import {
   countWallsBetween,
   calculateWallAttenuation,
 } from "@lib/spatial-audio";
-// import { logger } from "@lib/logger";
 
 // ============================================================================
 // RETURN TYPE EXPORTS
@@ -258,7 +257,6 @@ export function calculateAudioParameters(
   walls: Wall[] = [],
   options: AudioParameterOptions = {}
 ): AudioParameters {
-  // logger.audio.debug("calculating audio parameters...", { source, listener, walls, options });
   const {
     distanceModel = "inverse",
     masterVolume = 1,

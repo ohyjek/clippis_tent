@@ -32,9 +32,8 @@ export const MIN_ROOM_SIZE = 0.2;
 // ============================================================================
 
 /**
- * Generate a unique ID with prefix
+ * Generate a unique ID using SolidJS createUniqueId
  *
- * @param prefix - ID prefix (e.g., "room", "speaker", "source")
  * @returns Unique ID string
  */
 export function generateId(): string {
