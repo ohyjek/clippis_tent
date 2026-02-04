@@ -11,7 +11,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createRoot } from "solid-js";
-import { createWebRTCStore, type WebRTCStoreState } from "@src/stores/webRTC";
+import { createWebRTCStore, type WebRTCStore } from "@src/stores/webRTC";
 
 // Note: logger is mocked globally in src/test/setup.ts
 
@@ -115,8 +115,8 @@ afterEach(() => {
 // Tests
 // =============================================================================
 
-describe("useWebRTC", () => {
-  let webrtc: WebRTCStoreState;
+describe("webRTC store", () => {
+  let webrtc: WebRTCStore;
   let dispose: () => void;
 
   const createWebRTC = () => {
@@ -133,12 +133,12 @@ describe("useWebRTC", () => {
   describe("initial state", () => {
     beforeEach(() => createWebRTC());
 
-    it("starts with 'new' connection state", () => {
-      expect(webrtc.connectionState()).toBe("new");
+    it("starts with null connection state", () => {
+      expect(webrtc.connectionState()).toBeNull();
     });
 
-    it("starts with empty local SDP", () => {
-      expect(webrtc.localSdp()).toBe("");
+    it("starts with null local SDP", () => {
+      expect(webrtc.localSdp()).toBeNull();
     });
 
     it("starts with null remote stream", () => {
