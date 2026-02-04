@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Accessor, createRoot, createSignal } from "solid-js";
-import type { PeerConnectionState, RemotePeerState, Position } from "@clippis/types";
+import type { RemotePeerState, Position } from "@clippis/types";
 import { logger } from "@lib/logger";
 import { showToast } from "@stores/toast";
 
 export interface WebRTCStoreState {
   // Actions
   initializePeerConnection: () => boolean;
-  setConnectionState: (state: PeerConnectionState) => void;
+  // setConnectionState: (state: PeerConnectionState) => void;
   // Connection state
-  connectionState: Accessor<PeerConnectionState>;
+  connectionState: Accessor<RTCPeerConnectionState>;
   localSdp: Accessor<string>; // SDP to copy
 
   // Actions
   createOffer: () => Promise<void>; // Initiator calls this
   setRemoteSdp: (sdp: string) => Promise<void>; // Paste remote SDP
-  disconnect: () => void;
+  disconnect: () => boolean;
 
   // Remote data
   remoteStream: Accessor<MediaStream | null>;
@@ -34,13 +34,22 @@ const DEFAULT_ICE_SERVERS = [
   },
 ];
 
+/**
+ *
+ * @returns {WebRTCStoreState} The webRTC store state.
+ */
 export function createWebRTCStore(): WebRTCStoreState {
+  // ------------------------------------------------------------
+  // Remote data
+  // ------------------------------------------------------------
+  const [remoteStream, setRemoteStream] = createSignal<MediaStream | null>(null);
+  const [remotePeerState, setRemotePeerState] = createSignal<RemotePeerState | null>(null);
   // ------------------------------------------------------------
   // Connection State Signals
   // ------------------------------------------------------------
-  const [connectionState, setConnectionState] = createSignal<PeerConnectionState>("new"); // For UI Not yet implemented
-  const [peerConnection, setPeerConnection] = createSignal<RTCPeerConnection | null>(null); // Only support one connection for test
-  const [localSdp, setLocalSdp] = createSignal<string>("");
+  const [connectionState, setConnectionState] = createSignal<RTCPeerConnectionState>("new");
+  const [peerConnection, setPeerConnection] = createSignal<RTCPeerConnection | null>(null);
+  const [localSdp, setLocalSdp] = createSignal<string>(""); // Local SDP to copy
 
   // ------------------------------------------------------------
   // Peer Connection Initialization
@@ -54,34 +63,51 @@ export function createWebRTCStore(): WebRTCStoreState {
   const initializePeerConnection = () => {
     if (!peerConnection()) {
       try {
-        const rtcpc = new RTCPeerConnection({ iceServers: DEFAULT_ICE_SERVERS });
+        // Returns a new RTCPeerConnection,
+        // representing a connection between
+        // the local device and a remote peer.
+        const connection = new RTCPeerConnection({ iceServers: DEFAULT_ICE_SERVERS });
 
-        rtcpc.onicecandidate = (event) => {
+        logger.info("new connection state: ", connection.connectionState);
+
+        connection.onicecandidate = (event) => {
           logger.info("ICE candidate: ", event);
         };
 
-        rtcpc.onconnectionstatechange = (event) => {
+        connection.onconnectionstatechange = (event) => {
+          // TODO: Implement connection state change
           logger.info("Connection state change: ", event);
+          setConnectionState(connection.connectionState);
         };
 
-        rtcpc.oniceconnectionstatechange = (event) => {
+        connection.oniceconnectionstatechange = (event) => {
+          // TODO: Implement ICE connection state change
           logger.info("ICE connection state change: ", event);
         };
 
-        rtcpc.onicegatheringstatechange = (event) => {
+        connection.onicegatheringstatechange = (event) => {
+          // TODO: Implement ICE gathering state change
           logger.info("ICE gathering state change: ", event);
         };
 
-        rtcpc.ontrack = (event) => {
+        connection.ontrack = (event) => {
+          // TODO: Implement track added
           logger.info("Track added: ", event);
         };
 
-        rtcpc.onicecandidateerror = (event) => {
+        connection.onicecandidateerror = (event) => {
+          // TODO: Implement ICE candidate error
           logger.info("ICE candidate error: ", event);
         };
 
-        setPeerConnection(rtcpc);
+        connection.onnegotiationneeded = (event) => {
+          // TODO: Implement negotiation needed
+          logger.info("Negotiation needed: ", event);
+        };
+
+        setPeerConnection(connection);
         logger.info("Peer connection initialized");
+        showToast({ type: "success", message: "Peer connection successfully initialized" });
         return true;
       } catch (error) {
         logger.error("Failed to initialize peer connection: ", error);
@@ -90,6 +116,7 @@ export function createWebRTCStore(): WebRTCStoreState {
       }
     }
     logger.debug("Peer connection already initialized");
+    showToast({ type: "error", message: "Peer connection already initialized" });
     return false;
   };
 
@@ -108,6 +135,7 @@ export function createWebRTCStore(): WebRTCStoreState {
       await currentPeerConnection.setLocalDescription(offer);
       setLocalSdp(offer?.sdp ?? "");
       logger.info("creating offer: ", offer);
+      showToast({ type: "success", message: "Offer successfully created" });
     } else {
       logger.error("Failed to create offer: no peer connection");
       showToast({ type: "error", message: "Failed to create offer" });
@@ -128,6 +156,7 @@ export function createWebRTCStore(): WebRTCStoreState {
         new RTCSessionDescription({ type: "answer", sdp: sdp })
       );
       logger.info("Remote SDP set");
+      showToast({ type: "success", message: "Remote SDP successfully set" });
     } else {
       logger.error("Failed to set remote SDP: no peer connection");
       showToast({ type: "error", message: "Failed to set remote SDP" });
@@ -137,27 +166,38 @@ export function createWebRTCStore(): WebRTCStoreState {
 
   /**
    * Disconnect the peer connection.
-   * @returns {void} void
-   * @returns {void} void if it failed to disconnect
+   * @returns {boolean} true if the peer connection was disconnected
+   * @returns {boolean} false if it failed to disconnect
    */
   const disconnect = () => {
     const currentPeerConnection = peerConnection();
     if (currentPeerConnection) {
+      // 1. Close the connection (fires synchronous state change events)
       currentPeerConnection.close();
+
+      // 2. Remove all event handlers (close() has already fired its events)
+      currentPeerConnection.onconnectionstatechange = null;
+      currentPeerConnection.oniceconnectionstatechange = null;
+      currentPeerConnection.onicegatheringstatechange = null;
+      currentPeerConnection.ontrack = null;
+      currentPeerConnection.onicecandidate = null;
+      currentPeerConnection.onicecandidateerror = null;
+
+      // 3. Clear signals
       setPeerConnection(null);
-      logger.info("Peer connection disconnected");
+      setLocalSdp("");
+      setRemoteStream(null);
+      setRemotePeerState(null);
+
+      logger.info("Peer connection disconnected and cleaned up");
+      showToast({ type: "success", message: "Peer connection successfully disconnected" });
+      return true;
     } else {
       logger.error("Failed to disconnect: no peer connection");
       showToast({ type: "error", message: "Failed to disconnect" });
+      return false;
     }
-    return;
   };
-
-  // ------------------------------------------------------------
-  // Remote data
-  // ------------------------------------------------------------
-  const [remoteStream, setRemoteStream] = createSignal<MediaStream | null>(null);
-  const [remotePeerState, setRemotePeerState] = createSignal<RemotePeerState | null>(null);
 
   // ------------------------------------------------------------
   // Local data to send
@@ -174,7 +214,6 @@ export function createWebRTCStore(): WebRTCStoreState {
   return {
     initializePeerConnection,
     connectionState,
-    setConnectionState,
     localSdp,
     createOffer,
     setRemoteSdp,

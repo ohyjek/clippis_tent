@@ -157,7 +157,6 @@ describe("useWebRTC", () => {
     it("creates an offer and sets local description", async () => {
       await webrtc.createOffer();
 
-      // When implemented, these should be called
       expect(mockPeerConnection.createOffer).toHaveBeenCalled();
       expect(mockPeerConnection.setLocalDescription).toHaveBeenCalled();
     });
@@ -165,8 +164,7 @@ describe("useWebRTC", () => {
     it("generates local SDP after creating offer", async () => {
       await webrtc.createOffer();
 
-      // When implemented, localSdp should contain the offer
-      // expect(webrtc.localSdp()).toContain("sdp");
+      expect(webrtc.localSdp()).toContain("sdp");
     });
 
     it("creates a data channel for position/state sync", async () => {

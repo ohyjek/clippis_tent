@@ -1,8 +1,5 @@
 import { Position } from "./geometry";
 
-// Peer connection state
-export type PeerConnectionState = "new" | "connecting" | "connected" | "disconnected" | "failed";
-
 // Remote peer data synced via DataChannel
 export interface RemotePeerState {
   peerId: string;
