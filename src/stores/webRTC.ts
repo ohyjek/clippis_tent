@@ -1,32 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Accessor, createRoot, createSignal } from "solid-js";
+import { createRoot, createSignal } from "solid-js";
 import type { RemotePeerState, Position } from "@clippis/types";
 import { logger } from "@lib/logger";
 import { showToast } from "@stores/toast";
-
-export interface WebRTCStoreState {
-  // Actions
-  initializePeerConnection: () => boolean;
-  // setConnectionState: (state: PeerConnectionState) => void;
-  // Connection state
-  connectionState: Accessor<RTCPeerConnectionState>;
-  localSdp: Accessor<string>; // SDP to copy
-
-  // Actions
-  createOffer: () => Promise<void>; // Initiator calls this
-  setRemoteSdp: (sdp: string) => Promise<void>; // Paste remote SDP
-  disconnect: () => boolean;
-
-  // Remote data
-  remoteStream: Accessor<MediaStream | null>;
-  setRemoteStream: (stream: MediaStream | null) => void;
-  remotePeerState: Accessor<RemotePeerState | null>;
-  setRemotePeerState: (state: RemotePeerState | null) => void;
-
-  // Local data to send
-  sendPosition: (position: Position, facing: number) => void;
-  sendSpeakingState: (isSpeaking: boolean) => void;
-}
 
 const DEFAULT_ICE_SERVERS = [
   {
@@ -38,7 +13,7 @@ const DEFAULT_ICE_SERVERS = [
  *
  * @returns {WebRTCStoreState} The webRTC store state.
  */
-export function createWebRTCStore(): WebRTCStoreState {
+export function createWebRTCStore() {
   // ------------------------------------------------------------
   // Remote data
   // ------------------------------------------------------------
@@ -47,9 +22,9 @@ export function createWebRTCStore(): WebRTCStoreState {
   // ------------------------------------------------------------
   // Connection State Signals
   // ------------------------------------------------------------
-  const [connectionState, setConnectionState] = createSignal<RTCPeerConnectionState>("new");
+  const [connectionState, setConnectionState] = createSignal<RTCPeerConnectionState | null>(null);
   const [peerConnection, setPeerConnection] = createSignal<RTCPeerConnection | null>(null);
-  const [localSdp, setLocalSdp] = createSignal<string>(""); // Local SDP to copy
+  const [localSdp, setLocalSdp] = createSignal<string | null>(null); // Local SDP to copy
 
   // ------------------------------------------------------------
   // Peer Connection Initialization
@@ -63,46 +38,69 @@ export function createWebRTCStore(): WebRTCStoreState {
   const initializePeerConnection = () => {
     if (!peerConnection()) {
       try {
-        // Returns a new RTCPeerConnection,
-        // representing a connection between
-        // the local device and a remote peer.
         const connection = new RTCPeerConnection({ iceServers: DEFAULT_ICE_SERVERS });
+        setConnectionState(connection.connectionState);
 
-        logger.info("new connection state: ", connection.connectionState);
-
-        connection.onicecandidate = (event) => {
-          logger.info("ICE candidate: ", event);
+        connection.onicecandidate = (event: RTCPeerConnectionIceEvent) => {
+          showToast({
+            type: "info",
+            message: `ICE candidate: ${event.candidate?.candidate}`,
+          });
+          logger.info(`ICE candidate: ${event.candidate?.candidate}`);
         };
 
-        connection.onconnectionstatechange = (event) => {
-          // TODO: Implement connection state change
-          logger.info("Connection state change: ", event);
+        connection.onconnectionstatechange = () => {
+          showToast({
+            type: "info",
+            message: "Connection state change:" + connection.connectionState,
+          });
+          logger.info("Connection state change:", connection.connectionState);
           setConnectionState(connection.connectionState);
         };
 
-        connection.oniceconnectionstatechange = (event) => {
+        connection.oniceconnectionstatechange = () => {
           // TODO: Implement ICE connection state change
-          logger.info("ICE connection state change: ", event);
+          showToast({
+            type: "info",
+            message: "ICE connection state change:" + connection.iceConnectionState,
+          });
+          logger.info("ICE connection state change:", connection.iceConnectionState);
         };
 
-        connection.onicegatheringstatechange = (event) => {
+        connection.onicegatheringstatechange = () => {
           // TODO: Implement ICE gathering state change
-          logger.info("ICE gathering state change: ", event);
+          showToast({
+            type: "info",
+            message: "ICE gathering state change:" + connection.iceGatheringState,
+          });
+          logger.info("ICE gathering state change:", connection.iceGatheringState);
         };
 
-        connection.ontrack = (event) => {
+        connection.ontrack = (event: RTCTrackEvent) => {
           // TODO: Implement track added
-          logger.info("Track added: ", event);
+          showToast({
+            type: "info",
+            message: `Track added: ${event.track.id}`,
+          });
+          logger.info(`Track added: ${event.track.id}`);
         };
 
-        connection.onicecandidateerror = (event) => {
+        connection.onicecandidateerror = (event: RTCPeerConnectionIceErrorEvent) => {
           // TODO: Implement ICE candidate error
-          logger.info("ICE candidate error: ", event);
+          showToast({
+            type: "info",
+            message: `ICE candidate error: ${event.errorCode}`,
+          });
+          logger.info(`ICE candidate error: ${event.errorCode}`);
         };
 
-        connection.onnegotiationneeded = (event) => {
+        connection.onnegotiationneeded = () => {
           // TODO: Implement negotiation needed
-          logger.info("Negotiation needed: ", event);
+          showToast({
+            type: "info",
+            message: "Negotiation needed",
+          });
+          logger.info("Negotiation needed");
         };
 
         setPeerConnection(connection);
@@ -125,43 +123,60 @@ export function createWebRTCStore(): WebRTCStoreState {
   // ------------------------------------------------------------
   /**
    * Create an offer.
-   * @returns {Promise<void>} void
-   * @returns {Promise<void>} void if it failed to create an offer
+   * @returns {boolean} true if the offer was created successfully
+   * @returns {boolean} false if it failed to create an offer
    */
   const createOffer = async () => {
     const currentPeerConnection = peerConnection();
     if (currentPeerConnection) {
-      const offer = await currentPeerConnection.createOffer();
-      await currentPeerConnection.setLocalDescription(offer);
-      setLocalSdp(offer?.sdp ?? "");
-      logger.info("creating offer: ", offer);
-      showToast({ type: "success", message: "Offer successfully created" });
+      try {
+        const offer = await currentPeerConnection.createOffer({
+          offerToReceiveAudio: true,
+          offerToReceiveVideo: false,
+        });
+        await currentPeerConnection.setLocalDescription(offer);
+        setLocalSdp(offer?.sdp ?? null);
+        logger.info("creating offer: ", offer);
+        showToast({ type: "success", message: "Offer successfully created" });
+        return true;
+      } catch (error) {
+        logger.error("Failed to create offer: ", error);
+        showToast({ type: "error", message: "Failed to create offer" });
+        return false;
+      }
     } else {
       logger.error("Failed to create offer: no peer connection");
-      showToast({ type: "error", message: "Failed to create offer" });
+      showToast({ type: "error", message: "Failed to create offer: no peer connection" });
+      return false;
     }
-    return;
   };
 
   /**
    * Set the remote SDP.
    * @param sdp - The remote SDP to set.
-   * @returns {Promise<void>} void
-   * @returns {Promise<void>} void if it failed to set the remote SDP
+   * @returns {boolean} true if the remote SDP was set successfully
+   * @returns {boolean} false if it failed to set the remote SDP
    */
   const setRemoteSdp = async (sdp: string) => {
     const currentPeerConnection = peerConnection();
     if (currentPeerConnection) {
-      await currentPeerConnection.setRemoteDescription(
-        new RTCSessionDescription({ type: "answer", sdp: sdp })
-      );
-      logger.info("Remote SDP set");
-      showToast({ type: "success", message: "Remote SDP successfully set" });
+      try {
+        await currentPeerConnection.setRemoteDescription(
+          new RTCSessionDescription({ type: "answer", sdp: sdp })
+        );
+        logger.info("Remote SDP set");
+        showToast({ type: "success", message: "Remote SDP successfully set" });
+        return true;
+      } catch (error) {
+        logger.error("Failed to set remote SDP: ", error);
+        showToast({ type: "error", message: "Failed to set remote SDP" });
+        return false;
+      }
     } else {
       logger.error("Failed to set remote SDP: no peer connection");
-      showToast({ type: "error", message: "Failed to set remote SDP" });
+      showToast({ type: "error", message: "Failed to set remote SDP: no peer connection" });
+      return false;
     }
-    return;
   };
 
   /**
@@ -182,12 +197,14 @@ export function createWebRTCStore(): WebRTCStoreState {
       currentPeerConnection.ontrack = null;
       currentPeerConnection.onicecandidate = null;
       currentPeerConnection.onicecandidateerror = null;
+      currentPeerConnection.onnegotiationneeded = null;
 
       // 3. Clear signals
       setPeerConnection(null);
-      setLocalSdp("");
+      setLocalSdp(null);
       setRemoteStream(null);
       setRemotePeerState(null);
+      setConnectionState(null);
 
       logger.info("Peer connection disconnected and cleaned up");
       showToast({ type: "success", message: "Peer connection successfully disconnected" });
@@ -202,12 +219,12 @@ export function createWebRTCStore(): WebRTCStoreState {
   // ------------------------------------------------------------
   // Local data to send
   // ------------------------------------------------------------
-  const sendPosition = (_position: Position, _facing: number) => {
-    logger.info("todo: implement sendPosition");
+  const sendPosition = (position: Position, facing: number) => {
+    logger.info("Sending position: ", position, " facing: ", facing);
     return;
   };
-  const sendSpeakingState = (_isSpeaking: boolean) => {
-    logger.info("todo: implement sendSpeakingState");
+  const sendSpeakingState = (isSpeaking: boolean) => {
+    logger.info("Sending speaking state: ", isSpeaking);
     return;
   };
 
@@ -229,3 +246,5 @@ export function createWebRTCStore(): WebRTCStoreState {
 
 // Create a singleton store for the webRTC hook
 export const webRTCStore = createRoot(createWebRTCStore);
+// Export the type of the webRTC store for convenience
+export type WebRTCStore = ReturnType<typeof createWebRTCStore>;
