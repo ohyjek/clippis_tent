@@ -8,10 +8,43 @@
  *
  * This is the "backend" of the Electron app.
  */
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 import { logger } from "./lib/logger.main";
+import fs from "node:fs";
+
+const settingsPath = path.join(app.getPath("userData"), "settings.json");
+const defaultSettings = {
+  hardwareAcceleration: {
+    disabled: process.platform === "win32", // default off on Windows (DWM flicker workaround)
+  },
+};
+let settings: { hardwareAcceleration: { disabled: boolean } } = defaultSettings;
+try {
+  const loaded = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
+  settings = { ...defaultSettings, ...loaded };
+  logger.app.info("Settings loaded", { settings });
+} catch (err) {
+  logger.app.warn("Could not read settings.json, using defaults", { error: err });
+}
+if (settings.hardwareAcceleration.disabled) {
+  app.disableHardwareAcceleration();
+}
+
+function writeSettings() {
+  fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), "utf8");
+}
+
+ipcMain.handle(
+  "settings:getHardwareAccelerationDisabled",
+  () => settings.hardwareAcceleration.disabled
+);
+ipcMain.handle("settings:setHardwareAccelerationDisabled", (_event, disabled: boolean) => {
+  settings.hardwareAcceleration.disabled = disabled;
+  writeSettings();
+});
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
