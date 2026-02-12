@@ -18,11 +18,13 @@ import { Section, SelectField, Slider, Toggle } from "@components/ui";
 import { logger } from "@lib/logger";
 import { showToast } from "@stores/toast";
 import styles from "./Settings.module.css";
+import useHardwareAcceleration from "@lib/hooks/useHardwareAcceleration";
 
 export function Settings() {
   const [t, locale, setLocale] = useI18n();
   const [inputDevices, setInputDevices] = createSignal<AudioDevice[]>([]);
   const [outputDevices, setOutputDevices] = createSignal<AudioDevice[]>([]);
+  const { hardwareAcceleration, setHardwareAcceleration } = useHardwareAcceleration();
 
   onMount(async () => {
     try {
@@ -145,6 +147,26 @@ export function Settings() {
               description={t("settings.echoCancellationDesc")}
               checked={audioStore.echoCancellationEnabled()}
               onChange={(e) => audioStore.setEchoCancellationEnabled(e.currentTarget.checked)}
+            />
+          </div>
+        </Section>
+
+        <Section title="Hardware Acceleration">
+          <div class={styles.toggleList}>
+            <Toggle
+              label="Hardware Acceleration"
+              description="Enable hardware acceleration for better performance. Restart the app to apply."
+              checked={hardwareAcceleration()}
+              onChange={(e) => {
+                const enabled = e.currentTarget.checked;
+                setHardwareAcceleration(enabled);
+                if (typeof window !== "undefined" && window.electron) {
+                  showToast({
+                    type: "info",
+                    message: "Restart the app for the change to take effect.",
+                  });
+                }
+              }}
             />
           </div>
         </Section>

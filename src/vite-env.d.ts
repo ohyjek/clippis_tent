@@ -16,3 +16,17 @@ interface ImportMetaEnv {
   readonly PROD: boolean;
   readonly MODE: string;
 }
+
+/** Electron APIs exposed via preload (only in Electron app) */
+export interface ElectronAPI {
+  getHardwareAccelerationDisabled: () => Promise<boolean>;
+  setHardwareAccelerationDisabled: (disabled: boolean) => Promise<void>;
+}
+
+declare global {
+  interface Window {
+    electron?: ElectronAPI;
+  }
+}
+
+export {};
