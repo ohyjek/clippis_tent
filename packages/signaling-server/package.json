@@ -1,0 +1,13 @@
+{
+  "name": "signaling-server",
+  "version": "0.1.0",
+  "description": "Local WebSocket signaling server for WebRTC testing",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

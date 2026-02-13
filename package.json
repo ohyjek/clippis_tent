@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "electron-forge start",
     "start": "electron-forge start",
+    "signaling": "pnpm --filter signaling-server start",
     "build": "electron-forge package",
     "package": "electron-forge package",
     "make": "electron-forge make",
