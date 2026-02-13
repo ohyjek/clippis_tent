@@ -25,6 +25,7 @@ interface MockRTCPeerConnection {
   setLocalDescription: ReturnType<typeof vi.fn>;
   setRemoteDescription: ReturnType<typeof vi.fn>;
   addTrack: ReturnType<typeof vi.fn>;
+  addTransceiver: ReturnType<typeof vi.fn>;
   createDataChannel: ReturnType<typeof vi.fn>;
   close: ReturnType<typeof vi.fn>;
   connectionState: RTCPeerConnectionState;
@@ -61,6 +62,7 @@ const createMockPeerConnection = (): MockRTCPeerConnection => ({
   setLocalDescription: vi.fn().mockResolvedValue(undefined),
   setRemoteDescription: vi.fn().mockResolvedValue(undefined),
   addTrack: vi.fn(),
+  addTransceiver: vi.fn(),
   createDataChannel: vi.fn().mockReturnValue(mockDataChannel),
   close: vi.fn(),
   connectionState: "new",
