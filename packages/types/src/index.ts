@@ -1,6 +1,9 @@
 // Geometry types
 export type { Position, Wall, Bounds } from "./geometry";
 
+// WebRTC types
+export type { RemotePeerState, DataChannelMessage } from "./webRTC";
+
 // Audio types
 export type {
   DirectivityPattern,

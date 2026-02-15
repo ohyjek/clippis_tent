@@ -5,6 +5,7 @@
   },
   "nav": {
     "tent": "The Tent",
+    "webrtc": "WebRTC",
     "settings": "Settings"
   },
   "status": {

@@ -47,6 +47,7 @@ logger.info("Renderer starting");
 // Lazy load pages for code splitting
 const Tent = lazy(() => import("@pages/Tent").then((m) => ({ default: m.Tent })));
 const Settings = lazy(() => import("@pages/Settings").then((m) => ({ default: m.Settings })));
+const WebRTC = lazy(() => import("@pages/WebRTC").then((m) => ({ default: m.WebRTC })));
 
 const root = document.getElementById("root");
 
@@ -60,6 +61,7 @@ render(
       <I18nProvider>
         <Router root={App}>
           <Route path="/" component={Tent} />
+          <Route path="/webrtc" component={WebRTC} />
           <Route path="/settings" component={Settings} />
         </Router>
         <ToastContainer />

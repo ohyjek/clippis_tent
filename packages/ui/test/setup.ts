@@ -4,7 +4,6 @@
  * Configures testing environment with jest-dom matchers and
  * provides mock CSS variables for component styling.
  */
-import { beforeAll } from "vitest";
 import "@testing-library/jest-dom/vitest";
 
 // Mock CSS custom properties used by components
@@ -33,9 +32,10 @@ const cssVars = `
   }
 `;
 
-// Inject CSS variables into the document
-beforeAll(() => {
+// Inject CSS variables into the document at module load time
+// (runs once when the setup file is imported)
+if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.textContent = cssVars;
   document.head.appendChild(style);
-});
+}
