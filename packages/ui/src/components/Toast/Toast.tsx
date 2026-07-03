@@ -7,11 +7,12 @@
  * @example
  * <ToastContainer toasts={toasts()} onDismiss={dismissToast} />
  */
+
+import type { ToastData, ToastType } from "@clippis/types";
 import { For } from "solid-js";
-import type { ToastType, ToastData } from "@clippis/types";
 import styles from "./Toast.module.css";
 
-export type { ToastType, ToastData };
+export type { ToastData, ToastType };
 
 interface ToastContainerProps {
   /** Array of toast notifications to display */

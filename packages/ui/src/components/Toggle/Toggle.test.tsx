@@ -1,8 +1,9 @@
 /**
  * Toggle.test.tsx - Unit tests for Toggle component
  */
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+
+import { fireEvent, render, screen } from "@solidjs/testing-library";
+import { describe, expect, it, vi } from "vitest";
 import { Toggle } from "./Toggle";
 
 describe("Toggle", () => {

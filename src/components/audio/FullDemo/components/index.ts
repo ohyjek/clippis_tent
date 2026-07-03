@@ -1,8 +1,9 @@
 /**
  * components/index.ts - Barrel export for all demo components
  */
-export { Toolbar } from "./Toolbar";
+
+export * from "./panels";
+export { Sidebar } from "./Sidebar";
 export { SpatialCanvas } from "./SpatialCanvas";
 export { StatusBar } from "./StatusBar";
-export { Sidebar } from "./Sidebar";
-export * from "./panels";
+export { Toolbar } from "./Toolbar";

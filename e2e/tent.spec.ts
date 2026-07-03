@@ -4,7 +4,7 @@
  * Tests the spatial audio demo functionality.
  * The Tent is the home page at route "/"
  */
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.describe("The Tent Page", () => {
   test.beforeEach(async ({ page }) => {

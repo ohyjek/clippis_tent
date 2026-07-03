@@ -10,8 +10,9 @@
  * <Button variant="success" icon="🔊" onClick={play}>Play</Button>
  * <Button icon="✕" aria-label="Close" onClick={close} />
  */
-import { type JSX, splitProps } from "solid-js";
+
 import type { ButtonVariant } from "@clippis/types";
+import { type JSX, splitProps } from "solid-js";
 import styles from "./Button.module.css";
 
 export type { ButtonVariant };

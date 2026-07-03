@@ -11,9 +11,10 @@
  *   /         -> The Tent (spatial audio demo)
  *   /settings -> Settings page
  */
+
+import { useI18n } from "@lib/i18n";
 import { A, useLocation } from "@solidjs/router";
 import { audioStore } from "@stores/audio";
-import { useI18n } from "@lib/i18n";
 import styles from "./Sidebar.module.css";
 
 interface NavItem {

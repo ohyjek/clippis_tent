@@ -8,11 +8,12 @@
  *
  * This is the "backend" of the Electron app.
  */
-import { app, BrowserWindow, ipcMain } from "electron";
+
+import fs from "node:fs";
 import path from "node:path";
+import { app, BrowserWindow, ipcMain } from "electron";
 import started from "electron-squirrel-startup";
 import { logger } from "./lib/logger.main";
-import fs from "node:fs";
 
 const settingsPath = path.join(app.getPath("userData"), "settings.json");
 const defaultSettings = {

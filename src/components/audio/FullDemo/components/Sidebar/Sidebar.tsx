@@ -4,11 +4,11 @@
  * Composes all panel components in the correct order.
  */
 import {
-  SpeakerPropertiesPanel,
-  RoomPropertiesPanel,
   AudioSettingsPanel,
-  SpeakersListPanel,
+  RoomPropertiesPanel,
   RoomsListPanel,
+  SpeakerPropertiesPanel,
+  SpeakersListPanel,
 } from "../panels";
 import styles from "./Sidebar.module.css";
 

@@ -3,10 +3,11 @@
  *
  * Provides microphone stream management with proper cleanup.
  */
-import { createSignal, onCleanup, type Accessor } from "solid-js";
-import { showToast } from "@stores/toast";
-import { audioStore } from "@stores/audio";
+
 import { logger } from "@lib/logger";
+import { audioStore } from "@stores/audio";
+import { showToast } from "@stores/toast";
+import { type Accessor, createSignal, onCleanup } from "solid-js";
 
 export interface MicrophoneOptions {
   /** Called when microphone access is granted */

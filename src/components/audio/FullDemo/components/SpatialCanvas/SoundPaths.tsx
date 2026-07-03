@@ -5,7 +5,7 @@
  * with dashed lines when the path is blocked by walls.
  */
 import { For } from "solid-js";
-import type { SpeakerState, Position } from "../../context/types";
+import type { Position, SpeakerState } from "../../context/types";
 import { toPercent } from "../../utils";
 import styles from "./SpatialCanvas.module.css";
 

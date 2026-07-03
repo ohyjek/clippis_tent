@@ -1,9 +1,10 @@
 /**
  * useRoomManager.test.ts - Unit tests for room management hook
  */
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+
+import { type RoomManagerState, useRoomManager } from "@lib/hooks/useRoomManager";
 import { createRoot } from "solid-js";
-import { useRoomManager, type RoomManagerState } from "@lib/hooks/useRoomManager";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 describe("useRoomManager", () => {
   let manager: RoomManagerState;

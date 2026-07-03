@@ -8,9 +8,10 @@
  * - Audio parameter calculations
  * - Cleanup
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+
+import { type UseRemoteSpeakerReturn, useRemoteSpeaker } from "@lib/hooks/useRemoteSpeaker";
 import { createRoot } from "solid-js";
-import { useRemoteSpeaker, type UseRemoteSpeakerReturn } from "@lib/hooks/useRemoteSpeaker";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Note: logger is mocked globally in src/test/setup.ts
 

@@ -1,1 +1,1 @@
-export { Tabs, type Tab } from "./Tabs";
+export { type Tab, Tabs } from "./Tabs";

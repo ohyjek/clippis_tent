@@ -10,8 +10,9 @@
  *
  * Used in FullDemo for both speakers and the listener.
  */
-import type { JSX } from "solid-js";
+
 import type { Position } from "@clippis/types";
+import type { JSX } from "solid-js";
 import styles from "./Speaker.module.css";
 
 export type { Position };

@@ -5,9 +5,10 @@
  * Note: Tests are typically run from the root monorepo for better deduplication.
  * This config is for standalone package testing.
  */
-import { defineConfig } from "vitest/config";
-import solid from "vite-plugin-solid";
+
 import path from "node:path";
+import solid from "vite-plugin-solid";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [

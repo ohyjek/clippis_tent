@@ -1,9 +1,10 @@
 /**
  * useMicrophone.test.ts - Unit tests for microphone access hook
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+
+import { type MicrophoneState, useMicrophone } from "@lib/hooks/useMicrophone";
 import { createRoot } from "solid-js";
-import { useMicrophone, type MicrophoneState } from "@lib/hooks/useMicrophone";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Note: logger is mocked globally in src/test/setup.ts
 

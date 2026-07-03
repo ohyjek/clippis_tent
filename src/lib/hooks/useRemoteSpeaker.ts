@@ -5,17 +5,18 @@
  * (source → panner → gain → destination) and recomputes pan/gain whenever the
  * remote position, the listener, walls, or audio settings change.
  */
-import { createSignal, createMemo, createEffect, onCleanup, type Accessor } from "solid-js";
+
 import type {
-  Position,
-  AudioParameters,
   AudioParameterOptions,
+  AudioParameters,
   Listener,
+  Position,
   Wall,
 } from "@clippis/types";
+import { logger } from "@lib/logger";
 import { calculateAudioParameters } from "@lib/spatial-audio-engine";
 import { audioStore } from "@stores/audio";
-import { logger } from "@lib/logger";
+import { type Accessor, createEffect, createMemo, createSignal, onCleanup } from "solid-js";
 
 export interface RemoteSpeakerOptions {
   /** Listener (perspective) to spatialize against. Defaults to origin, facing up. */

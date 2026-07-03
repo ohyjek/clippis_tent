@@ -14,7 +14,7 @@
  * Range: typically -2.5 to +2.5 in room coordinates
  */
 
-import type { Position, SpatialParams, SoundSource, Speaker, Wall, Room } from "@clippis/types";
+import type { Position, Room, SoundSource, SpatialParams, Speaker, Wall } from "@clippis/types";
 
 /** Musical note frequencies (E4 to G5) */
 export const SOUND_FREQUENCIES = [330, 392, 440, 494, 523, 587, 659, 784] as const;

@@ -1,9 +1,10 @@
 /**
  * useCanvasDrawing.test.ts - Unit tests for canvas drawing hook
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+
+import { type CanvasDrawingState, useCanvasDrawing } from "@lib/hooks/useCanvasDrawing";
 import { createRoot } from "solid-js";
-import { useCanvasDrawing, type CanvasDrawingState } from "@lib/hooks/useCanvasDrawing";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("useCanvasDrawing", () => {
   let drawing: CanvasDrawingState;

@@ -4,9 +4,10 @@
  * Contains mode selection, add speaker, volume, and reset button.
  * Play controls are in the SpeakerPropertiesPanel for per-speaker control.
  */
+
+import { useDemoContext } from "@components/audio/FullDemo/context";
 import { Button, Slider } from "@components/ui";
 import { audioStore } from "@stores/audio";
-import { useDemoContext } from "@components/audio/FullDemo/context";
 import styles from "./Toolbar.module.css";
 
 export function Toolbar() {

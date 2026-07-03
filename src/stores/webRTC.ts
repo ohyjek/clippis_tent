@@ -1,8 +1,8 @@
-import { createRoot, createSignal, onCleanup } from "solid-js";
-import type { RemotePeerState, DataChannelMessage, Position } from "@clippis/types";
+import type { DataChannelMessage, Position, RemotePeerState } from "@clippis/types";
 import { logger } from "@lib/logger";
-import { showToast } from "@stores/toast";
 import { audioStore } from "@stores/audio";
+import { showToast } from "@stores/toast";
+import { createRoot, createSignal, onCleanup } from "solid-js";
 
 const DEFAULT_ICE_SERVERS = [
   {

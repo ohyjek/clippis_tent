@@ -3,8 +3,9 @@
  *
  * Handles draw mode mouse events for creating rectangular regions.
  */
-import { createSignal, type Accessor, type Setter } from "solid-js";
-import type { Position, DrawingMode } from "@clippis/types";
+
+import type { DrawingMode, Position } from "@clippis/types";
+import { type Accessor, createSignal, type Setter } from "solid-js";
 
 /** Options for canvas drawing */
 export interface CanvasDrawingOptions {

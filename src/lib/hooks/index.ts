@@ -10,36 +10,34 @@
  * - Canvas drawing (useCanvasDrawing)
  */
 
-// Interaction hooks
-export { useDragHandler, useRotationHandler } from "@lib/hooks/useDragHandler";
-
 // Audio hooks
 export {
-  useAudioPlayback,
   type AudioNodes,
-  type PlaybackParams,
   type AudioPlaybackState,
+  type PlaybackParams,
+  useAudioPlayback,
 } from "@lib/hooks/useAudioPlayback";
 export {
-  useMicrophone,
-  type MicrophoneOptions,
-  type MicrophoneState,
-} from "@lib/hooks/useMicrophone";
-
-// State management hooks
-export { useRoomManager, type RoomConfig, type RoomManagerState } from "@lib/hooks/useRoomManager";
-export {
-  useSpeakerManager,
-  type SpeakerManagerOptions,
-  type SpeakerManagerState,
-} from "@lib/hooks/useSpeakerManager";
-export {
-  useRemoteSpeaker,
-  type UseRemoteSpeakerReturn,
-  type RemoteSpeakerOptions,
-} from "@lib/hooks/useRemoteSpeaker";
-export {
-  useCanvasDrawing,
   type CanvasDrawingOptions,
   type CanvasDrawingState,
+  useCanvasDrawing,
 } from "@lib/hooks/useCanvasDrawing";
+// Interaction hooks
+export { useDragHandler, useRotationHandler } from "@lib/hooks/useDragHandler";
+export {
+  type MicrophoneOptions,
+  type MicrophoneState,
+  useMicrophone,
+} from "@lib/hooks/useMicrophone";
+export {
+  type RemoteSpeakerOptions,
+  type UseRemoteSpeakerReturn,
+  useRemoteSpeaker,
+} from "@lib/hooks/useRemoteSpeaker";
+// State management hooks
+export { type RoomConfig, type RoomManagerState, useRoomManager } from "@lib/hooks/useRoomManager";
+export {
+  type SpeakerManagerOptions,
+  type SpeakerManagerState,
+  useSpeakerManager,
+} from "@lib/hooks/useSpeakerManager";

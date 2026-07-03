@@ -9,16 +9,17 @@
  *
  * Device enumeration requires microphone permission on first load.
  */
-import { createSignal, onMount } from "solid-js";
+
 import type { AudioDevice } from "@clippis/types";
-import { audioStore } from "@stores/audio";
-import { themeStore, type ThemeMode } from "@stores/theme";
-import { useI18n, locales, type Locale } from "@lib/i18n";
 import { Section, SelectField, Slider, Toggle } from "@components/ui";
-import { logger } from "@lib/logger";
-import { showToast } from "@stores/toast";
-import styles from "./Settings.module.css";
 import useHardwareAcceleration from "@lib/hooks/useHardwareAcceleration";
+import { type Locale, locales, useI18n } from "@lib/i18n";
+import { logger } from "@lib/logger";
+import { audioStore } from "@stores/audio";
+import { type ThemeMode, themeStore } from "@stores/theme";
+import { showToast } from "@stores/toast";
+import { createSignal, onMount } from "solid-js";
+import styles from "./Settings.module.css";
 
 export function Settings() {
   const [t, locale, setLocale] = useI18n();

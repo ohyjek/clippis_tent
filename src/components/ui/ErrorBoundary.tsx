@@ -3,9 +3,10 @@
  *
  * Wraps the @clippis/ui ErrorBoundary with app-specific error logging.
  */
-import type { JSX } from "solid-js";
+
 import { ErrorBoundary as UIErrorBoundary } from "@clippis/ui";
 import { logger } from "@lib/logger";
+import type { JSX } from "solid-js";
 
 interface ErrorBoundaryProps {
   /** Child components to wrap */

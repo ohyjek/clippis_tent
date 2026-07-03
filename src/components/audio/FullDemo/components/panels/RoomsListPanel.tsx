@@ -3,8 +3,9 @@
  *
  * Shows each room with its name and color.
  */
-import { Panel, ItemList } from "@components/ui";
+
 import { useDemoContext } from "@components/audio/FullDemo/context";
+import { ItemList, Panel } from "@components/ui";
 
 export function RoomsListPanel() {
   const { rooms, selectedRoomId, setSelectedRoomId } = useDemoContext();

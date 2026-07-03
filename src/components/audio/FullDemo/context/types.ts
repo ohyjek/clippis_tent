@@ -6,22 +6,23 @@
  *
  * We do this because if we have to change from @clippis/types to a different package, we only have to change it in one place.
  */
-import type { CalculateAudioParameters } from "@lib/spatial-audio-engine";
+
 import type {
-  AudioSourceType,
+  AudioNodes,
   AudioParameters,
+  AudioSourceType,
+  Bounds,
   DirectivityPattern,
   DistanceModel,
   DrawingMode,
   DrawnRoom,
   Position,
   RemotePeerState,
+  SelectOption,
   SpeakerState,
   Wall,
-  Bounds,
-  AudioNodes,
-  SelectOption,
 } from "@clippis/types";
+import type { CalculateAudioParameters } from "@lib/spatial-audio-engine";
 import type { Accessor, Setter } from "solid-js";
 
 /** Context value type - exposes all state and actions to components */
@@ -141,20 +142,20 @@ interface DemoContextValue {
 }
 
 export type {
-  // Geometry
-  Position,
-  Wall,
+  AudioNodes,
+  AudioSourceType,
   Bounds,
+  // Component
+  DemoContextValue,
   // Audio
   DirectivityPattern,
   DistanceModel,
-  AudioSourceType,
-  SpeakerState,
-  DrawnRoom,
-  AudioNodes,
   // UI
   DrawingMode,
+  DrawnRoom,
+  // Geometry
+  Position,
   SelectOption,
-  // Component
-  DemoContextValue,
+  SpeakerState,
+  Wall,
 };

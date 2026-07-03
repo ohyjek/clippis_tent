@@ -11,9 +11,10 @@
  * - Signaling auto-answer flow
  * - Disconnect/cleanup
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { createRoot } from "solid-js";
+
 import { createWebRTCStore, type WebRTCStore } from "@src/stores/webRTC";
+import { createRoot } from "solid-js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Note: logger is mocked globally in src/test/setup.ts
 

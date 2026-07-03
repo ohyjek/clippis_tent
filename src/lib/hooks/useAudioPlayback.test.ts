@@ -1,9 +1,10 @@
 /**
  * useAudioPlayback.test.ts - Unit tests for audio playback hook
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+
+import { type AudioPlaybackState, useAudioPlayback } from "@lib/hooks/useAudioPlayback";
 import { createRoot } from "solid-js";
-import { useAudioPlayback, type AudioPlaybackState } from "@lib/hooks/useAudioPlayback";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock audio context and nodes
 const mockGainNode = {

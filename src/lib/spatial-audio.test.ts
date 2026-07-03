@@ -11,27 +11,28 @@
  *
  * Run with: pnpm test
  */
-import { describe, it, expect } from "vitest";
+
 import {
+  CARDINAL_DIRECTIONS,
+  calculateAngleToPoint,
+  calculateDirectionalGain,
   calculateDistance,
-  calculateVolume,
   calculatePan,
   calculateSpatialParams,
-  randomPosition,
-  randomFrequency,
-  createSoundSource,
-  calculateAngleToPoint,
-  normalizeAngle,
-  calculateDirectionalGain,
-  lineIntersectsWall,
-  countWallsBetween,
+  calculateVolume,
   calculateWallAttenuation,
+  countWallsBetween,
   createRectangularRoom,
+  createSoundSource,
   createSpeaker,
+  lineIntersectsWall,
+  normalizeAngle,
+  randomFrequency,
+  randomPosition,
   SOUND_FREQUENCIES,
-  CARDINAL_DIRECTIONS,
   SPEAKER_COLORS,
 } from "@lib/spatial-audio";
+import { describe, expect, it } from "vitest";
 
 describe("spatial-audio utilities", () => {
   describe("calculateDistance", () => {

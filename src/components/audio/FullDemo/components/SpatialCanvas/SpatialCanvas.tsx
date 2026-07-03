@@ -6,13 +6,14 @@
  * - Position and rotate speakers (all entities are speakers)
  * - Switch perspective (who you are)
  */
-import { Show, For } from "solid-js";
-import { Speaker } from "@components/ui";
-import { useDemoContext } from "@components/audio/FullDemo/context";
-import { toPercent } from "@components/audio/FullDemo/utils";
+
 import { DrawingPreview } from "@components/audio/FullDemo/components/SpatialCanvas/DrawingPreview";
 import { RoomRenderer } from "@components/audio/FullDemo/components/SpatialCanvas/RoomRenderer";
 import { SoundPaths } from "@components/audio/FullDemo/components/SpatialCanvas/SoundPaths";
+import { useDemoContext } from "@components/audio/FullDemo/context";
+import { toPercent } from "@components/audio/FullDemo/utils";
+import { Speaker } from "@components/ui";
+import { For, Show } from "solid-js";
 import styles from "./SpatialCanvas.module.css";
 
 export function SpatialCanvas() {

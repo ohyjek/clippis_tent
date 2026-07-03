@@ -8,9 +8,10 @@
  * - Code splitting (vendor chunk for solid-js)
  * - Dependency pre-bundling
  */
+
+import path from "node:path";
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
-import path from "node:path";
 
 // Helper to create absolute paths
 const resolver = (dir: string) => path.resolve(__dirname, dir);

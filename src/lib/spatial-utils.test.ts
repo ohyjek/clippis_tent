@@ -1,22 +1,23 @@
 /**
  * spatial-utils.test.ts - Unit tests for spatial utility functions
  */
-import { describe, it, expect } from "vitest";
-import {
-  toPercent,
-  fromPercent,
-  distanceBetween,
-  angleBetween,
-  normalizeAngle,
-  createWallsFromBounds,
-  createRoomFromCorners,
-  isValidRoomSize,
-  isSpeakerInsideRoom,
-  updateItemById,
-  DEFAULT_ATTENUATION,
-  MIN_ROOM_SIZE,
-} from "@lib/spatial-utils";
+
 import type { DrawnRoom, SpeakerState } from "@clippis/types";
+import {
+  angleBetween,
+  createRoomFromCorners,
+  createWallsFromBounds,
+  DEFAULT_ATTENUATION,
+  distanceBetween,
+  fromPercent,
+  isSpeakerInsideRoom,
+  isValidRoomSize,
+  MIN_ROOM_SIZE,
+  normalizeAngle,
+  toPercent,
+  updateItemById,
+} from "@lib/spatial-utils";
+import { describe, expect, it } from "vitest";
 
 describe("Coordinate Conversion", () => {
   describe("toPercent", () => {

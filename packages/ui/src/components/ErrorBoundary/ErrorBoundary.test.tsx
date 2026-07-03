@@ -1,8 +1,9 @@
 /**
  * ErrorBoundary.test.tsx - Unit tests for ErrorBoundary component
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import { render, screen } from "@solidjs/testing-library";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ErrorBoundary } from "./ErrorBoundary";
 
 // Component that throws an error

@@ -10,10 +10,11 @@
  * Note: This store avoids createEffect at module level to prevent
  * "computations created outside createRoot" warnings.
  */
-import { createSignal } from "solid-js";
-import type { ThemeMode, ResolvedTheme } from "@clippis/types";
 
-export type { ThemeMode, ResolvedTheme };
+import type { ResolvedTheme, ThemeMode } from "@clippis/types";
+import { createSignal } from "solid-js";
+
+export type { ResolvedTheme, ThemeMode };
 
 /**
  * Get the resolved theme based on current mode and system preference

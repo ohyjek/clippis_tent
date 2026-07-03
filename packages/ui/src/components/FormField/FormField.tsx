@@ -4,7 +4,7 @@
  * Provides consistent styling for form inputs across the app.
  * Includes label, input/select, and optional hint text.
  */
-import { type JSX, createUniqueId, splitProps, Show } from "solid-js";
+import { createUniqueId, type JSX, Show, splitProps } from "solid-js";
 import styles from "./FormField.module.css";
 
 /** Common props for all field types */

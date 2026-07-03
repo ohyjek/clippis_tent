@@ -3,18 +3,19 @@
  *
  * Allows changing room name, color, and wall attenuation.
  */
-import { Show, createEffect, createSignal } from "solid-js";
+
+import { ROOM_COLORS } from "@components/audio/FullDemo/constants";
+import { useDemoContext } from "@components/audio/FullDemo/context";
 import {
   Button,
-  ColorSwatches,
-  Panel,
-  InputField,
-  SliderField,
-  FieldGroup,
   ButtonRow,
+  ColorSwatches,
+  FieldGroup,
+  InputField,
+  Panel,
+  SliderField,
 } from "@components/ui";
-import { useDemoContext } from "@components/audio/FullDemo/context";
-import { ROOM_COLORS } from "@components/audio/FullDemo/constants";
+import { createEffect, createSignal, Show } from "solid-js";
 
 export function RoomPropertiesPanel() {
   const {

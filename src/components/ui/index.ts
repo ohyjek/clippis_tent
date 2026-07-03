@@ -11,12 +11,12 @@
 // Pure UI components from @clippis/ui
 export {
   Button,
+  ButtonRow,
   type ButtonVariant,
   ColorSwatches,
   type ColorSwatchesProps,
   DropdownField,
   FieldGroup,
-  ButtonRow,
   InputField,
   ItemList,
   type ItemListItem,
@@ -29,10 +29,10 @@ export {
   Slider,
   SliderField,
   Speaker,
-  type SpeakerProps,
   type SpeakerPosition,
-  Tabs,
+  type SpeakerProps,
   type Tab,
+  Tabs,
   Toggle,
 } from "@clippis/ui";
 

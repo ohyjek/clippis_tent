@@ -1,8 +1,9 @@
 /**
  * Section.test.tsx - Unit tests for Section component
  */
-import { describe, it, expect } from "vitest";
+
 import { render, screen } from "@solidjs/testing-library";
+import { describe, expect, it } from "vitest";
 import { Section } from "./Section";
 
 describe("Section", () => {

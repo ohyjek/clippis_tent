@@ -3,7 +3,7 @@
  *
  * Tests the audio settings configuration.
  */
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.describe("Settings Page", () => {
   test.beforeEach(async ({ page }) => {

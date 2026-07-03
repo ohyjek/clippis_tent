@@ -8,9 +8,10 @@
  *
  * Remote audio plays here un-spatialized; open the Tent page for spatialized playback.
  */
-import { createSignal, createEffect, onCleanup } from "solid-js";
-import styles from "./WebRTC.module.css";
+
 import { webRTCStore } from "@stores/webRTC";
+import { createEffect, createSignal, onCleanup } from "solid-js";
+import styles from "./WebRTC.module.css";
 
 export function WebRTC() {
   const [remoteSdpPaste, setRemoteSdpPaste] = createSignal("");

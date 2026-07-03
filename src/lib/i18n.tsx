@@ -13,11 +13,11 @@
  *   const [t] = useI18n();
  *   t("nav.settings")
  */
-import { createSignal, createContext, useContext, type JSX } from "solid-js";
-import * as i18n from "@solid-primitives/i18n";
 
 // Import translation files
 import en from "@locales/en.json";
+import * as i18n from "@solid-primitives/i18n";
+import { createContext, createSignal, type JSX, useContext } from "solid-js";
 
 // Available dictionaries
 const dictionaries = { en } as const;

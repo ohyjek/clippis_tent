@@ -13,22 +13,22 @@
  */
 
 import type {
-  Position,
-  Wall,
-  Listener,
+  AudioParameterOptions,
+  AudioParameters,
   DirectivityPattern,
   DistanceModel,
+  Listener,
+  Position,
   SourceConfig,
-  AudioParameters,
-  AudioParameterOptions,
+  Wall,
 } from "@clippis/types";
 
 import {
-  calculateDistance,
   calculateAngleToPoint,
-  normalizeAngle,
-  countWallsBetween,
+  calculateDistance,
   calculateWallAttenuation,
+  countWallsBetween,
+  normalizeAngle,
 } from "@lib/spatial-audio";
 
 // ============================================================================

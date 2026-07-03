@@ -1,4 +1,4 @@
-import type { Position, Wall, Bounds } from "./geometry";
+import type { Bounds, Position, Wall } from "./geometry";
 
 // ============================================================================
 // Core Audio Types

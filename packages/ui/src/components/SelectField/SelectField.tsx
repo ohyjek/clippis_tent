@@ -11,8 +11,9 @@
  *   placeholder="Select..."
  * />
  */
-import { type JSX, For, splitProps, createUniqueId } from "solid-js";
+
 import type { SelectOption } from "@clippis/types";
+import { createUniqueId, For, type JSX, splitProps } from "solid-js";
 import styles from "./SelectField.module.css";
 
 export type { SelectOption };

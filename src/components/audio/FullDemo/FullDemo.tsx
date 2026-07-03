@@ -13,8 +13,8 @@
  * and wraps them with the DemoProvider context.
  */
 import { audioStore } from "@stores/audio";
+import { Sidebar, SpatialCanvas, StatusBar, Toolbar } from "./components";
 import { DemoProvider, useDemoContext } from "./context";
-import { Toolbar, SpatialCanvas, StatusBar, Sidebar } from "./components";
 import styles from "./FullDemo.module.css";
 
 /** Audio banner shown when audio is not yet initialized */

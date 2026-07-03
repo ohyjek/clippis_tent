@@ -11,8 +11,9 @@
  *   onSelect={(id) => setSelectedId(id)}
  * />
  */
-import { For, Show, type JSX } from "solid-js";
+
 import type { ListItem } from "@clippis/types";
+import { For, type JSX, Show } from "solid-js";
 import styles from "./ItemList.module.css";
 
 /** @deprecated Use ListItem from @clippis/types instead */

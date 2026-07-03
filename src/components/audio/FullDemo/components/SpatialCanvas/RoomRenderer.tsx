@@ -4,7 +4,7 @@
  * Displays room areas with labels and colored walls on the canvas.
  */
 import { For } from "solid-js";
-import type { DrawnRoom, DrawingMode } from "../../context/types";
+import type { DrawingMode, DrawnRoom } from "../../context/types";
 import { toPercent } from "../../utils";
 import styles from "./SpatialCanvas.module.css";
 

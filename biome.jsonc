@@ -34,8 +34,12 @@
       "bracketSpacing": true
     }
   },
-  // organizeImports would touch 85 files; enable later as its own commit if wanted
-  "assist": { "enabled": false },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": { "organizeImports": "on" }
+    }
+  },
   "linter": {
     "enabled": true,
     "domains": { "solid": "recommended" },

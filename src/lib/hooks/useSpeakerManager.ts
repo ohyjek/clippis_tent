@@ -3,10 +3,11 @@
  *
  * Provides speaker CRUD operations, selection, and perspective management.
  */
-import { createSignal, type Accessor, type Setter } from "solid-js";
-import type { SpeakerState, DirectivityPattern, AudioSourceType, Position } from "@clippis/types";
+
+import type { AudioSourceType, DirectivityPattern, Position, SpeakerState } from "@clippis/types";
 import { SPEAKER_COLORS } from "@lib/spatial-audio";
 import { generateId, updateItemById } from "@lib/spatial-utils";
+import { type Accessor, createSignal, type Setter } from "solid-js";
 
 /** Options for speaker manager initialization */
 export interface SpeakerManagerOptions {

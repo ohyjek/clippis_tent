@@ -1,10 +1,11 @@
 /**
  * useSpeakerManager.test.ts - Unit tests for speaker management hook
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { createRoot } from "solid-js";
-import { useSpeakerManager, type SpeakerManagerState } from "@lib/hooks/useSpeakerManager";
+
 import type { SpeakerState } from "@clippis/types";
+import { type SpeakerManagerState, useSpeakerManager } from "@lib/hooks/useSpeakerManager";
+import { createRoot } from "solid-js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock SPEAKER_COLORS (must match exact import path in source)
 vi.mock("@lib/spatial-audio", () => ({

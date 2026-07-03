@@ -1,16 +1,17 @@
 /**
  * spatial-audio-engine.test.ts - Tests for advanced spatial audio engine
  */
-import { describe, it, expect } from "vitest";
+
 import {
+  calculateAudioParameters,
   calculateDirectivityGain,
   calculateDistanceAttenuation,
-  calculateStereoPan,
   calculateListenerDirectionalGain,
-  calculateAudioParameters,
-  createSourceConfig,
+  calculateStereoPan,
   createListener,
+  createSourceConfig,
 } from "@lib/spatial-audio-engine";
+import { describe, expect, it } from "vitest";
 
 describe("Directivity Patterns", () => {
   describe("omnidirectional", () => {

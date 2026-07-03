@@ -10,8 +10,8 @@
  * Used as the `root` prop for the SolidJS Router.
  */
 import type { JSX } from "solid-js";
-import { Sidebar } from "./Sidebar";
 import styles from "./App.module.css";
+import { Sidebar } from "./Sidebar";
 
 interface AppProps {
   /** Page content rendered by the router (optional during route transitions) */

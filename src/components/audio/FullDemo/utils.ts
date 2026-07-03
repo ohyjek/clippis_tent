@@ -7,10 +7,10 @@
 
 // Re-export only what's actually used by demo components
 export {
-  toPercent,
+  DEFAULT_ATTENUATION,
   getPositionFromEvent,
   getScreenPosition,
-  DEFAULT_ATTENUATION,
+  toPercent,
 } from "@lib/spatial-utils";
 
 import { FREQUENCY_NOTES } from "./constants";

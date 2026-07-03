@@ -4,38 +4,39 @@
  * Provides shared state and actions for all demo components.
  * Composes specialized hooks for room, speaker, audio, and interaction management.
  */
-import {
-  createContext,
-  useContext,
-  createSignal,
-  createEffect,
-  onCleanup,
-  untrack,
-  type JSX,
-} from "solid-js";
+
 import type { DistanceModel } from "@clippis/types";
-import { calculateAudioParameters, createListener } from "@lib/spatial-audio-engine";
-import { audioStore } from "@stores/audio";
 import {
-  useMicrophone,
   useAudioPlayback,
+  useCanvasDrawing,
+  useMicrophone,
+  useRemoteSpeaker,
   useRoomManager,
   useSpeakerManager,
-  useCanvasDrawing,
-  useRemoteSpeaker,
 } from "@lib/hooks";
+import { logger } from "@lib/logger";
+import { calculateAudioParameters, createListener } from "@lib/spatial-audio-engine";
+import { isSpeakerInsideRoom } from "@lib/spatial-utils";
+import { audioStore } from "@stores/audio";
+import { showToast } from "@stores/toast";
 import { webRTCStore } from "@stores/webRTC";
-import type { SpeakerState, Position, AudioSourceType, DemoContextValue } from "./types";
 import {
-  ROOM_COLORS,
+  createContext,
+  createEffect,
+  createSignal,
+  type JSX,
+  onCleanup,
+  untrack,
+  useContext,
+} from "solid-js";
+import {
   DEFAULT_MAX_DISTANCE,
   DEFAULT_REAR_GAIN,
   DEFAULT_SPEAKERS,
+  ROOM_COLORS,
 } from "../constants";
-import { getPositionFromEvent, getScreenPosition, DEFAULT_ATTENUATION } from "../utils";
-import { showToast } from "@stores/toast";
-import { logger } from "@lib/logger";
-import { isSpeakerInsideRoom } from "@lib/spatial-utils";
+import { DEFAULT_ATTENUATION, getPositionFromEvent, getScreenPosition } from "../utils";
+import type { AudioSourceType, DemoContextValue, Position, SpeakerState } from "./types";
 
 // ============================================================================
 // SolidJS Context Value

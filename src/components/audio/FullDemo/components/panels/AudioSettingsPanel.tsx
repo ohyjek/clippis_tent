@@ -3,11 +3,12 @@
  *
  * Contains perspective selection, distance model, max distance, rear gain, and visual settings.
  */
-import { For, Index } from "solid-js";
+
 import type { DistanceModel } from "@clippis/types";
-import { Panel, Toggle, DropdownField, SliderField, FieldGroup } from "@components/ui";
-import { useDemoContext } from "@components/audio/FullDemo/context";
 import { DISTANCE_MODEL_OPTIONS } from "@components/audio/FullDemo/constants";
+import { useDemoContext } from "@components/audio/FullDemo/context";
+import { DropdownField, FieldGroup, Panel, SliderField, Toggle } from "@components/ui";
+import { For, Index } from "solid-js";
 
 export function AudioSettingsPanel() {
   const {

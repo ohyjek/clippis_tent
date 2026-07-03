@@ -14,14 +14,15 @@
  *   /         -> Tent (spatial audio demo)
  *   /settings -> Settings page
  */
-import { render } from "solid-js/web";
-import { lazy } from "solid-js";
-import { Router, Route } from "@solidjs/router";
+
 import { App } from "@components/layout";
 import { ErrorBoundary, ToastContainer } from "@components/ui";
 import { I18nProvider } from "@lib/i18n";
 import { logger } from "@lib/logger";
+import { Route, Router } from "@solidjs/router";
 import { showToast } from "@stores/toast";
+import { lazy } from "solid-js";
+import { render } from "solid-js/web";
 // Initialize theme store (applies theme before first render)
 import "@stores/theme";
 

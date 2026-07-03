@@ -3,14 +3,15 @@
  *
  * Provides room CRUD operations and selection state.
  */
-import { createSignal, type Accessor, type Setter } from "solid-js";
+
 import type { DrawnRoom, Position, Wall } from "@clippis/types";
 import {
   createRoomFromCorners,
+  DEFAULT_ATTENUATION,
   isValidRoomSize,
   updateItemById,
-  DEFAULT_ATTENUATION,
 } from "@lib/spatial-utils";
+import { type Accessor, createSignal, type Setter } from "solid-js";
 
 /** Room creation configuration */
 export interface RoomConfig {

@@ -14,8 +14,9 @@
  *   ariaLabel="Demo options"
  * />
  */
-import { For, createSignal } from "solid-js";
+
 import type { Tab } from "@clippis/types";
+import { createSignal, For } from "solid-js";
 import styles from "./Tabs.module.css";
 
 export type { Tab };

@@ -11,11 +11,12 @@
  *
  * Usage: import { audioStore } from "@/stores/audio"
  */
-import { createSignal, createRoot } from "solid-js";
-import type { SoundSource, Position } from "@clippis/types";
-import { createSoundSource, randomPosition } from "@lib/spatial-audio";
+
+import type { Position, SoundSource } from "@clippis/types";
 import { logger } from "@lib/logger";
+import { createSoundSource, randomPosition } from "@lib/spatial-audio";
 import { showToast } from "@stores/toast";
+import { createRoot, createSignal } from "solid-js";
 
 // Store AudioContext outside of reactive system
 let audioContext: AudioContext | null = null;

@@ -3,7 +3,7 @@
  *
  * Tests the core navigation flows through the sidebar.
  */
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.describe("Navigation", () => {
   test.beforeEach(async ({ page }) => {

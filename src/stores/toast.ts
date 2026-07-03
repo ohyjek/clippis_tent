@@ -12,10 +12,11 @@
  *   showToast({ type: "success", message: "Saved!" });
  *   showToast({ type: "error", message: "Failed", duration: 5000 });
  */
-import { createSignal, createRoot } from "solid-js";
-import type { Toast, ToastType, ToastOptions } from "@clippis/types";
 
-export type { Toast, ToastType, ToastOptions };
+import type { Toast, ToastOptions, ToastType } from "@clippis/types";
+import { createRoot, createSignal } from "solid-js";
+
+export type { Toast, ToastOptions, ToastType };
 
 const DEFAULT_DURATION = 4000;
 

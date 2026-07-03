@@ -12,7 +12,7 @@
  *   onChange={handleChange}
  * />
  */
-import { type JSX, splitProps, createUniqueId } from "solid-js";
+import { createUniqueId, type JSX, splitProps } from "solid-js";
 import styles from "./Toggle.module.css";
 
 interface ToggleProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "type"> {

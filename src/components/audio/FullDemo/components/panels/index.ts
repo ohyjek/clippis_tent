@@ -1,6 +1,6 @@
-export { SpeakerPropertiesPanel } from "./SpeakerPropertiesPanel";
-export { RoomPropertiesPanel } from "./RoomPropertiesPanel";
 export { AudioSettingsPanel } from "./AudioSettingsPanel";
-export { SpeakersListPanel } from "./SpeakersListPanel";
+export { RoomPropertiesPanel } from "./RoomPropertiesPanel";
 export { RoomsListPanel } from "./RoomsListPanel";
+export { SpeakerPropertiesPanel } from "./SpeakerPropertiesPanel";
+export { SpeakersListPanel } from "./SpeakersListPanel";
 export { WebRTCPanel } from "./WebRTCPanel";
