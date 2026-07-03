@@ -9,7 +9,7 @@
  * @example
  * <Slider id="volume" label="Volume" min={0} max={1} step={0.01} value={0.5} showValue />
  */
-import { JSX, splitProps, createUniqueId } from "solid-js";
+import { type JSX, splitProps, createUniqueId } from "solid-js";
 import styles from "./Slider.module.css";
 
 interface SliderProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "type"> {

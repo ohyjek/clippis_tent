@@ -1,0 +1,69 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.2/schema.json",
+  "root": true,
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    // ts/tsx only — same scope as the old `eslint --ext .ts,.tsx` + prettier globs.
+    // dist is negated explicitly because it is not in .gitignore (only in the clean script).
+    "includes": [
+      "**/*.ts",
+      "**/*.tsx",
+      "!**/node_modules",
+      "!**/.vite",
+      "!**/out",
+      "!**/dist",
+      "!**/test-results",
+      "!**/playwright-report"
+    ]
+  },
+  // Formatter mirrors the retired .prettierrc (semi, double quotes, 2-space, es5 commas, width 100, lf)
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "jsxQuoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "es5",
+      "arrowParentheses": "always",
+      "bracketSpacing": true
+    }
+  },
+  // organizeImports would touch 85 files; enable later as its own commit if wanted
+  "assist": { "enabled": false },
+  "linter": {
+    "enabled": true,
+    "domains": { "solid": "recommended" },
+    "rules": { "preset": "recommended" }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.test.ts", "**/*.test.tsx"],
+      "linter": { "rules": { "style": { "noNonNullAssertion": "off" } } }
+    },
+    {
+      // Mouse-driven spatial canvas editor: pointer interaction is the feature;
+      // keyboard-equivalence rules don't fit these components
+      "includes": ["**/SpatialCanvas.tsx", "**/RoomRenderer.tsx", "**/Speaker.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noStaticElementInteractions": "off",
+            "useKeyWithClickEvents": "off"
+          }
+        }
+      }
+    },
+    {
+      // ARIA radiogroup-of-buttons pattern: native radio inputs can't carry the
+      // color-swatch styling, and inline biome-ignore can't sit inside a JSX opening tag
+      "includes": ["**/ColorSwatches.tsx"],
+      "linter": { "rules": { "a11y": { "useSemanticElements": "off" } } }
+    }
+  ]
+}

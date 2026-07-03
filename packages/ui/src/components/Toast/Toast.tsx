@@ -37,6 +37,7 @@ function ToastItem(props: { toast: ToastData; onDismiss: (id: string) => void })
       <span class={styles.icon}>{TOAST_ICONS[props.toast.type]}</span>
       <span class={styles.message}>{props.toast.message}</span>
       <button
+        type="button"
         class={styles.dismiss}
         onClick={() => props.onDismiss(props.toast.id)}
         aria-label="Dismiss"

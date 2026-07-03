@@ -9,7 +9,7 @@
  *   <SelectField ... />
  * </Section>
  */
-import { JSX } from "solid-js";
+import type { JSX } from "solid-js";
 import styles from "./Section.module.css";
 
 interface SectionProps {

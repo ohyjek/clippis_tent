@@ -134,6 +134,7 @@ beforeEach(() => {
   // both the store (handlers) and the tests (events) see the same instance
   vi.stubGlobal(
     "RTCPeerConnection",
+    // biome-ignore lint/complexity/useArrowFunction: vitest constructor mocks need `function` so `new RTCPeerConnection()` works
     vi.fn(function () {
       return mockPeerConnection;
     })
@@ -545,7 +546,7 @@ describe("webRTC store", () => {
         onclose: (() => void) | null = null;
         onerror: (() => void) | null = null;
         constructor() {
-          // eslint-disable-next-line @typescript-eslint/no-this-alias -- capture instance for the test
+          // capture instance for the test
           lastSocket = this;
         }
       }

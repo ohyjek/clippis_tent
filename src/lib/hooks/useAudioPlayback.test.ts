@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
  * useAudioPlayback.test.ts - Unit tests for audio playback hook
  */

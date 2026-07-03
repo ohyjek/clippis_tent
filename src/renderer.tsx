@@ -68,7 +68,7 @@ render(
       </I18nProvider>
     </ErrorBoundary>
   ),
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  // biome-ignore lint/style/noNonNullAssertion: #root is guaranteed by index.html
   root!
 );
 

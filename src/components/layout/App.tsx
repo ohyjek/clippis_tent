@@ -9,7 +9,7 @@
  *
  * Used as the `root` prop for the SolidJS Router.
  */
-import { JSX } from "solid-js";
+import type { JSX } from "solid-js";
 import { Sidebar } from "./Sidebar";
 import styles from "./App.module.css";
 

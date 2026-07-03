@@ -1,2 +1,7 @@
 packages:
   - "packages/*"
+
+catalog:
+  # TS 7 RC (native Go compiler) — exact prerelease pin, deduped workspace-wide.
+  # Flip to stable at 7.0 GA (~mid-July 2026); verified fallback: 6.0.3.
+  typescript: 7.0.1-rc

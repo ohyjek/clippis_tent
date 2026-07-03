@@ -226,7 +226,7 @@ export function countWallsBetween(
  * @returns Total attenuation multiplier
  */
 export function calculateWallAttenuation(wallCount: number, attenuationPerWall = 0.3): number {
-  return Math.pow(attenuationPerWall, wallCount);
+  return attenuationPerWall ** wallCount;
 }
 
 /**

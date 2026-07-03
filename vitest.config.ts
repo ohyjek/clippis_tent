@@ -20,10 +20,9 @@
  * - Global mocks for Electron APIs (logger, ipc)
  * - Solid-js deduplication prevents multiple instance issues
  */
-// eslint-disable-next-line import/no-unresolved
 import { defineConfig } from "vitest/config";
 import solid from "vite-plugin-solid";
-import path from "path";
+import path from "node:path";
 
 // Helper to create absolute paths
 const resolver = (dir: string) => path.resolve(__dirname, dir);

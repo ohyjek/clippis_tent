@@ -1,4 +1,4 @@
-import { Position } from "./geometry";
+import type { Position } from "./geometry";
 
 // Remote peer data synced via DataChannel
 export interface RemotePeerState {

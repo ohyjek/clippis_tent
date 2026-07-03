@@ -12,8 +12,8 @@
 import { createSignal, onMount } from "solid-js";
 import type { AudioDevice } from "@clippis/types";
 import { audioStore } from "@stores/audio";
-import { themeStore, ThemeMode } from "@stores/theme";
-import { useI18n, locales, Locale } from "@lib/i18n";
+import { themeStore, type ThemeMode } from "@stores/theme";
+import { useI18n, locales, type Locale } from "@lib/i18n";
 import { Section, SelectField, Slider, Toggle } from "@components/ui";
 import { logger } from "@lib/logger";
 import { showToast } from "@stores/toast";

@@ -9,7 +9,7 @@
  *   <SomeComponent />
  * </ErrorBoundary>
  */
-import { ErrorBoundary as SolidErrorBoundary, JSX } from "solid-js";
+import { ErrorBoundary as SolidErrorBoundary, type JSX } from "solid-js";
 import { Button } from "../Button";
 import styles from "./ErrorBoundary.module.css";
 

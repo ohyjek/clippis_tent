@@ -5,10 +5,9 @@
  * Note: Tests are typically run from the root monorepo for better deduplication.
  * This config is for standalone package testing.
  */
-// eslint-disable-next-line import/no-unresolved
 import { defineConfig } from "vitest/config";
 import solid from "vite-plugin-solid";
-import path from "path";
+import path from "node:path";
 
 export default defineConfig({
   plugins: [

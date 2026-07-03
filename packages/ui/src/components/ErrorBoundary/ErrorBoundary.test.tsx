@@ -71,7 +71,9 @@ describe("ErrorBoundary", () => {
         fallback={(err, reset) => (
           <div>
             <span>Custom error: {err.message}</span>
-            <button onClick={reset}>Reset</button>
+            <button type="button" onClick={reset}>
+              Reset
+            </button>
           </div>
         )}
       >

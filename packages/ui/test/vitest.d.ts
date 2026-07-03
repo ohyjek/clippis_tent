@@ -6,8 +6,7 @@
 import type { TestingLibraryMatchers } from "@testing-library/jest-dom/matchers";
 
 declare module "vitest" {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: must match vitest's own Assertion<T = any> signature
   type Assertion<T = any> = TestingLibraryMatchers<T, void>;
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface AsymmetricMatchersContaining extends TestingLibraryMatchers<unknown, void> {}
 }

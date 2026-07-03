@@ -2,16 +2,20 @@
   // Editor settings for this project
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.biome": "explicit"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
   },
 
-  // TypeScript
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-
-  // ESLint
-  "eslint.validate": ["typescript", "typescriptreact"],
-  "eslint.workingDirectories": [{ "mode": "auto" }],
+  // TypeScript 7 (native compiler) ships no tsserver.js, so the classic
+  // workspace-tsdk mechanism can't load it. IntelliSense parity comes from the
+  // "TypeScript (Native Preview)" extension + this flag; without the extension
+  // VS Code silently uses its bundled TS (fine — the checkers agree).
+  "typescript.experimental.useTsgo": true,
 
   // File associations
   "files.associations": {

@@ -67,7 +67,7 @@ export function SpeakerPropertiesPanel() {
             <SliderField
               label={`Note: ${getNoteName(speaker().frequency)} (${speaker().frequency} Hz)`}
               value={speaker().frequency}
-              onInput={(e) => updateFrequency(parseInt(e.currentTarget.value))}
+              onInput={(e) => updateFrequency(parseInt(e.currentTarget.value, 10))}
               min={220}
               max={880}
               step={10}

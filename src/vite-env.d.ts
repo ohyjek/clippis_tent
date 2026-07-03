@@ -7,15 +7,9 @@
  */
 /// <reference types="vite/client" />
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
-
-interface ImportMetaEnv {
-  readonly DEV: boolean;
-  readonly PROD: boolean;
-  readonly MODE: string;
-}
+// import.meta.env types come from vite/client; this file is a module (it has
+// exports), so local ImportMeta interfaces here would be dead code, not global
+// augmentation.
 
 /** Electron APIs exposed via preload (only in Electron app) */
 export interface ElectronAPI {
@@ -28,5 +22,3 @@ declare global {
     electron?: ElectronAPI;
   }
 }
-
-export {};

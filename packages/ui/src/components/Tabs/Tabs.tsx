@@ -77,6 +77,7 @@ export function Tabs(props: TabsProps) {
           const isActive = () => props.activeTab === tab.id;
           return (
             <button
+              type="button"
               ref={(el) => (tabRefs[index()] = el)}
               id={`${prefix()}-${tab.id}`}
               role="tab"

@@ -1,8 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    // Path aliases for the main app
-    "baseUrl": ".",
+    // Path aliases for the main app (tsconfig-relative; baseUrl is gone in TS 6+)
     "paths": {
       "@src/*": ["./src/*"],
       "@components/*": ["./src/components/*"],

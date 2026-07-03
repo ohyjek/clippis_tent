@@ -8,9 +8,7 @@ import { useCanvasDrawing, type CanvasDrawingState } from "@lib/hooks/useCanvasD
 describe("useCanvasDrawing", () => {
   let drawing: CanvasDrawingState;
   let dispose: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let onDrawComplete: ReturnType<typeof vi.fn>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let getPositionFromEvent: ReturnType<typeof vi.fn>;
 
   const createDrawing = () => {

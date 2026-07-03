@@ -13,7 +13,7 @@
  *   const [t] = useI18n();
  *   t("nav.settings")
  */
-import { createSignal, createContext, useContext, JSX } from "solid-js";
+import { createSignal, createContext, useContext, type JSX } from "solid-js";
 import * as i18n from "@solid-primitives/i18n";
 
 // Import translation files

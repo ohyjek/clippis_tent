@@ -101,14 +101,14 @@ export function WebRTC() {
           {webRTCStore.remoteStream() && " · Remote audio: receiving"}
         </p>
         <p class={styles.hint}>
-          Remote peer position:{" "}
-          {(() => {
+          Remote peer position: {(() => {
             const peer = webRTCStore.remotePeerState();
             return peer
               ? `x=${peer.position.x.toFixed(2)}, y=${peer.position.y.toFixed(2)}, facing=${peer.facing.toFixed(2)}`
               : "— (none received yet)";
           })()}
         </p>
+        {/* biome-ignore lint/a11y/useMediaCaption: live WebRTC voice stream — captions don't apply */}
         <audio ref={remoteAudioRef} autoplay />
 
         <section class={styles.section}>
@@ -139,16 +139,20 @@ export function WebRTC() {
 
         <section class={styles.section}>
           <h2 class={styles.sectionTitle}>Init &amp; create offer</h2>
-          <button class={styles.button} onClick={() => webRTCStore.initializePeerConnection()}>
+          <button
+            type="button"
+            class={styles.button}
+            onClick={() => webRTCStore.initializePeerConnection()}
+          >
             Initialize peer connection
           </button>
-          <button class={styles.button} onClick={() => webRTCStore.createOffer()}>
+          <button type="button" class={styles.button} onClick={() => webRTCStore.createOffer()}>
             Create offer
             {webRTCStore.signalingConnected()
               ? " (sends via signaling)"
               : " (copy SDP below for manual)"}
           </button>
-          <button class={styles.button} onClick={() => webRTCStore.createAnswer()}>
+          <button type="button" class={styles.button} onClick={() => webRTCStore.createAnswer()}>
             Create answer (manual only; with signaling the other peer auto-responds)
           </button>
         </section>
@@ -193,10 +197,10 @@ export function WebRTC() {
             onInput={(e) => setRemoteSdpPaste(e.currentTarget.value)}
           />
           <div class={styles.buttonRow}>
-            <button class={styles.button} onClick={setRemoteOffer}>
+            <button type="button" class={styles.button} onClick={setRemoteOffer}>
               Set remote offer
             </button>
-            <button class={styles.button} onClick={setRemoteAnswer}>
+            <button type="button" class={styles.button} onClick={setRemoteAnswer}>
               Set remote answer
             </button>
           </div>
@@ -231,13 +235,17 @@ export function WebRTC() {
             placeholder='Paste ICE candidate(s) as JSON, one per line, e.g. {"candidate":"...","sdpMid":"0","sdpMLineIndex":0}'
             onInput={(e) => setRemoteIcePaste(e.currentTarget.value)}
           />
-          <button class={styles.button} onClick={addPastedIceCandidates}>
+          <button type="button" class={styles.button} onClick={addPastedIceCandidates}>
             Add ICE candidates
           </button>
         </section>
 
         <section class={styles.section}>
-          <button class={styles.buttonDanger} onClick={() => webRTCStore.disconnect()}>
+          <button
+            type="button"
+            class={styles.buttonDanger}
+            onClick={() => webRTCStore.disconnect()}
+          >
             Disconnect
           </button>
         </section>

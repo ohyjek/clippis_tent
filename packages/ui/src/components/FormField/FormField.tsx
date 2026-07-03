@@ -4,7 +4,7 @@
  * Provides consistent styling for form inputs across the app.
  * Includes label, input/select, and optional hint text.
  */
-import { JSX, splitProps, Show } from "solid-js";
+import { type JSX, createUniqueId, splitProps, Show } from "solid-js";
 import styles from "./FormField.module.css";
 
 /** Common props for all field types */
@@ -58,11 +58,15 @@ interface SliderFieldProps extends BaseFieldProps {
  */
 export function InputField(props: InputFieldProps) {
   const [local, others] = splitProps(props, ["label", "hint", "class", "type", "value", "onInput"]);
+  const id = createUniqueId();
 
   return (
     <div class={`${styles.fieldGroup} ${local.class || ""}`}>
-      <label class={styles.label}>{local.label}</label>
+      <label class={styles.label} for={id}>
+        {local.label}
+      </label>
       <input
+        id={id}
         type={local.type || "text"}
         class={styles.input}
         value={local.value}
@@ -90,10 +94,20 @@ export function DropdownField(props: SelectFieldProps) {
     "children",
   ]);
 
+  const id = createUniqueId();
+
   return (
     <div class={`${styles.fieldGroup} ${local.class || ""}`}>
-      <label class={styles.label}>{local.label}</label>
-      <select class={styles.select} value={local.value} onChange={local.onChange} {...others}>
+      <label class={styles.label} for={id}>
+        {local.label}
+      </label>
+      <select
+        id={id}
+        class={styles.select}
+        value={local.value}
+        onChange={local.onChange}
+        {...others}
+      >
         {local.children}
       </select>
       <Show when={local.hint}>
@@ -123,11 +137,15 @@ export function SliderField(props: SliderFieldProps) {
 
   const displayValue = () =>
     local.formatValue ? local.formatValue(local.value) : String(local.value);
+  const id = createUniqueId();
 
   return (
     <div class={`${styles.fieldGroup} ${local.class || ""}`}>
-      <label class={styles.label}>{local.label}</label>
+      <label class={styles.label} for={id}>
+        {local.label}
+      </label>
       <input
+        id={id}
         type="range"
         class={styles.slider}
         value={local.value}
@@ -160,7 +178,8 @@ export function FieldGroup(props: {
 }) {
   return (
     <div class={`${styles.fieldGroup} ${props.class || ""}`}>
-      <label class={styles.label}>{props.label}</label>
+      {/* span, not label: the grouped children are arbitrary content, not a single labelable control */}
+      <span class={styles.label}>{props.label}</span>
       {props.children}
       <Show when={props.hint}>
         <small class={styles.hint}>{props.hint}</small>

@@ -20,7 +20,7 @@ function getSdpType(sdp: string): "offer" | "answer" {
 /** Normalize SDP so setRemoteDescription parses correctly: CRLF line endings, trim each line (fixes "Invalid SDP line" from clipboard cruft), fix merged lines. */
 function normalizeSdp(sdp: string): string {
   // Strip control chars and null bytes that can come from clipboard
-  // eslint-disable-next-line no-control-regex -- intentional: strip control characters from pasted SDP
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: intentional — strip control characters from pasted SDP
   let out = sdp.replace(/\0/g, "").replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
   out = out.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
   // If paste merged lines (e.g. "a=msid-semantic: WMS m=audio ..."), split before " m=" so parser sees m= line
@@ -33,7 +33,7 @@ function normalizeSdp(sdp: string): string {
     .join("\r\n");
   // Chromium's parser requires the final line to be newline-terminated —
   // without this every normalized SDP fails with "Invalid SDP line" on its last line
-  return out + "\r\n";
+  return `${out}\r\n`;
 }
 
 export interface SetRemoteSdpOptions {
@@ -231,7 +231,9 @@ export function createWebRTCStore() {
   const releaseLocalAudio = () => {
     const stream = localStream();
     if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
+      stream.getTracks().forEach((track) => {
+        track.stop();
+      });
       setLocalStream(null);
     }
   };
@@ -456,7 +458,7 @@ export function createWebRTCStore() {
     }
 
     const currentPeerConnection = peerConnection();
-    if (!currentPeerConnection || !currentPeerConnection.remoteDescription) {
+    if (!currentPeerConnection?.remoteDescription) {
       // Too early — hold on to it until the remote description lands
       pendingRemoteCandidates.push(init);
       logger.debug("Queued early ICE candidate", { queued: pendingRemoteCandidates.length });

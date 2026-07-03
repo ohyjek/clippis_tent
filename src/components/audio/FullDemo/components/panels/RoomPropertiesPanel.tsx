@@ -37,7 +37,7 @@ export function RoomPropertiesPanel() {
   });
 
   const handleSliderChange = (e: InputEvent & { currentTarget: HTMLInputElement }) => {
-    const newValue = parseInt(e.currentTarget.value);
+    const newValue = parseInt(e.currentTarget.value, 10);
     const room = selectedRoom();
     if (!room) return;
 

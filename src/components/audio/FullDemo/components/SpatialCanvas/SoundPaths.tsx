@@ -18,7 +18,7 @@ interface SoundPathsProps {
 
 export function SoundPaths(props: SoundPathsProps) {
   return (
-    <svg class={styles.pathSvg}>
+    <svg class={styles.pathSvg} aria-hidden="true">
       <For each={props.speakers}>
         {(speaker) => {
           const wallCount = props.getWallCount(speaker);

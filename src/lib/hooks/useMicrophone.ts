@@ -66,7 +66,9 @@ export function useMicrophone(options?: MicrophoneOptions): MicrophoneState {
     const currentStream = stream();
     if (currentStream) {
       // Stop all tracks
-      currentStream.getTracks().forEach((track) => track.stop());
+      currentStream.getTracks().forEach((track) => {
+        track.stop();
+      });
       setStream(null);
       showToast({ type: "info", message: "Microphone disabled" });
       options?.onDisabled?.();

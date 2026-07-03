@@ -141,7 +141,7 @@ export function calculateDistanceAttenuation(
 
     case "exponential":
       // Exponential: (ref / d) ^ rolloff
-      attenuation = Math.pow(refDistance / d, rolloffFactor);
+      attenuation = (refDistance / d) ** rolloffFactor;
       break;
 
     default:
