@@ -12,6 +12,7 @@
  *
  * Routes:
  *   /         -> Tent (spatial audio demo)
+ *   /webrtc   -> WebRTC testing page
  *   /settings -> Settings page
  */
 

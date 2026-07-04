@@ -9,6 +9,7 @@ import { useDemoContext } from "@components/audio/FullDemo/context";
 import { DropdownField, FieldGroup, Panel, SliderField, Toggle } from "@components/ui";
 import type { DistanceModel } from "@tentchat/types";
 import { For, Index } from "solid-js";
+import { getSpeakerDisplayName } from "../../utils";
 
 export function AudioSettingsPanel() {
   const {
@@ -27,12 +28,6 @@ export function AudioSettingsPanel() {
     speakers,
   } = useDemoContext();
 
-  // Get display label for a speaker
-  const getSpeakerLabel = (speakerId: string, index: number) => {
-    if (speakerId === "observer") return "You (Observer)";
-    return `Speaker ${index}`;
-  };
-
   return (
     <Panel title="Audio Settings" icon="⚙️">
       {/* Perspective - uses FieldGroup with raw select for Index reactivity */}
@@ -42,8 +37,10 @@ export function AudioSettingsPanel() {
           onChange={(e) => setCurrentPerspective(e.currentTarget.value)}
         >
           <Index each={speakers()}>
-            {(speaker, i) => (
-              <option value={speaker().id}>{getSpeakerLabel(speaker().id, i)}</option>
+            {(speaker) => (
+              <option value={speaker().id}>
+                {getSpeakerDisplayName(speakers(), speaker().id, "You (Observer)")}
+              </option>
             )}
           </Index>
         </select>

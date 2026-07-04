@@ -11,8 +11,10 @@ import { type Accessor, createSignal, type Setter } from "solid-js";
 
 /** Options for speaker manager initialization */
 export interface SpeakerManagerOptions {
-  /** Initial speakers to create */
+  /** Initial speakers to create (default: none) */
   initialSpeakers?: SpeakerState[];
+  /** Speaker ID initially selected and used as perspective (default: "observer") */
+  initialPerspective?: string;
   /** Callback when playback should stop for a speaker */
   onStopPlayback?: (speakerId: string) => void;
 }
@@ -61,36 +63,15 @@ export interface SpeakerManagerState {
   reset: (initialSpeakers: SpeakerState[]) => void;
 }
 
-const OBSERVER_ID = "observer";
-
 /**
  * Hook for managing speaker state
  */
 export function useSpeakerManager(options?: SpeakerManagerOptions): SpeakerManagerState {
-  const defaultSpeakers: SpeakerState[] = options?.initialSpeakers ?? [
-    {
-      id: OBSERVER_ID,
-      position: { x: 0, y: 0 },
-      facing: 0,
-      color: "#3b82f6",
-      directivity: "omnidirectional",
-      frequency: 440,
-      sourceType: "oscillator",
-    },
-    {
-      id: "speaker-1",
-      position: { x: -1, y: 0 },
-      facing: 0,
-      color: SPEAKER_COLORS[0],
-      directivity: "cardioid",
-      frequency: 440,
-      sourceType: "oscillator",
-    },
-  ];
+  const initialPerspective = options?.initialPerspective ?? "observer";
 
-  const [speakers, setSpeakers] = createSignal<SpeakerState[]>(defaultSpeakers);
-  const [selectedSpeaker, setSelectedSpeaker] = createSignal<string>(OBSERVER_ID);
-  const [currentPerspective, setCurrentPerspective] = createSignal<string>(OBSERVER_ID);
+  const [speakers, setSpeakers] = createSignal<SpeakerState[]>(options?.initialSpeakers ?? []);
+  const [selectedSpeaker, setSelectedSpeaker] = createSignal<string>(initialPerspective);
+  const [currentPerspective, setCurrentPerspective] = createSignal<string>(initialPerspective);
 
   const getSelectedSpeaker = () => speakers().find((s) => s.id === selectedSpeaker());
   const getSpeakerById = (id: string) => speakers().find((s) => s.id === id);

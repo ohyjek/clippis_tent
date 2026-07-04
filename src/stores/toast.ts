@@ -58,18 +58,10 @@ function createToastStore() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  /**
-   * Dismiss all toasts
-   */
-  const dismissAll = (): void => {
-    setToasts([]);
-  };
-
   return {
     toasts,
     showToast,
     dismissToast,
-    dismissAll,
   };
 }
 
@@ -79,4 +71,3 @@ const store = createRoot(createToastStore);
 export const toasts = store.toasts;
 export const showToast = store.showToast;
 export const dismissToast = store.dismissToast;
-export const dismissAll = store.dismissAll;

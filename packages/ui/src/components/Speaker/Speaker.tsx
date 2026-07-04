@@ -15,8 +15,6 @@ import type { Position } from "@tentchat/types";
 import type { JSX } from "solid-js";
 import styles from "./Speaker.module.css";
 
-export type { Position };
-
 export interface SpeakerProps {
   /** Unique identifier */
   id: string;

@@ -104,12 +104,3 @@ export function useI18n(): [typeof translate, typeof locale, typeof setLocale] {
   }
   return [context.t, context.locale, context.setLocale];
 }
-
-/**
- * Direct access to i18n store for non-component usage
- */
-export const i18nStore = {
-  locale,
-  setLocale,
-  t: translate,
-};

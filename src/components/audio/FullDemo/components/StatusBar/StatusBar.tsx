@@ -4,6 +4,7 @@
  * Shows current perspective, room count, speaker count, and interaction hints.
  */
 import { useDemoContext } from "../../context";
+import { getSpeakerDisplayName } from "../../utils";
 import styles from "./StatusBar.module.css";
 
 export function StatusBar() {
@@ -16,20 +17,16 @@ export function StatusBar() {
     getPerspectivePosition,
   } = useDemoContext();
 
-  const getPerspectiveName = () => {
-    const perspective = currentPerspective();
-    if (perspective === "observer") return "Observer";
-    const speakerList = speakers();
-    const index = speakerList.findIndex((s) => s.id === perspective);
-    return index >= 0 ? `Speaker ${index}` : "Unknown";
-  };
+  const getPerspectiveName = () => getSpeakerDisplayName(speakers(), currentPerspective());
 
-  const pos = getPerspectivePosition();
+  // Must stay a function call inside JSX: components run once, so capturing
+  // the position in a const here would freeze it at its mount-time value
+  const pos = () => getPerspectivePosition();
 
   return (
     <div class={styles.statusBar}>
       <span class={styles.perspective}>
-        👤 You: {getPerspectiveName()} ({pos.x.toFixed(1)}, {pos.y.toFixed(1)})
+        👤 You: {getPerspectiveName()} ({pos().x.toFixed(1)}, {pos().y.toFixed(1)})
       </span>
       <span>
         {rooms().length} room{rooms().length !== 1 ? "s" : ""}

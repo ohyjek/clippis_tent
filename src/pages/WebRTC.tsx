@@ -1,10 +1,12 @@
 /**
  * WebRTC.tsx - The WebRTC page
  *
- * Signaling flow: Run `pnpm signaling` in a terminal. Both peers: Connect, then one clicks
- * Create offer (connection, mic, and answer are automatic). Offer/answer/ICE go over the wire.
+ * Signaling flow (primary): Run `pnpm signaling` in a terminal. Both peers: Connect, then one
+ * clicks Create offer (connection, mic, and answer are automatic). Offer/answer/ICE go over
+ * the wire.
  *
- * Manual flow: Use the sections below to copy-paste SDP and ICE between windows.
+ * Manual fallback: collapsed at the bottom of the page — copy-paste SDP and ICE between
+ * windows when no signaling server is running.
  *
  * Remote audio plays here un-spatialized; open the Tent page for spatialized playback.
  */
@@ -153,93 +155,101 @@ export function WebRTC() {
               ? " (sends via signaling)"
               : " (copy SDP below for manual)"}
           </button>
-          <button type="button" class={styles.button} onClick={() => webRTCStore.createAnswer()}>
-            Create answer (manual only; with signaling the other peer auto-responds)
-          </button>
         </section>
 
-        <section class={styles.section}>
-          <h2 class={styles.sectionTitle}>2. Local SDP (copy to other peer)</h2>
-          <div class={styles.copyRow}>
-            <button
-              class={styles.button}
-              type="button"
-              onClick={copyLocalSdp}
-              disabled={!webRTCStore.localSdp()}
-            >
-              Copy SDP
-            </button>
-          </div>
-          <textarea
-            class={styles.textarea}
-            readOnly
-            value={webRTCStore.localSdp() ?? ""}
-            placeholder="After Create offer / Create answer, copy this to the other window."
-          />
-        </section>
+        <details class={styles.section}>
+          <summary>Manual fallback (copy-paste SDP/ICE — no signaling server)</summary>
 
-        <section class={styles.section}>
-          <h2 class={styles.sectionTitle}>3. Remote SDP (paste from other peer)</h2>
-          <p class={styles.hint}>
-            In the other window click &quot;Copy SDP&quot;, then here click one of the buttons below
-            (or paste in the box and click Set).
-          </p>
-          <div class={styles.buttonRow}>
-            <button class={styles.button} type="button" onClick={pasteFromClipboardAndSetOffer}>
-              Paste from clipboard and set remote offer
+          <section class={styles.section}>
+            <h2 class={styles.sectionTitle}>1. Create answer (answering peer)</h2>
+            <button type="button" class={styles.button} onClick={() => webRTCStore.createAnswer()}>
+              Create answer (manual only; with signaling the other peer auto-responds)
             </button>
-            <button class={styles.button} type="button" onClick={pasteFromClipboardAndSetAnswer}>
-              Paste from clipboard and set remote answer
-            </button>
-          </div>
-          <textarea
-            class={styles.textarea}
-            placeholder="Or paste the other peer's SDP here, then click Set below"
-            onInput={(e) => setRemoteSdpPaste(e.currentTarget.value)}
-          />
-          <div class={styles.buttonRow}>
-            <button type="button" class={styles.button} onClick={setRemoteOffer}>
-              Set remote offer
-            </button>
-            <button type="button" class={styles.button} onClick={setRemoteAnswer}>
-              Set remote answer
-            </button>
-          </div>
-        </section>
+          </section>
 
-        <section class={styles.section}>
-          <h2 class={styles.sectionTitle}>4. Local ICE candidates (copy to other peer)</h2>
-          <div class={styles.copyRow}>
-            <button
-              class={styles.button}
-              type="button"
-              onClick={copyLocalIce}
-              disabled={localIceJson() === "[]"}
-            >
-              Copy ICE
-            </button>
-          </div>
-          <textarea
-            class={styles.textarea}
-            readOnly
-            value={localIceJson()}
-            placeholder="ICE candidates appear here after offer/answer. Copy to other peer."
-          />
-        </section>
+          <section class={styles.section}>
+            <h2 class={styles.sectionTitle}>2. Local SDP (copy to other peer)</h2>
+            <div class={styles.copyRow}>
+              <button
+                class={styles.button}
+                type="button"
+                onClick={copyLocalSdp}
+                disabled={!webRTCStore.localSdp()}
+              >
+                Copy SDP
+              </button>
+            </div>
+            <textarea
+              class={styles.textarea}
+              readOnly
+              value={webRTCStore.localSdp() ?? ""}
+              placeholder="After Create offer / Create answer, copy this to the other window."
+            />
+          </section>
 
-        <section class={styles.section}>
-          <h2 class={styles.sectionTitle}>
-            5. Remote ICE (paste from other peer, one JSON per line)
-          </h2>
-          <textarea
-            class={styles.textarea}
-            placeholder='Paste ICE candidate(s) as JSON, one per line, e.g. {"candidate":"...","sdpMid":"0","sdpMLineIndex":0}'
-            onInput={(e) => setRemoteIcePaste(e.currentTarget.value)}
-          />
-          <button type="button" class={styles.button} onClick={addPastedIceCandidates}>
-            Add ICE candidates
-          </button>
-        </section>
+          <section class={styles.section}>
+            <h2 class={styles.sectionTitle}>3. Remote SDP (paste from other peer)</h2>
+            <p class={styles.hint}>
+              In the other window click &quot;Copy SDP&quot;, then here click one of the buttons
+              below (or paste in the box and click Set).
+            </p>
+            <div class={styles.buttonRow}>
+              <button class={styles.button} type="button" onClick={pasteFromClipboardAndSetOffer}>
+                Paste from clipboard and set remote offer
+              </button>
+              <button class={styles.button} type="button" onClick={pasteFromClipboardAndSetAnswer}>
+                Paste from clipboard and set remote answer
+              </button>
+            </div>
+            <textarea
+              class={styles.textarea}
+              placeholder="Or paste the other peer's SDP here, then click Set below"
+              onInput={(e) => setRemoteSdpPaste(e.currentTarget.value)}
+            />
+            <div class={styles.buttonRow}>
+              <button type="button" class={styles.button} onClick={setRemoteOffer}>
+                Set remote offer
+              </button>
+              <button type="button" class={styles.button} onClick={setRemoteAnswer}>
+                Set remote answer
+              </button>
+            </div>
+          </section>
+
+          <section class={styles.section}>
+            <h2 class={styles.sectionTitle}>4. Local ICE candidates (copy to other peer)</h2>
+            <div class={styles.copyRow}>
+              <button
+                class={styles.button}
+                type="button"
+                onClick={copyLocalIce}
+                disabled={localIceJson() === "[]"}
+              >
+                Copy ICE
+              </button>
+            </div>
+            <textarea
+              class={styles.textarea}
+              readOnly
+              value={localIceJson()}
+              placeholder="ICE candidates appear here after offer/answer. Copy to other peer."
+            />
+          </section>
+
+          <section class={styles.section}>
+            <h2 class={styles.sectionTitle}>
+              5. Remote ICE (paste from other peer, one JSON per line)
+            </h2>
+            <textarea
+              class={styles.textarea}
+              placeholder='Paste ICE candidate(s) as JSON, one per line, e.g. {"candidate":"...","sdpMid":"0","sdpMLineIndex":0}'
+              onInput={(e) => setRemoteIcePaste(e.currentTarget.value)}
+            />
+            <button type="button" class={styles.button} onClick={addPastedIceCandidates}>
+              Add ICE candidates
+            </button>
+          </section>
+        </details>
 
         <section class={styles.section}>
           <button

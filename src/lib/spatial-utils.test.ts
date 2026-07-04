@@ -3,16 +3,12 @@
  */
 
 import {
-  angleBetween,
   createRoomFromCorners,
   createWallsFromBounds,
   DEFAULT_ATTENUATION,
-  distanceBetween,
-  fromPercent,
   isSpeakerInsideRoom,
   isValidRoomSize,
   MIN_ROOM_SIZE,
-  normalizeAngle,
   toPercent,
   updateItemById,
 } from "@lib/spatial-utils";
@@ -33,90 +29,6 @@ describe("Coordinate Conversion", () => {
     it("converts negative values correctly", () => {
       expect(toPercent(-2.5)).toBe(0);
       expect(toPercent(-1)).toBe(30);
-    });
-  });
-
-  describe("fromPercent", () => {
-    it("converts 50% to center (0)", () => {
-      expect(fromPercent(50)).toBe(0);
-    });
-
-    it("converts 100% to 2.5", () => {
-      expect(fromPercent(100)).toBe(2.5);
-    });
-
-    it("converts 0% to -2.5", () => {
-      expect(fromPercent(0)).toBe(-2.5);
-    });
-
-    it("is the inverse of toPercent", () => {
-      const values = [-2, -1, 0, 1, 2];
-      for (const val of values) {
-        expect(fromPercent(toPercent(val))).toBeCloseTo(val);
-      }
-    });
-  });
-});
-
-describe("Geometry Calculations", () => {
-  describe("distanceBetween", () => {
-    it("returns 0 for same position", () => {
-      expect(distanceBetween({ x: 1, y: 1 }, { x: 1, y: 1 })).toBe(0);
-    });
-
-    it("calculates horizontal distance", () => {
-      expect(distanceBetween({ x: 0, y: 0 }, { x: 3, y: 0 })).toBe(3);
-    });
-
-    it("calculates vertical distance", () => {
-      expect(distanceBetween({ x: 0, y: 0 }, { x: 0, y: 4 })).toBe(4);
-    });
-
-    it("calculates diagonal distance (3-4-5 triangle)", () => {
-      expect(distanceBetween({ x: 0, y: 0 }, { x: 3, y: 4 })).toBe(5);
-    });
-
-    it("works with negative coordinates", () => {
-      expect(distanceBetween({ x: -1, y: -1 }, { x: 2, y: 3 })).toBe(5);
-    });
-  });
-
-  describe("angleBetween", () => {
-    it("returns 0 for point to the right", () => {
-      expect(angleBetween({ x: 0, y: 0 }, { x: 1, y: 0 })).toBe(0);
-    });
-
-    it("returns PI/2 for point below", () => {
-      expect(angleBetween({ x: 0, y: 0 }, { x: 0, y: 1 })).toBeCloseTo(Math.PI / 2);
-    });
-
-    it("returns PI for point to the left", () => {
-      expect(angleBetween({ x: 0, y: 0 }, { x: -1, y: 0 })).toBeCloseTo(Math.PI);
-    });
-
-    it("returns -PI/2 for point above", () => {
-      expect(angleBetween({ x: 0, y: 0 }, { x: 0, y: -1 })).toBeCloseTo(-Math.PI / 2);
-    });
-  });
-
-  describe("normalizeAngle", () => {
-    it("keeps angles in [-PI, PI] unchanged", () => {
-      expect(normalizeAngle(0)).toBe(0);
-      expect(normalizeAngle(Math.PI / 2)).toBeCloseTo(Math.PI / 2);
-      expect(normalizeAngle(-Math.PI / 2)).toBeCloseTo(-Math.PI / 2);
-    });
-
-    it("normalizes angles > PI", () => {
-      expect(normalizeAngle(Math.PI + 0.5)).toBeCloseTo(-Math.PI + 0.5);
-    });
-
-    it("normalizes angles < -PI", () => {
-      expect(normalizeAngle(-Math.PI - 0.5)).toBeCloseTo(Math.PI - 0.5);
-    });
-
-    it("normalizes full rotations", () => {
-      expect(normalizeAngle(2 * Math.PI)).toBeCloseTo(0);
-      expect(normalizeAngle(-2 * Math.PI)).toBeCloseTo(0);
     });
   });
 });

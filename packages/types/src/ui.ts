@@ -10,15 +10,6 @@ export interface SelectOption {
   label: string;
 }
 
-/**
- * Tab definition for tab components
- */
-export interface Tab {
-  id: string;
-  label: string;
-  icon?: string;
-}
-
 // ============================================================================
 // List Types
 // ============================================================================
@@ -100,19 +91,6 @@ export type ButtonVariant = "primary" | "success" | "purple" | "danger" | "outli
  * Drawing mode for canvas interactions
  */
 export type DrawingMode = "select" | "draw";
-
-// ============================================================================
-// Navigation Types
-// ============================================================================
-
-/**
- * Navigation item for sidebar
- */
-export interface NavItem {
-  path: string;
-  labelKey: string;
-  icon: string;
-}
 
 // ============================================================================
 // Device Types

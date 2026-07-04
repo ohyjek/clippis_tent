@@ -43,11 +43,7 @@ export function useMicrophone(options?: MicrophoneOptions): MicrophoneState {
 
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: audioStore.echoCancellationEnabled(),
-          noiseSuppression: audioStore.noiseSuppressionEnabled(),
-          autoGainControl: true,
-        },
+        audio: audioStore.microphoneConstraints(),
       });
       setStream(mediaStream);
       showToast({ type: "success", message: "Microphone enabled" });

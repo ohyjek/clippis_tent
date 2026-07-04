@@ -2,29 +2,19 @@
  * spatial-audio.test.ts - Unit tests for spatial audio utilities
  *
  * Tests all functions in spatial-audio.ts:
- * - Distance calculations
- * - Volume attenuation
- * - Stereo panning
- * - Directional gain (cardioid pattern)
- * - Wall intersection detection
- * - Room creation
+ * - Distance and angle calculations
+ * - Wall intersection detection and attenuation
+ * - Sound source creation helpers
  *
  * Run with: pnpm test
  */
 
 import {
-  CARDINAL_DIRECTIONS,
   calculateAngleToPoint,
-  calculateDirectionalGain,
   calculateDistance,
-  calculatePan,
-  calculateSpatialParams,
-  calculateVolume,
   calculateWallAttenuation,
   countWallsBetween,
-  createRectangularRoom,
   createSoundSource,
-  createSpeaker,
   lineIntersectsWall,
   normalizeAngle,
   randomFrequency,
@@ -63,116 +53,6 @@ describe("spatial-audio utilities", () => {
       const pos1 = { x: -1, y: -1 };
       const pos2 = { x: 2, y: 3 };
       expect(calculateDistance(pos1, pos2)).toBe(5);
-    });
-  });
-
-  describe("calculateVolume", () => {
-    it("returns 0.3 at distance 0 with default params", () => {
-      // volume = 1/(1+0) * 1 * 0.3 = 0.3
-      expect(calculateVolume(0)).toBeCloseTo(0.3);
-    });
-
-    it("returns 0.15 at distance 1 with default params", () => {
-      // volume = 1/(1+1) * 1 * 0.3 = 0.15
-      expect(calculateVolume(1)).toBeCloseTo(0.15);
-    });
-
-    it("decreases with distance (inverse relationship)", () => {
-      const vol0 = calculateVolume(0);
-      const vol1 = calculateVolume(1);
-      const vol2 = calculateVolume(2);
-      const vol5 = calculateVolume(5);
-
-      expect(vol0).toBeGreaterThan(vol1);
-      expect(vol1).toBeGreaterThan(vol2);
-      expect(vol2).toBeGreaterThan(vol5);
-    });
-
-    it("scales with master volume", () => {
-      const fullVolume = calculateVolume(1, 1);
-      const halfVolume = calculateVolume(1, 0.5);
-
-      expect(halfVolume).toBeCloseTo(fullVolume * 0.5);
-    });
-
-    it("clamps to 0-1 range", () => {
-      // Even with very close distance and high master volume
-      const vol = calculateVolume(0, 10, 1);
-      expect(vol).toBeLessThanOrEqual(1);
-      expect(vol).toBeGreaterThanOrEqual(0);
-    });
-  });
-
-  describe("calculatePan", () => {
-    it("returns 0 when directly in front (dx = 0)", () => {
-      expect(calculatePan(0)).toBe(0);
-    });
-
-    it("returns positive (right) for positive dx", () => {
-      expect(calculatePan(1)).toBeGreaterThan(0);
-    });
-
-    it("returns negative (left) for negative dx", () => {
-      expect(calculatePan(-1)).toBeLessThan(0);
-    });
-
-    it("clamps to -1 for far left", () => {
-      expect(calculatePan(-10)).toBe(-1);
-    });
-
-    it("clamps to 1 for far right", () => {
-      expect(calculatePan(10)).toBe(1);
-    });
-
-    it("returns correct pan for moderate offset", () => {
-      // With default panWidth of 3, dx=1.5 should give 0.5
-      expect(calculatePan(1.5)).toBeCloseTo(0.5);
-    });
-
-    it("respects custom pan width", () => {
-      // With panWidth of 2, dx=1 should give 0.5
-      expect(calculatePan(1, 2)).toBeCloseTo(0.5);
-    });
-  });
-
-  describe("calculateSpatialParams", () => {
-    it("returns correct params for same position", () => {
-      const listener = { x: 0, y: 0 };
-      const source = { x: 0, y: 0 };
-      const params = calculateSpatialParams(listener, source);
-
-      expect(params.distance).toBe(0);
-      expect(params.pan).toBe(0);
-      expect(params.volume).toBeCloseTo(0.3);
-    });
-
-    it("returns correct params for source to the right", () => {
-      const listener = { x: 0, y: 0 };
-      const source = { x: 3, y: 0 };
-      const params = calculateSpatialParams(listener, source);
-
-      expect(params.distance).toBe(3);
-      expect(params.pan).toBe(1); // 3/3 = 1 (clamped)
-      expect(params.volume).toBeLessThan(0.3);
-    });
-
-    it("returns correct params for source to the left", () => {
-      const listener = { x: 0, y: 0 };
-      const source = { x: -3, y: 0 };
-      const params = calculateSpatialParams(listener, source);
-
-      expect(params.distance).toBe(3);
-      expect(params.pan).toBe(-1); // -3/3 = -1 (clamped)
-    });
-
-    it("scales volume with master volume parameter", () => {
-      const listener = { x: 0, y: 0 };
-      const source = { x: 1, y: 0 };
-
-      const fullParams = calculateSpatialParams(listener, source, 1);
-      const halfParams = calculateSpatialParams(listener, source, 0.5);
-
-      expect(halfParams.volume).toBeCloseTo(fullParams.volume * 0.5);
     });
   });
 
@@ -232,32 +112,6 @@ describe("spatial-audio utilities", () => {
         expect(ids.has(source.id)).toBe(false);
         ids.add(source.id);
       }
-    });
-  });
-
-  describe("CARDINAL_DIRECTIONS", () => {
-    it("has 4 directions", () => {
-      expect(CARDINAL_DIRECTIONS).toHaveLength(4);
-    });
-
-    it("includes left, right, front, and back", () => {
-      const names = CARDINAL_DIRECTIONS.map((d) => d.name);
-      expect(names).toContain("Left");
-      expect(names).toContain("Right");
-      expect(names).toContain("Front");
-      expect(names).toContain("Back");
-    });
-
-    it("left is at negative x", () => {
-      const left = CARDINAL_DIRECTIONS.find((d) => d.name === "Left");
-      expect(left?.x).toBeLessThan(0);
-      expect(left?.y).toBe(0);
-    });
-
-    it("right is at positive x", () => {
-      const right = CARDINAL_DIRECTIONS.find((d) => d.name === "Right");
-      expect(right?.x).toBeGreaterThan(0);
-      expect(right?.y).toBe(0);
     });
   });
 
@@ -330,40 +184,6 @@ describe("spatial-audio utilities", () => {
     });
   });
 
-  describe("calculateDirectionalGain", () => {
-    it("returns 1.0 when facing directly toward listener", () => {
-      const speakerPos = { x: 0, y: 0 };
-      const listenerPos = { x: 1, y: 0 };
-      const facing = 0; // Facing right, toward listener
-      expect(calculateDirectionalGain(facing, speakerPos, listenerPos)).toBeCloseTo(1.0);
-    });
-
-    it("returns ~0 when facing directly away from listener", () => {
-      const speakerPos = { x: 0, y: 0 };
-      const listenerPos = { x: 1, y: 0 };
-      const facing = Math.PI; // Facing left, away from listener
-      expect(calculateDirectionalGain(facing, speakerPos, listenerPos)).toBeCloseTo(0);
-    });
-
-    it("returns 0.5 when facing perpendicular to listener", () => {
-      const speakerPos = { x: 0, y: 0 };
-      const listenerPos = { x: 1, y: 0 };
-      const facing = Math.PI / 2; // Facing down, perpendicular
-      expect(calculateDirectionalGain(facing, speakerPos, listenerPos)).toBeCloseTo(0.5);
-    });
-
-    it("returns values between 0 and 1", () => {
-      const speakerPos = { x: 0, y: 0 };
-      const listenerPos = { x: 1, y: 1 };
-
-      for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 8) {
-        const gain = calculateDirectionalGain(angle, speakerPos, listenerPos);
-        expect(gain).toBeGreaterThanOrEqual(0);
-        expect(gain).toBeLessThanOrEqual(1);
-      }
-    });
-  });
-
   describe("lineIntersectsWall", () => {
     const horizontalWall = { start: { x: -1, y: 0 }, end: { x: 1, y: 0 } };
     const verticalWall = { start: { x: 0, y: -1 }, end: { x: 0, y: 1 } };
@@ -430,71 +250,6 @@ describe("spatial-audio utilities", () => {
     it("respects custom attenuation factor", () => {
       expect(calculateWallAttenuation(1, 0.5)).toBeCloseTo(0.5);
       expect(calculateWallAttenuation(2, 0.5)).toBeCloseTo(0.25);
-    });
-  });
-
-  describe("createRectangularRoom", () => {
-    it("creates a room with 4 walls", () => {
-      const room = createRectangularRoom({ x: 0, y: 0 }, 2, 2, "test-room");
-      expect(room.walls).toHaveLength(4);
-    });
-
-    it("creates walls at correct positions", () => {
-      const room = createRectangularRoom({ x: 0, y: 0 }, 2, 2, "test-room");
-
-      // Check that walls form a closed rectangle
-      const wallEnds = room.walls.flatMap((w) => [w.start, w.end]);
-      const corners = [
-        { x: -1, y: -1 },
-        { x: 1, y: -1 },
-        { x: 1, y: 1 },
-        { x: -1, y: 1 },
-      ];
-
-      corners.forEach((corner) => {
-        const hasCorner = wallEnds.some(
-          (p) => Math.abs(p.x - corner.x) < 0.01 && Math.abs(p.y - corner.y) < 0.01
-        );
-        expect(hasCorner).toBe(true);
-      });
-    });
-
-    it("stores room id and label", () => {
-      const room = createRectangularRoom({ x: 0, y: 0 }, 2, 2, "my-room", "My Room");
-      expect(room.id).toBe("my-room");
-      expect(room.label).toBe("My Room");
-    });
-  });
-
-  describe("createSpeaker", () => {
-    it("creates a speaker with valid properties", () => {
-      const speaker = createSpeaker();
-      expect(speaker).toHaveProperty("id");
-      expect(speaker).toHaveProperty("position");
-      expect(speaker).toHaveProperty("facing");
-      expect(speaker).toHaveProperty("color");
-    });
-
-    it("uses provided id", () => {
-      const speaker = createSpeaker("custom-speaker");
-      expect(speaker.id).toBe("custom-speaker");
-    });
-
-    it("assigns colors based on index", () => {
-      const speaker0 = createSpeaker(undefined, 0);
-      const speaker1 = createSpeaker(undefined, 1);
-      expect(speaker0.color).toBe(SPEAKER_COLORS[0]);
-      expect(speaker1.color).toBe(SPEAKER_COLORS[1]);
-    });
-
-    it("wraps color index for large values", () => {
-      const speaker = createSpeaker(undefined, SPEAKER_COLORS.length);
-      expect(speaker.color).toBe(SPEAKER_COLORS[0]);
-    });
-
-    it("initializes facing to 0 (right)", () => {
-      const speaker = createSpeaker();
-      expect(speaker.facing).toBe(0);
     });
   });
 

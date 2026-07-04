@@ -1,5 +1,10 @@
 # Technical Roadmap
 
+> **Status (July 2026):** the "audio polish before multiplayer" sequencing below was
+> overtaken by events — two-client voice chat shipped first (WebRTC + signaling server
+> + DataChannel position sync; see README "Voice Chat"). The HRTF/acoustics sections
+> remain the live plan; phase ordering is historical.
+
 This document outlines the technical implementation plan for TentChat, focusing on completing all audio and voice features before engaging with multiplayer.
 
 ## Current State (Phase 1 Complete)

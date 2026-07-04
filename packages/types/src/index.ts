@@ -1,7 +1,5 @@
 // Audio types
 export type {
-  AcousticRoom,
-  AcousticWall,
   AudioNodes,
   AudioParameterOptions,
   AudioParameters,
@@ -10,8 +8,6 @@ export type {
   DistanceModel,
   DrawnRoom,
   Listener,
-  Material,
-  Opening,
   Room,
   SoundSource,
   SourceConfig,
@@ -28,10 +24,8 @@ export type {
   ButtonVariant,
   DrawingMode,
   ListItem,
-  NavItem,
   ResolvedTheme,
   SelectOption,
-  Tab,
   ThemeMode,
   Toast,
   ToastData,

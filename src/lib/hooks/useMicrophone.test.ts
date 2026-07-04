@@ -11,8 +11,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Mock the audio store (must match exact import path in source)
 vi.mock("@stores/audio", () => ({
   audioStore: {
-    echoCancellationEnabled: () => true,
-    noiseSuppressionEnabled: () => true,
+    microphoneConstraints: () => ({
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+    }),
   },
 }));
 

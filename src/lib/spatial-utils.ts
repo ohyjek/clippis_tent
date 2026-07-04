@@ -1,11 +1,10 @@
 /**
- * spatial-utils.ts - Coordinate and geometry utilities for spatial audio
+ * spatial-utils.ts - Coordinate and room-drawing utilities for spatial audio
  *
- * Single source of truth for:
- * - Coordinate conversion (room ↔ screen ↔ percentage)
- * - Room/wall geometry creation
- * - Distance and angle calculations
- * - ID generation
+ * Provides:
+ * - Coordinate conversion (room → percentage/screen)
+ * - Room/wall geometry creation for drag-to-draw rooms
+ * - ID generation and collection helpers
  *
  * The coordinate system uses:
  * - Origin (0,0) at center
@@ -44,6 +43,19 @@ export function generateId(): string {
 // COORDINATE CONVERSION
 // ============================================================================
 
+/** Scale factor from room units to CSS percentage (room range -2.5..2.5 spans 0-100%) */
+export const WORLD_TO_PERCENT = 20;
+
+/**
+ * Convert a room-space size (width, height, offset) to a CSS percentage
+ *
+ * @param v - Room-space size value
+ * @returns Percentage value for CSS sizing
+ */
+export function sizeToPercent(v: number): number {
+  return v * WORLD_TO_PERCENT;
+}
+
 /**
  * Convert room coordinates to percentage for rendering
  *
@@ -54,19 +66,7 @@ export function generateId(): string {
  * @returns Percentage value for CSS positioning
  */
 export function toPercent(val: number): number {
-  return 50 + val * 20;
-}
-
-/**
- * Convert percentage to room coordinates
- *
- * Inverse of toPercent
- *
- * @param percent - CSS percentage value
- * @returns Room coordinate value
- */
-export function fromPercent(percent: number): number {
-  return (percent - 50) / 20;
+  return 50 + sizeToPercent(val);
 }
 
 /**
@@ -121,59 +121,6 @@ export function getScreenPosition(
     x: rect.left + (0.5 + pos.x * 0.2) * rect.width,
     y: rect.top + (0.5 + pos.y * 0.2) * rect.height,
   };
-}
-
-/**
- * Convert room position to CSS position object
- *
- * Returns an object suitable for inline styles.
- *
- * @param pos - Room position
- * @returns CSS position object with left and top as percentages
- */
-export function toCssPosition(pos: Position): { left: string; top: string } {
-  return {
-    left: `${toPercent(pos.x)}%`,
-    top: `${toPercent(pos.y)}%`,
-  };
-}
-
-// ============================================================================
-// GEOMETRY CALCULATIONS
-// ============================================================================
-
-/**
- * Calculate distance between two positions
- *
- * @param a - First position
- * @param b - Second position
- * @returns Euclidean distance
- */
-export function distanceBetween(a: Position, b: Position): number {
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-/**
- * Calculate angle from one position to another
- *
- * @param from - Starting position
- * @param to - Target position
- * @returns Angle in radians (0 = right, PI/2 = down)
- */
-export function angleBetween(from: Position, to: Position): number {
-  return Math.atan2(to.y - from.y, to.x - from.x);
-}
-
-/**
- * Normalize angle to range [-PI, PI]
- *
- * @param angle - Angle in radians
- * @returns Normalized angle
- */
-export function normalizeAngle(angle: number): number {
-  return Math.atan2(Math.sin(angle), Math.cos(angle));
 }
 
 // ============================================================================

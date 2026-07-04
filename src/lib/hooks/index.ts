@@ -2,7 +2,6 @@
  * hooks/index.ts - Barrel export for custom hooks
  *
  * Provides reusable hooks for:
- * - Drag/rotation interactions (useDragHandler, useRotationHandler)
  * - Audio playback management (useAudioPlayback)
  * - Microphone access (useMicrophone)
  * - Room management (useRoomManager)
@@ -22,8 +21,6 @@ export {
   type CanvasDrawingState,
   useCanvasDrawing,
 } from "@lib/hooks/useCanvasDrawing";
-// Interaction hooks
-export { useDragHandler, useRotationHandler } from "@lib/hooks/useDragHandler";
 export {
   type MicrophoneOptions,
   type MicrophoneState,

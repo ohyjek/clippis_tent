@@ -1,4 +1,5 @@
 import { logger } from "@lib/logger";
+import { normalizeSdp, validatePastedSdp } from "@lib/sdp";
 import { audioStore } from "@stores/audio";
 import { showToast } from "@stores/toast";
 import type { DataChannelMessage, Position, RemotePeerState } from "@tentchat/types";
@@ -12,30 +13,6 @@ const DEFAULT_ICE_SERVERS = [
 
 const DEFAULT_SIGNALING_URL = "ws://localhost:8765";
 
-/** Heuristic: treat as offer if SDP contains "offer", else answer. Prefer passing type explicitly from UI. */
-function getSdpType(sdp: string): "offer" | "answer" {
-  return sdp.trim().toLowerCase().includes("offer") ? "offer" : "answer";
-}
-
-/** Normalize SDP so setRemoteDescription parses correctly: CRLF line endings, trim each line (fixes "Invalid SDP line" from clipboard cruft), fix merged lines. */
-function normalizeSdp(sdp: string): string {
-  // Strip control chars and null bytes that can come from clipboard
-  // biome-ignore lint/suspicious/noControlCharactersInRegex: intentional — strip control characters from pasted SDP
-  let out = sdp.replace(/\0/g, "").replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
-  out = out.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
-  // If paste merged lines (e.g. "a=msid-semantic: WMS m=audio ..."), split before " m=" so parser sees m= line
-  out = out.replace(/\s+(m=)/g, "\n$1");
-  // Trim each line; drop telephone-event rtpmap lines (Chromium parser rejects them; optional for DTMF)
-  out = out
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => !/^a=rtpmap:\d+ telephone-event\//.test(line))
-    .join("\r\n");
-  // Chromium's parser requires the final line to be newline-terminated —
-  // without this every normalized SDP fails with "Invalid SDP line" on its last line
-  return `${out}\r\n`;
-}
-
 export interface SetRemoteSdpOptions {
   /** Skip the paste-sanity validation (used for trusted signaling payloads) */
   skipValidation?: boolean;
@@ -44,8 +21,7 @@ export interface SetRemoteSdpOptions {
 }
 
 /**
- *
- * @returns {WebRTCStoreState} The webRTC store state.
+ * @returns The webRTC store state.
  */
 export function createWebRTCStore() {
   // ------------------------------------------------------------
@@ -126,7 +102,10 @@ export function createWebRTCStore() {
       // messages back through the untracked duplicate).
       setSignalingWs(ws);
       ws.onopen = () => {
-        if (signalingWs() === ws) setSignalingOpen(true);
+        // Identity-guard everything (not just state): a stale socket's events
+        // must neither flip signals nor toast at the user
+        if (signalingWs() !== ws) return;
+        setSignalingOpen(true);
         showToast({ type: "success", message: "Connected to signaling server" });
         logger.info("Signaling connected", url);
       };
@@ -142,11 +121,11 @@ export function createWebRTCStore() {
         }
       };
       ws.onclose = () => {
-        // A stale socket closing later must not null out the live one
-        if (signalingWs() === ws) {
-          setSignalingWs(null);
-          setSignalingOpen(false);
-        }
+        // A stale socket closing later must not null out the live one — or
+        // show a spurious "disconnected" toast while the live socket is fine
+        if (signalingWs() !== ws) return;
+        setSignalingWs(null);
+        setSignalingOpen(false);
         showToast({ type: "info", message: "Disconnected from signaling" });
       };
       ws.onerror = () => {
@@ -203,11 +182,7 @@ export function createWebRTCStore() {
         throw new Error("mediaDevices API unavailable");
       }
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: audioStore.echoCancellationEnabled(),
-          noiseSuppression: audioStore.noiseSuppressionEnabled(),
-          autoGainControl: true,
-        },
+        audio: audioStore.microphoneConstraints(),
       });
       for (const track of stream.getAudioTracks()) {
         connection.addTrack(track, stream);
@@ -283,98 +258,138 @@ export function createWebRTCStore() {
   // ------------------------------------------------------------
   // Peer Connection Initialization
   // ------------------------------------------------------------
+  const createStateChannel = (connection: RTCPeerConnection) => {
+    // Symmetric, pre-negotiated channel: both sides create id 0, no
+    // ondatachannel handshake needed (see docs/multiplayer.plan.md).
+    const channel = connection.createDataChannel("state", { negotiated: true, id: 0 });
+    channel.onopen = () => {
+      logger.info("DataChannel open");
+      setDataChannelOpen(true);
+    };
+    channel.onclose = () => {
+      logger.info("DataChannel closed");
+      setDataChannelOpen(false);
+    };
+    channel.onerror = (event) => logger.warn("DataChannel error", event);
+    channel.onmessage = (event: MessageEvent) => handleDataChannelMessage(event.data as string);
+    setDataChannel(channel);
+  };
+
+  const attachConnectionHandlers = (connection: RTCPeerConnection) => {
+    connection.onicecandidate = (event: RTCPeerConnectionIceEvent) => {
+      if (event.candidate) {
+        const init: RTCIceCandidateInit = {
+          candidate: event.candidate.candidate,
+          sdpMid: event.candidate.sdpMid ?? undefined,
+          sdpMLineIndex: event.candidate.sdpMLineIndex ?? undefined,
+        };
+        setLocalIceCandidates((prev) => [...prev, init]);
+        sendSignaling("ice", JSON.stringify(init));
+        logger.info("ICE candidate gathered", init);
+      }
+    };
+
+    connection.onconnectionstatechange = () => {
+      const state = connection.connectionState;
+      logger.info("Connection state change:", state);
+      setConnectionState(state);
+      if (state === "connected") {
+        showToast({ type: "success", message: "Peer connected" });
+      } else if (state === "failed" || state === "disconnected") {
+        showToast({ type: "error", message: `Peer connection ${state}` });
+      }
+    };
+
+    connection.oniceconnectionstatechange = () => {
+      logger.info("ICE connection state change:", connection.iceConnectionState);
+    };
+
+    connection.onicegatheringstatechange = () => {
+      logger.info("ICE gathering state change:", connection.iceGatheringState);
+    };
+
+    connection.ontrack = (event: RTCTrackEvent) => {
+      const stream = event.streams[0] ?? new MediaStream([event.track]);
+      setRemoteStream(stream);
+      logger.info("Remote track added", { trackId: event.track.id });
+    };
+
+    connection.onicecandidateerror = (event: RTCPeerConnectionIceErrorEvent) => {
+      logger.warn(`ICE candidate error: ${event.errorCode}`);
+    };
+
+    connection.onnegotiationneeded = () => {
+      logger.info("Negotiation needed");
+    };
+  };
+
   /**
    * Initialize the peer connection.
-   * @returns {boolean} true if the peer connection was initialized`
+   * @returns {boolean} true if the peer connection was initialized
    * @returns {boolean} false if it was already initialized
    * @returns {boolean} false if it failed to initialize
    */
   const initializePeerConnection = () => {
-    if (!peerConnection()) {
-      try {
-        const connection = new RTCPeerConnection({ iceServers: DEFAULT_ICE_SERVERS });
-        setConnectionState(connection.connectionState);
-        recvOnlyFallbackAdded = false;
-        // NOTE: pendingRemoteCandidates deliberately survives init — candidates
-        // can arrive over signaling before we create the connection.
-
-        // Symmetric, pre-negotiated channel: both sides create id 0, no
-        // ondatachannel handshake needed (see docs/multiplayer.plan.md).
-        const channel = connection.createDataChannel("state", { negotiated: true, id: 0 });
-        channel.onopen = () => {
-          logger.info("DataChannel open");
-          setDataChannelOpen(true);
-        };
-        channel.onclose = () => {
-          logger.info("DataChannel closed");
-          setDataChannelOpen(false);
-        };
-        channel.onerror = (event) => logger.warn("DataChannel error", event);
-        channel.onmessage = (event: MessageEvent) => handleDataChannelMessage(event.data as string);
-        setDataChannel(channel);
-
-        connection.onicecandidate = (event: RTCPeerConnectionIceEvent) => {
-          if (event.candidate) {
-            const init: RTCIceCandidateInit = {
-              candidate: event.candidate.candidate,
-              sdpMid: event.candidate.sdpMid ?? undefined,
-              sdpMLineIndex: event.candidate.sdpMLineIndex ?? undefined,
-            };
-            setLocalIceCandidates((prev) => [...prev, init]);
-            sendSignaling("ice", JSON.stringify(init));
-            logger.info("ICE candidate gathered", init);
-          }
-        };
-
-        connection.onconnectionstatechange = () => {
-          const state = connection.connectionState;
-          logger.info("Connection state change:", state);
-          setConnectionState(state);
-          if (state === "connected") {
-            showToast({ type: "success", message: "Peer connected" });
-          } else if (state === "failed" || state === "disconnected") {
-            showToast({ type: "error", message: `Peer connection ${state}` });
-          }
-        };
-
-        connection.oniceconnectionstatechange = () => {
-          logger.info("ICE connection state change:", connection.iceConnectionState);
-        };
-
-        connection.onicegatheringstatechange = () => {
-          logger.info("ICE gathering state change:", connection.iceGatheringState);
-        };
-
-        connection.ontrack = (event: RTCTrackEvent) => {
-          const stream = event.streams[0] ?? new MediaStream([event.track]);
-          setRemoteStream(stream);
-          logger.info("Remote track added", { trackId: event.track.id });
-        };
-
-        connection.onicecandidateerror = (event: RTCPeerConnectionIceErrorEvent) => {
-          logger.warn(`ICE candidate error: ${event.errorCode}`);
-        };
-
-        connection.onnegotiationneeded = () => {
-          logger.info("Negotiation needed");
-        };
-
-        setPeerConnection(connection);
-        logger.info("Peer connection initialized");
-        return true;
-      } catch (error) {
-        logger.error("Failed to initialize peer connection: ", error);
-        showToast({ type: "error", message: "Failed to initialize peer connection" });
-        return false;
-      }
+    if (peerConnection()) {
+      logger.debug("Peer connection already initialized");
+      return false;
     }
-    logger.debug("Peer connection already initialized");
-    return false;
+    try {
+      const connection = new RTCPeerConnection({ iceServers: DEFAULT_ICE_SERVERS });
+      setConnectionState(connection.connectionState);
+      recvOnlyFallbackAdded = false;
+      // NOTE: pendingRemoteCandidates deliberately survives init — candidates
+      // can arrive over signaling before we create the connection.
+
+      createStateChannel(connection);
+      attachConnectionHandlers(connection);
+
+      setPeerConnection(connection);
+      logger.info("Peer connection initialized");
+      return true;
+    } catch (error) {
+      logger.error("Failed to initialize peer connection: ", error);
+      showToast({ type: "error", message: "Failed to initialize peer connection" });
+      return false;
+    }
   };
 
   // ------------------------------------------------------------
   // RTC Actions
   // ------------------------------------------------------------
+  /**
+   * Shared offer/answer flow: create the description, set it locally, expose
+   * it via localSdp for the manual copy/paste flow, and send it over
+   * signaling when connected.
+   */
+  const publishLocalDescription = async (kind: "offer" | "answer"): Promise<boolean> => {
+    const label = kind === "offer" ? "Offer" : "Answer";
+    const connection = peerConnection();
+    if (!connection) {
+      logger.error(`Failed to create ${kind}: no peer connection`);
+      showToast({ type: "error", message: `Failed to create ${kind}: no peer connection` });
+      return false;
+    }
+    try {
+      const description =
+        kind === "offer" ? await connection.createOffer() : await connection.createAnswer();
+      await connection.setLocalDescription(description);
+      setLocalSdp(description?.sdp ?? null);
+      if (description?.sdp && signalingConnected()) {
+        sendSignaling(kind, description.sdp);
+        showToast({ type: "success", message: `${label} created and sent via signaling` });
+      } else {
+        showToast({ type: "success", message: `${label} created` });
+      }
+      logger.info(`${label} created`);
+      return true;
+    } catch (error) {
+      logger.error(`Failed to create ${kind}: `, error);
+      showToast({ type: "error", message: `Failed to create ${kind}` });
+      return false;
+    }
+  };
+
   /**
    * Create an offer (auto-initializes the connection and mic if needed).
    * @returns {boolean} true if the offer was created successfully
@@ -382,64 +397,16 @@ export function createWebRTCStore() {
    */
   const createOffer = async () => {
     if (!peerConnection()) initializePeerConnection();
-    const currentPeerConnection = peerConnection();
-    if (currentPeerConnection) {
-      try {
-        // Track must be attached before createOffer so the SDP includes it
-        await ensureLocalAudio();
-        const offer = await currentPeerConnection.createOffer();
-        await currentPeerConnection.setLocalDescription(offer);
-        setLocalSdp(offer?.sdp ?? null);
-        if (offer?.sdp && signalingConnected()) {
-          sendSignaling("offer", offer.sdp);
-          showToast({ type: "success", message: "Offer created and sent via signaling" });
-        } else {
-          showToast({ type: "success", message: "Offer created" });
-        }
-        logger.info("Offer created");
-        return true;
-      } catch (error) {
-        logger.error("Failed to create offer: ", error);
-        showToast({ type: "error", message: "Failed to create offer" });
-        return false;
-      }
-    } else {
-      logger.error("Failed to create offer: no peer connection");
-      showToast({ type: "error", message: "Failed to create offer: no peer connection" });
-      return false;
-    }
+    // Track must be attached before createOffer so the SDP includes it
+    await ensureLocalAudio();
+    return publishLocalDescription("offer");
   };
 
   /**
    * Create an answer after setting the remote offer. Exposes answer SDP via
    * localSdp for the manual flow and sends it via signaling when connected.
    */
-  const createAnswer = async () => {
-    const currentPeerConnection = peerConnection();
-    if (currentPeerConnection) {
-      try {
-        const answer = await currentPeerConnection.createAnswer();
-        await currentPeerConnection.setLocalDescription(answer);
-        setLocalSdp(answer?.sdp ?? null);
-        if (answer?.sdp && signalingConnected()) {
-          sendSignaling("answer", answer.sdp);
-          showToast({ type: "success", message: "Answer created and sent via signaling" });
-        } else {
-          showToast({ type: "success", message: "Answer created" });
-        }
-        logger.info("Answer created");
-        return true;
-      } catch (error) {
-        logger.error("Failed to create answer: ", error);
-        showToast({ type: "error", message: "Failed to create answer" });
-        return false;
-      }
-    } else {
-      logger.error("Failed to create answer: no peer connection");
-      showToast({ type: "error", message: "Failed to create answer: no peer connection" });
-      return false;
-    }
-  };
+  const createAnswer = () => publishLocalDescription("answer");
 
   /**
    * Add a remote ICE candidate (from signaling or pasted from the other peer).
@@ -493,26 +460,24 @@ export function createWebRTCStore() {
    * Set the remote SDP (offer or answer). When the SDP is an offer, an answer
    * is created automatically (paste-offer flow / signaling auto-answer).
    * @param sdp - The remote SDP to set.
-   * @param type - Optional "offer" | "answer". If omitted, guessed from SDP (best-effort; prefer passing from UI).
+   * @param type - Whether the remote SDP is an "offer" or an "answer".
    * @returns {Promise<boolean>} true if set successfully
    */
   const setRemoteSdp = async (
     sdp: string,
-    type?: "offer" | "answer",
+    type: "offer" | "answer",
     options: SetRemoteSdpOptions = {}
   ) => {
-    const trimmed = sdp.trim();
-    if (!options.skipValidation && (trimmed.length < 200 || !/m=audio|m=video/.test(trimmed))) {
-      showToast({
-        type: "error",
-        message: `Pasted SDP too short (${trimmed.length} chars) or invalid. In the OTHER window click "Copy SDP" then paste here — don't type or select from the box.`,
-      });
-      return false;
+    if (!options.skipValidation) {
+      const validationError = validatePastedSdp(sdp);
+      if (validationError) {
+        showToast({ type: "error", message: validationError });
+        return false;
+      }
     }
 
-    const descType = type ?? getSdpType(sdp);
     if (!peerConnection()) {
-      if (descType === "answer") {
+      if (type === "answer") {
         // An answer with no connection is stale (e.g. arrived after disconnect) —
         // creating a fresh connection for it would just make a ghost.
         logger.warn("Ignoring stale answer: no peer connection");
@@ -527,17 +492,16 @@ export function createWebRTCStore() {
       return false;
     }
 
-    const normalizedSdp = normalizeSdp(sdp);
     try {
       await currentPeerConnection.setRemoteDescription(
-        new RTCSessionDescription({ type: descType, sdp: normalizedSdp })
+        new RTCSessionDescription({ type, sdp: normalizeSdp(sdp) })
       );
-      logger.info("Remote SDP set", { type: descType });
-      showToast({ type: "success", message: `Remote SDP (${descType}) set` });
+      logger.info("Remote SDP set", { type });
+      showToast({ type: "success", message: `Remote SDP (${type}) set` });
 
       await flushPendingCandidates(currentPeerConnection);
 
-      if (descType === "offer" && options.autoAnswer !== false) {
+      if (type === "offer" && options.autoAnswer !== false) {
         // Answer needs our mic attached first so the SDP includes the track
         await ensureLocalAudio();
         await createAnswer();
@@ -624,9 +588,7 @@ export function createWebRTCStore() {
     disconnectSignaling,
     signalingConnected,
     remoteStream,
-    setRemoteStream,
     remotePeerState,
-    setRemotePeerState,
     dataChannelOpen,
     sendPosition,
     sendSpeakingState,

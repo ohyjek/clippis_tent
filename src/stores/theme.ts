@@ -41,9 +41,8 @@ const initialResolved = getResolvedTheme(initialMode);
 // Apply theme immediately on load (before first render) to prevent flash
 applyTheme(initialResolved);
 
-// Create signals for reactive access
+// Create signal for reactive access
 const [themeMode, setThemeModeInternal] = createSignal<ThemeMode>(initialMode);
-const [resolvedTheme, setResolvedTheme] = createSignal<ResolvedTheme>(initialResolved);
 
 /**
  * Set theme mode - handles signal update, DOM update, and persistence
@@ -51,9 +50,8 @@ const [resolvedTheme, setResolvedTheme] = createSignal<ResolvedTheme>(initialRes
 function setThemeMode(mode: ThemeMode): void {
   const resolved = getResolvedTheme(mode);
 
-  // Update signals
+  // Update signal
   setThemeModeInternal(mode);
-  setResolvedTheme(resolved);
 
   // Apply to DOM
   applyTheme(resolved);
@@ -66,9 +64,7 @@ function setThemeMode(mode: ThemeMode): void {
 if (typeof window !== "undefined") {
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
     if (themeMode() === "system") {
-      const resolved = e.matches ? "dark" : "light";
-      applyTheme(resolved);
-      setResolvedTheme(resolved);
+      applyTheme(e.matches ? "dark" : "light");
     }
   });
 }
@@ -81,6 +77,4 @@ export const themeStore = {
   themeMode,
   /** Set the theme mode */
   setThemeMode,
-  /** The actual applied theme (light/dark) */
-  resolvedTheme,
 };
