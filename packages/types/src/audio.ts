@@ -109,42 +109,6 @@ export interface Room {
 }
 
 /**
- * Acoustic material properties
- */
-export interface Material {
-  name: string;
-  absorption: number;
-  transmission: number;
-}
-
-/**
- * Wall with acoustic properties
- */
-export interface AcousticWall extends Wall {
-  material: Material;
-}
-
-/**
- * Opening in a room (door, window, etc.)
- */
-export interface Opening {
-  position: Position;
-  width: number;
-  transmission: number;
-}
-
-/**
- * Room with acoustic properties
- */
-export interface AcousticRoom {
-  id: string;
-  walls: AcousticWall[];
-  openings: Opening[];
-  center: Position;
-  label?: string;
-}
-
-/**
  * Drawn room in the demo canvas
  */
 export interface DrawnRoom {

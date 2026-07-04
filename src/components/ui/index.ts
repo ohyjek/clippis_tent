@@ -5,7 +5,7 @@
  * Most components come directly from the UI library, while ErrorBoundary
  * and ToastContainer have app-specific wrappers that add logging.
  *
- * Usage: import { Button, Slider, Tabs } from "@/components/ui"
+ * Usage: import { Button, Slider } from "@/components/ui"
  */
 
 // Pure UI components from @tentchat/ui
@@ -19,7 +19,6 @@ export {
   FieldGroup,
   InputField,
   ItemList,
-  type ItemListItem,
   type ItemListProps,
   Panel,
   type PanelProps,
@@ -29,10 +28,7 @@ export {
   Slider,
   SliderField,
   Speaker,
-  type SpeakerPosition,
   type SpeakerProps,
-  type Tab,
-  Tabs,
   Toggle,
 } from "@tentchat/ui";
 

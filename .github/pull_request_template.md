@@ -25,7 +25,7 @@
 
 ### Code Quality
 
-- [ ] Code follows project style (ESLint passes)
+- [ ] Code follows project style (`pnpm check` passes: Biome + typecheck + tests)
 - [ ] TypeScript has no errors (`pnpm typecheck`)
 - [ ] No `console.log` statements left in code (use `logger` instead)
 - [ ] New code has appropriate comments/JSDoc

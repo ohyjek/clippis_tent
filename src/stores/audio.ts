@@ -1,21 +1,20 @@
 /**
  * audio.ts - Global audio state store (SolidJS signals)
  *
- * Singleton store managing all audio-related state:
+ * Singleton store managing app-wide audio state:
  * - AudioContext initialization
  * - Master volume
- * - Listener position
- * - Sound sources list
- * - Device preferences (input/output)
- * - Processing settings (spatial, noise suppression, echo cancellation)
+ * - Device preference (microphone input; feeds getUserMedia constraints)
+ * - Processing settings (noise suppression, echo cancellation, spatial toggle)
  *
- * Usage: import { audioStore } from "@/stores/audio"
+ * Spatial sound sources live in the FullDemo context (useSpeakerManager),
+ * not here.
+ *
+ * Usage: import { audioStore } from "@stores/audio"
  */
 
 import { logger } from "@lib/logger";
-import { createSoundSource, randomPosition } from "@lib/spatial-audio";
 import { showToast } from "@stores/toast";
-import type { Position, SoundSource } from "@tentchat/types";
 import { createRoot, createSignal } from "solid-js";
 
 // Store AudioContext outside of reactive system
@@ -30,10 +29,6 @@ function createAudioStore() {
   const [audioInitialized, setAudioInitialized] = createSignal(false);
   const [masterVolume, setMasterVolume] = createSignal(0.5);
 
-  // Spatial audio state
-  const [listenerPos, setListenerPos] = createSignal<Position>({ x: 0, y: 0 });
-  const [sounds, setSounds] = createSignal<SoundSource[]>([]);
-
   // Settings
   const [audioInputDevice, setAudioInputDevice] = createSignal<string>("");
   const [audioOutputDevice, setAudioOutputDevice] = createSignal<string>("");
@@ -45,9 +40,8 @@ function createAudioStore() {
    * Initialize the AudioContext Browser API.
    *
    * @note This is a browser API! (This is NOT a solid/reactive context)
-   * @returns {boolean} true if the audio context was initialized
-   * @returns {boolean} false if it was already initialized
-   * @returns {boolean} false if it failed to initialize
+   * @returns true if the audio context was newly initialized; false if it was
+   * already initialized or failed to initialize
    */
   const initializeAudio = (): boolean => {
     if (!audioInitialized()) {
@@ -78,67 +72,21 @@ function createAudioStore() {
   };
 
   /**
-   * Add a new sound source.
-   * @returns The new sound source.
+   * getUserMedia audio constraints for voice capture — the single place the
+   * processing settings and device selection feed the microphone. Every
+   * capture path (useMicrophone, the WebRTC store) must build from this.
+   *
+   * The device id uses `ideal` rather than `exact` so a stale saved id (e.g.
+   * an unplugged mic) degrades to the default device instead of failing.
    */
-  const addSound = () => {
-    initializeAudio();
-    const newSound = createSoundSource();
-    setSounds((prev) => [...prev, newSound]);
-    return newSound;
-  };
-
-  /**
-   * Move a sound source to a new random position.
-   * @param soundId - The ID of the sound source to move.
-   * @returns The moved sound source.
-   */
-  const moveSound = (soundId: string) => {
-    let movedSound: SoundSource | undefined;
-
-    setSounds((prev) =>
-      prev.map((s) => {
-        if (s.id === soundId) {
-          movedSound = { ...s, position: randomPosition() };
-          return movedSound;
-        }
-        return s;
-      })
-    );
-
-    return movedSound;
-  };
-
-  /**
-   * Update a sound source's position (for dragging).
-   * @param soundId - The ID of the sound source to update.
-   * @param position - The new position of the sound source.
-   */
-  const updateSoundPosition = (soundId: string, position: Position) => {
-    setSounds((prev) => prev.map((s) => (s.id === soundId ? { ...s, position } : s)));
-  };
-
-  /**
-   * Get a sound by ID.
-   * @param soundId - The ID of the sound source to get.
-   * @returns The sound source.
-   */
-  const getSound = (soundId: string): SoundSource | undefined => {
-    return sounds().find((s) => s.id === soundId);
-  };
-
-  /**
-   * Remove all sounds.
-   */
-  const clearSounds = () => {
-    setSounds([]);
-  };
-
-  /**
-   * Reset listener position.
-   */
-  const resetListenerPosition = () => {
-    setListenerPos({ x: 0, y: 0 });
+  const microphoneConstraints = (): MediaTrackConstraints => {
+    const deviceId = audioInputDevice();
+    return {
+      echoCancellation: echoCancellationEnabled(),
+      noiseSuppression: noiseSuppressionEnabled(),
+      autoGainControl: true,
+      ...(deviceId ? { deviceId: { ideal: deviceId } } : {}),
+    };
   };
 
   /**
@@ -153,8 +101,6 @@ function createAudioStore() {
     // State (read-only signals)
     audioInitialized,
     masterVolume,
-    listenerPos,
-    sounds,
 
     // Settings
     audioInputDevice,
@@ -166,13 +112,7 @@ function createAudioStore() {
     // Actions
     initializeAudio,
     updateMasterVolume,
-    setListenerPos,
-    addSound,
-    moveSound,
-    updateSoundPosition,
-    getSound,
-    clearSounds,
-    resetListenerPosition,
+    microphoneConstraints,
     getAudioContext,
 
     // Settings actions
@@ -186,5 +126,3 @@ function createAudioStore() {
 
 // Create singleton store
 export const audioStore = createRoot(createAudioStore);
-// Export the type of the audio store for convenience
-export type AudioStore = ReturnType<typeof createAudioStore>;

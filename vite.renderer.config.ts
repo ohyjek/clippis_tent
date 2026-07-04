@@ -39,12 +39,7 @@ export default defineConfig(({ mode }) => ({
       "@lib": resolver("./src/lib"),
       "@locales": resolver("./src/locales"),
       "@pages": resolver("./src/pages"),
-      "@assets": resolver("./src/assets"),
-      "@hooks": resolver("./src/hooks"),
       "@stores": resolver("./src/stores"),
-      "@types": resolver("./src/types"),
-      "@utils": resolver("./src/utils"),
-      "@styles": resolver("./src/styles"),
 
       // Workspace packages (resolve to source for HMR)
       "@tentchat/ui": resolver("./packages/ui/src"),

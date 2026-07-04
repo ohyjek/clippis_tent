@@ -7,7 +7,6 @@
  * We do this because if we have to change from @tentchat/types to a different package, we only have to change it in one place.
  */
 
-import type { CalculateAudioParameters } from "@lib/spatial-audio-engine";
 import type {
   AudioNodes,
   AudioParameters,
@@ -29,42 +28,32 @@ import type { Accessor, Setter } from "solid-js";
 interface DemoContextValue {
   // Room state
   rooms: Accessor<DrawnRoom[]>;
-  setRooms: Setter<DrawnRoom[]>;
   selectedRoomId: Accessor<string | null>;
   setSelectedRoomId: Setter<string | null>;
   selectedRoom: () => DrawnRoom | undefined;
-  allWalls: () => Wall[];
 
   // Drawing state
   drawingMode: Accessor<DrawingMode>;
   setDrawingMode: Setter<DrawingMode>;
   isDrawing: Accessor<boolean>;
-  setIsDrawing: Setter<boolean>;
   drawStart: Accessor<Position | null>;
-  setDrawStart: Setter<Position | null>;
   drawEnd: Accessor<Position | null>;
-  setDrawEnd: Setter<Position | null>;
 
   // Speaker state
   speakers: Accessor<SpeakerState[]>;
-  setSpeakers: Setter<SpeakerState[]>;
   selectedSpeaker: Accessor<string>;
   setSelectedSpeaker: Setter<string>;
   getSelectedSpeaker: () => SpeakerState | undefined;
-  getSpeakerById: (id: string) => SpeakerState | undefined;
 
   // Perspective state
   currentPerspective: Accessor<string>;
   setCurrentPerspective: Setter<string>;
   isCurrentPerspective: (id: string) => boolean;
   getPerspectivePosition: () => Position;
-  getPerspectiveFacing: () => number;
 
   // Interaction state
   isMovingSpeaker: Accessor<string | null>;
-  setIsMovingSpeaker: Setter<string | null>;
   isRotatingSpeaker: Accessor<string | null>;
-  setIsRotatingSpeaker: Setter<string | null>;
 
   // Audio state
   distanceModel: Accessor<DistanceModel>;
@@ -85,11 +74,9 @@ interface DemoContextValue {
   setHearSelf: Setter<boolean>;
 
   // Room ref for coordinate calculations
-  roomRef: Accessor<HTMLDivElement | undefined>;
   setRoomRef: (ref: HTMLDivElement | undefined) => void;
 
   // Room actions
-  addRoom: (start: Position, end: Position) => void;
   deleteSelectedRoom: () => void;
   updateRoomAttenuation: (attenuation: number, roomId?: string) => void;
   updateRoomLabel: (label: string) => void;
@@ -105,23 +92,16 @@ interface DemoContextValue {
   updateSourceType: (sourceType: AudioSourceType) => void;
 
   // Microphone state
-  microphoneStream: Accessor<MediaStream | null>;
   microphoneEnabled: Accessor<boolean>;
-  requestMicrophone: () => Promise<boolean>;
-  stopMicrophone: () => void;
 
   // Audio actions
-  startPlayback: (speakerId: string) => void;
-  stopPlayback: (speakerId: string) => void;
   togglePlayback: (speakerId: string) => void;
-  stopAllPlayback: () => void;
 
   // Computed values
-  getAudioParams: (speaker: SpeakerState) => CalculateAudioParameters;
   calculateDisplayGain: (speaker: SpeakerState) => number;
   getWallCount: (speaker: SpeakerState) => number;
 
-  // Remote peer (WebRTC)
+  // Remote peer (WebRTC) — not consumed by the panels yet; integration surface for issue #33
   remotePeerState: Accessor<RemotePeerState | null>;
   remoteAudioParams: Accessor<AudioParameters | null>;
   webRTCConnectionState: Accessor<RTCPeerConnectionState | null>;
@@ -136,9 +116,6 @@ interface DemoContextValue {
 
   // Reset
   resetDemo: () => void;
-
-  // Color index for new rooms
-  nextColorIndex: Accessor<number>;
 }
 
 export type {

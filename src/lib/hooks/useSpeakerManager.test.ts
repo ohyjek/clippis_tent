@@ -16,9 +16,30 @@ describe("useSpeakerManager", () => {
   let manager: SpeakerManagerState;
   let dispose: () => void;
 
+  const makeFixtureSpeakers = (): SpeakerState[] => [
+    {
+      id: "observer",
+      position: { x: 0, y: 0 },
+      facing: 0,
+      color: "#3b82f6",
+      directivity: "omnidirectional",
+      frequency: 440,
+      sourceType: "oscillator",
+    },
+    {
+      id: "speaker-1",
+      position: { x: -1, y: 0 },
+      facing: 0,
+      color: "#ef4444",
+      directivity: "cardioid",
+      frequency: 440,
+      sourceType: "oscillator",
+    },
+  ];
+
   const createManager = (options?: Parameters<typeof useSpeakerManager>[0]) => {
     dispose = createRoot((d) => {
-      manager = useSpeakerManager(options);
+      manager = useSpeakerManager({ initialSpeakers: makeFixtureSpeakers(), ...options });
       return d;
     });
   };
@@ -27,10 +48,28 @@ describe("useSpeakerManager", () => {
     dispose?.();
   });
 
-  describe("initial state with defaults", () => {
+  describe("initial state with no options", () => {
+    beforeEach(() => {
+      dispose = createRoot((d) => {
+        manager = useSpeakerManager();
+        return d;
+      });
+    });
+
+    it("starts with no speakers", () => {
+      expect(manager.speakers().length).toBe(0);
+    });
+
+    it("defaults selection and perspective to observer", () => {
+      expect(manager.selectedSpeaker()).toBe("observer");
+      expect(manager.currentPerspective()).toBe("observer");
+    });
+  });
+
+  describe("initial state with fixture speakers", () => {
     beforeEach(() => createManager());
 
-    it("starts with two default speakers", () => {
+    it("starts with two fixture speakers", () => {
       expect(manager.speakers().length).toBe(2);
     });
 
@@ -44,6 +83,12 @@ describe("useSpeakerManager", () => {
 
     it("has observer as current perspective", () => {
       expect(manager.currentPerspective()).toBe("observer");
+    });
+
+    it("respects a custom initial perspective", () => {
+      createManager({ initialPerspective: "speaker-1" });
+      expect(manager.selectedSpeaker()).toBe("speaker-1");
+      expect(manager.currentPerspective()).toBe("speaker-1");
     });
   });
 

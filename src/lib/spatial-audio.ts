@@ -5,16 +5,16 @@
  * No side effects, fully tested (see spatial-audio.test.ts).
  *
  * Features:
- * - Distance-based volume attenuation (inverse square law)
- * - Stereo panning based on horizontal position
- * - Directional audio (cardioid speaking pattern)
- * - Wall/room boundary attenuation
+ * - Distance and angle calculations
+ * - Wall intersection detection and attenuation
+ * - Sound source creation helpers (random position/frequency)
+ * - Speaker color palette
  *
  * Coordinate system: x = left/right, y = up/down
  * Range: typically -2.5 to +2.5 in room coordinates
  */
 
-import type { Position, Room, SoundSource, SpatialParams, Speaker, Wall } from "@tentchat/types";
+import type { Position, SoundSource, Wall } from "@tentchat/types";
 
 /** Musical note frequencies (E4 to G5) */
 export const SOUND_FREQUENCIES = [330, 392, 440, 494, 523, 587, 659, 784] as const;
@@ -26,55 +26,6 @@ export function calculateDistance(pos1: Position, pos2: Position): number {
   const dx = pos1.x - pos2.x;
   const dy = pos1.y - pos2.y;
   return Math.sqrt(dx * dx + dy * dy);
-}
-
-/**
- * Calculate volume based on distance using inverse distance attenuation
- *
- * Uses the formula: volume = 1 / (1 + distance)
- * This provides a smooth falloff that never reaches zero
- *
- * @param distance - Distance from listener to sound source
- * @param masterVolume - Master volume multiplier (0 to 1)
- * @param gainFactor - Additional gain reduction factor (default 0.3)
- */
-export function calculateVolume(distance: number, masterVolume = 1, gainFactor = 0.3): number {
-  const baseVolume = 1.0 / (1.0 + distance);
-  return Math.max(0, Math.min(1, baseVolume * masterVolume * gainFactor));
-}
-
-/**
- * Calculate stereo pan position based on horizontal offset
- *
- * @param dx - Horizontal distance (positive = right, negative = left)
- * @param panWidth - Width factor for pan calculation (default 3)
- * @returns Pan value clamped between -1 (left) and 1 (right)
- */
-export function calculatePan(dx: number, panWidth = 3): number {
-  return Math.max(-1, Math.min(1, dx / panWidth));
-}
-
-/**
- * Calculate all spatial audio parameters for a sound source
- *
- * @param listenerPos - The listener's position in the room
- * @param sourcePos - The sound source's position
- * @param masterVolume - Master volume level (0 to 1)
- */
-export function calculateSpatialParams(
-  listenerPos: Position,
-  sourcePos: Position,
-  masterVolume = 1
-): SpatialParams {
-  const dx = sourcePos.x - listenerPos.x;
-  const dy = sourcePos.y - listenerPos.y;
-  const distance = Math.sqrt(dx * dx + dy * dy);
-
-  return {
-    distance,
-    volume: calculateVolume(distance, masterVolume),
-    pan: calculatePan(dx),
-  };
 }
 
 /**
@@ -127,32 +78,6 @@ export function normalizeAngle(angle: number): number {
   while (angle > Math.PI) angle -= 2 * Math.PI;
   while (angle < -Math.PI) angle += 2 * Math.PI;
   return angle;
-}
-
-/**
- * Calculate directional gain using a cardioid pattern
- *
- * Sound is loudest when the speaker faces the listener, and quietest when facing away.
- * Uses the formula: gain = 0.5 + 0.5 * cos(θ)
- *
- * @param speakerFacing - The direction the speaker is facing (radians)
- * @param speakerPos - The speaker's position
- * @param listenerPos - The listener's position
- * @returns Gain multiplier from 0 (facing away) to 1 (facing toward)
- */
-export function calculateDirectionalGain(
-  speakerFacing: number,
-  speakerPos: Position,
-  listenerPos: Position
-): number {
-  // Calculate the angle from speaker to listener
-  const angleToListener = calculateAngleToPoint(speakerPos, listenerPos);
-
-  // Calculate the difference between facing direction and direction to listener
-  const angleDiff = normalizeAngle(angleToListener - speakerFacing);
-
-  // Cardioid pattern: loudest when facing (diff = 0), quietest when facing away (diff = PI)
-  return 0.5 + 0.5 * Math.cos(angleDiff);
 }
 
 /**
@@ -230,43 +155,6 @@ export function calculateWallAttenuation(wallCount: number, attenuationPerWall =
 }
 
 /**
- * Create a rectangular room with walls
- *
- * @param center - Center position of the room
- * @param width - Width of the room
- * @param height - Height of the room
- * @param id - Room identifier
- * @param label - Optional room label
- */
-export function createRectangularRoom(
-  center: Position,
-  width: number,
-  height: number,
-  id: string,
-  label?: string
-): Room {
-  const halfW = width / 2;
-  const halfH = height / 2;
-
-  const topLeft = { x: center.x - halfW, y: center.y - halfH };
-  const topRight = { x: center.x + halfW, y: center.y - halfH };
-  const bottomRight = { x: center.x + halfW, y: center.y + halfH };
-  const bottomLeft = { x: center.x - halfW, y: center.y + halfH };
-
-  return {
-    id,
-    center,
-    label,
-    walls: [
-      { start: topLeft, end: topRight }, // Top wall
-      { start: topRight, end: bottomRight }, // Right wall
-      { start: bottomRight, end: bottomLeft }, // Bottom wall
-      { start: bottomLeft, end: topLeft }, // Left wall
-    ],
-  };
-}
-
-/**
  * Speaker colors for visual identification
  */
 export const SPEAKER_COLORS = [
@@ -276,26 +164,4 @@ export const SPEAKER_COLORS = [
   "#f59e0b", // Amber
   "#8b5cf6", // Purple
   "#ec4899", // Pink
-] as const;
-
-/**
- * Create a new speaker with random position
- */
-export function createSpeaker(id?: string, index = 0): Speaker {
-  return {
-    id: id ?? `speaker-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    position: randomPosition(1.5),
-    facing: 0, // Initially facing right
-    color: SPEAKER_COLORS[index % SPEAKER_COLORS.length],
-  };
-}
-
-/**
- * Cardinal direction test positions for spatial audio verification
- */
-export const CARDINAL_DIRECTIONS = [
-  { x: -2, y: 0, name: "Left", frequency: 330 },
-  { x: 2, y: 0, name: "Right", frequency: 440 },
-  { x: 0, y: -2, name: "Front", frequency: 550 },
-  { x: 0, y: 2, name: "Back", frequency: 660 },
 ] as const;

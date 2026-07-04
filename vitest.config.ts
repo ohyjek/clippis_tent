@@ -49,15 +49,11 @@ export default defineConfig({
       // App source alias
       "@src/": resolver("src/"),
       "@src": resolver("src"),
+      "@components": resolver("src/components"),
       "@stores": resolver("src/stores"),
       "@lib": resolver("src/lib"),
       "@locales": resolver("src/locales"),
       "@pages": resolver("src/pages"),
-      "@assets": resolver("src/assets"),
-      "@hooks": resolver("src/hooks"),
-      "@types": resolver("src/types"),
-      "@utils": resolver("src/utils"),
-      "@styles": resolver("src/styles"),
     },
   },
   test: {

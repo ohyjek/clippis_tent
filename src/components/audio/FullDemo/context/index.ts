@@ -3,4 +3,3 @@
  */
 
 export { DemoProvider, useDemoContext } from "./DemoContext";
-export * from "./types";

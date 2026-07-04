@@ -1,5 +1,12 @@
 # Multiplayer POC Implementation Plan
 
+> **Status (July 2026): executed — kept for history.** Two-client voice works, but the
+> shipped design differs from this plan in key ways: a local WebSocket signaling server
+> (`pnpm signaling`) replaced manual SDP exchange as the primary flow (manual remains a
+> fallback on the WebRTC page), the store lives in `src/stores/webRTC.ts` (not a
+> `useWebRTC` hook), and SDP is normalized for Chromium's parser (trailing-CRLF
+> requirement) — the bug that blocked this plan's original attempts.
+
 A step-by-step guide for implementing peer-to-peer spatial audio between two users using raw WebRTC with manual SDP exchange.
 
 ## Architecture Overview

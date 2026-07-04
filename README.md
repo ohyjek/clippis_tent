@@ -1,10 +1,10 @@
 # 🎪 TentChat - Spatial Voice Chat
 
-A desktop application prototype recreating **Dolby Axon**-style spatial voice chat functionality. Built with Electron, SolidJS, and Web Audio API.
+A desktop application prototype recreating **Dolby Axon**-style spatial voice chat. Built with Electron, SolidJS, WebRTC, and the Web Audio API. Two-client voice chat works today: peers connect over a local signaling server, hear each other spatialized in the room, and sync positions over a data channel.
 
 ## Overview
 
-TentChat demonstrates spatial audio positioning where sound sources have virtual positions in a 2D room. The listener (you) can move around, and audio volume/panning adjusts based on:
+TentChat places sound sources at virtual positions in a 2D room. The listener (you) can move around, and audio volume/panning adjusts based on:
 
 - **Distance attenuation** — Sounds get quieter as they move further away (linear, inverse, exponential models)
 - **Stereo panning** — Sounds pan left/right based on horizontal position relative to the listener
@@ -12,6 +12,8 @@ TentChat demonstrates spatial audio positioning where sound sources have virtual
 - **Wall occlusion** — Sound attenuates when passing through room walls
 - **Max distance cutoff** — Configurable maximum hearing range with smooth falloff
 - **Rear gain floor** — Minimum audibility for sounds behind the listener
+
+Remote voice runs through the same pipeline: a connected peer is just another positioned speaker.
 
 ## Features
 
@@ -24,30 +26,51 @@ TentChat demonstrates spatial audio positioning where sound sources have virtual
 - **Visual feedback** — Sound cones, gain bars, and optional sound path lines
 - **Room boundaries** with configurable wall attenuation
 
+### Voice Chat (WebRTC)
+
+- **Two-client voice** over an RTCPeerConnection, with mic capture honoring the echo-cancellation/noise-suppression settings
+- **Local signaling server** (`pnpm signaling`) relays offer/answer/ICE between exactly two peers
+- **Spatialized remote audio** — the remote peer plays through the spatial pipeline on the Tent page (distance, pan, walls)
+- **Position sync** — peers exchange position/facing over a negotiated DataChannel
+- **Manual fallback** — the WebRTC page also supports copy-paste SDP/ICE exchange without a server
+
+#### Try it locally
+
+```bash
+pnpm signaling          # terminal 1: start the relay on ws://localhost:8765
+pnpm dev                # terminal 2: first client
+pnpm dev                # terminal 3: second client
+```
+
+In both windows open the **WebRTC** page → **Connect to signaling**. In one window click **Create offer** — the rest (mic, answer, ICE) is automatic. Then open **The Tent** to hear the other peer spatialized.
+
 ### Settings
 
-- Configure audio devices (input/output)
+- Audio processing options (echo cancellation, noise suppression)
 - Theme selection (light/dark/system)
 - Language preferences
-- Audio processing options (echo cancellation, noise suppression)
+- Hardware acceleration toggle (persisted to the main process)
 
 ## Tech Stack
 
-| Component         | Technology                                 |
-| ----------------- | ------------------------------------------ |
-| Desktop Framework | Electron 40                                |
-| Build System      | Vite + Electron Forge                      |
-| UI Framework      | SolidJS + @solidjs/router (lazy loading)   |
-| Styling           | CSS Modules + CSS Custom Properties        |
-| Audio             | Web Audio API (oscillators, stereo panner) |
-| Testing           | Vitest + Playwright                        |
-| Package Manager   | pnpm (workspace monorepo)                  |
+| Component         | Technology                                       |
+| ----------------- | ------------------------------------------------ |
+| Desktop Framework | Electron 43                                      |
+| Build System      | Vite 7 + Electron Forge                          |
+| Language          | TypeScript 7 (native compiler preview)           |
+| UI Framework      | SolidJS + @solidjs/router (lazy loading)         |
+| Styling           | CSS Modules + CSS Custom Properties              |
+| Audio             | Web Audio API (oscillators, stereo panner)       |
+| Voice             | WebRTC + `ws` signaling relay                    |
+| Lint & Format     | Biome                                            |
+| Testing           | Vitest + Playwright                              |
+| Package Manager   | pnpm (workspace monorepo)                        |
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 22.12+
 - pnpm (`npm install -g pnpm`)
 
 ### Installation
@@ -66,39 +89,37 @@ pnpm dev
 
 ### Scripts
 
-| Command           | Description                             |
-| ----------------- | --------------------------------------- |
-| `pnpm dev`        | Run in development mode with hot reload |
-| `pnpm build`      | Package the app for distribution        |
-| `pnpm make`       | Build platform-specific installers      |
-| `pnpm lint`       | Run ESLint                              |
-| `pnpm lint:fix`   | Run ESLint with auto-fix                |
-| `pnpm typecheck`  | TypeScript type checking                |
-| `pnpm check`      | Run both typecheck and lint             |
-| `pnpm test`       | Run all unit tests                      |
-| `pnpm test:watch` | Run tests in watch mode                 |
-| `pnpm test:ui`    | Run UI component tests only             |
-| `pnpm test:all`   | Run unit tests + E2E tests              |
-| `pnpm e2e`        | Run Playwright E2E tests                |
-| `pnpm e2e:ui`     | Run E2E tests with interactive UI       |
-| `pnpm e2e:headed` | Run E2E tests with visible browser      |
-| `pnpm clean`      | Remove build artifacts                  |
+| Command            | Description                                        |
+| ------------------ | -------------------------------------------------- |
+| `pnpm dev`         | Run in development mode with hot reload            |
+| `pnpm signaling`   | Start the local WebRTC signaling server (:8765)    |
+| `pnpm build`       | Package the app for distribution                   |
+| `pnpm make`        | Build platform-specific installers                 |
+| `pnpm lint`        | Biome lint                                         |
+| `pnpm lint:fix`    | Biome lint with safe fixes                         |
+| `pnpm format`      | Biome format (write)                               |
+| `pnpm typecheck`   | TypeScript type checking (all workspace projects)  |
+| `pnpm check`       | typecheck + Biome (strict) + unit tests            |
+| `pnpm test`        | Run all unit tests                                 |
+| `pnpm test:watch`  | Run tests in watch mode                            |
+| `pnpm test:ui`     | Run UI component tests only                        |
+| `pnpm test:all`    | Run unit tests + E2E tests                         |
+| `pnpm e2e`         | Run Playwright E2E tests                           |
+| `pnpm e2e:ui`      | Run E2E tests with interactive UI                  |
+| `pnpm e2e:headed`  | Run E2E tests with visible browser                 |
+| `pnpm clean`       | Remove build artifacts                             |
 
 ### Testing
 
-The project has comprehensive test coverage:
-
-- **Spatial audio library** (`src/lib/spatial-audio*.ts`) — Distance, panning, directivity, and wall attenuation calculations
-- **Custom hooks** (`src/lib/hooks/`) — Room, speaker, audio playback, microphone, and drawing hooks
-- **UI components** (`packages/ui/`) — All components tested with `@solidjs/testing-library`
-- **E2E tests** (`e2e/`) — Critical user flows with Playwright
+- **Spatial audio math** (`src/lib/`) — distance, panning, directivity, wall attenuation
+- **Stores** (`src/stores/`) — WebRTC negotiation (offer/answer, ICE queueing, glare, DataChannel), audio settings
+- **Custom hooks** (`src/lib/hooks/`) — rooms, speakers, playback, microphone, drawing, remote speaker pipeline
+- **UI components** (`packages/ui/`) — tested with `@solidjs/testing-library`
+- **E2E** (`e2e/`) — critical user flows with Playwright
 
 ```bash
-# Run all tests (275 unit tests)
-pnpm test
-
-# Run E2E tests (19 tests)
-pnpm e2e
+pnpm test   # unit tests
+pnpm e2e    # end-to-end tests
 ```
 
 ## Architecture
@@ -109,57 +130,45 @@ This is a **pnpm workspace monorepo** with UI components and types extracted int
 TentChat/
 ├── packages/
 │   ├── ui/                           # @tentchat/ui - Reusable UI component library
-│   │   └── src/components/
-│   │       ├── Button/               # Button with variants
-│   │       ├── ColorSwatches/        # Color picker grid
-│   │       ├── FormField/            # Input, dropdown, slider fields
-│   │       ├── ItemList/             # Selectable list
-│   │       ├── Panel/                # Card container
-│   │       ├── Section/              # Card with title
-│   │       ├── SelectField/          # Dropdown
-│   │       ├── Slider/               # Range input
-│   │       ├── Speaker/              # Draggable speaker with cone
-│   │       ├── Tabs/                 # Tab navigation
-│   │       ├── Toast/                # Notifications
-│   │       ├── Toggle/               # Checkbox with description
-│   │       └── ErrorBoundary/        # Error boundary
-│   └── types/                        # @tentchat/types - Shared TypeScript types
+│   ├── types/                        # @tentchat/types - Shared TypeScript types
+│   └── signaling-server/             # Local WebSocket relay for WebRTC signaling
 ├── src/
 │   ├── main.ts                       # Electron main process
 │   ├── preload.ts                    # Preload script for IPC
 │   ├── renderer.tsx                  # App entry with lazy-loaded routes
 │   ├── components/
 │   │   ├── ui/                       # App-specific UI wrappers
-│   │   ├── audio/                    # Audio components
-│   │   │   └── FullDemo/             # Main spatial audio playground
-│   │   │       ├── context/          # SolidJS context (composes hooks)
-│   │   │       ├── components/       # Modular sub-components
-│   │   │       ├── constants.ts
-│   │   │       └── utils.ts
+│   │   ├── audio/FullDemo/           # Main spatial audio playground
+│   │   │   ├── context/              # SolidJS context (composes hooks)
+│   │   │   ├── components/           # Canvas, panels, toolbar, status bar
+│   │   │   ├── constants.ts
+│   │   │   └── utils.ts
 │   │   └── layout/                   # Layout components
 │   ├── pages/                        # Route pages (lazy-loaded)
 │   │   ├── Tent.tsx                  # The Tent - spatial audio playground
-│   │   └── Settings.tsx              # Audio settings page
+│   │   ├── WebRTC.tsx                # Voice chat: signaling + manual SDP flows
+│   │   └── Settings.tsx              # Settings page
 │   ├── stores/                       # Global state (SolidJS signals)
+│   │   ├── audio.ts                  # Audio context + processing settings
+│   │   ├── webRTC.ts                 # Peer connection, signaling, DataChannel
+│   │   ├── theme.ts / toast.ts
 │   ├── lib/                          # Core libraries
-│   │   ├── spatial-audio.ts          # Spatial audio math utilities
-│   │   ├── spatial-audio-engine.ts   # Advanced audio engine
+│   │   ├── spatial-audio.ts          # Spatial audio math
+│   │   ├── spatial-utils.ts          # Coordinate/room/wall helpers
+│   │   ├── sdp.ts                    # SDP normalization for Chromium's parser
 │   │   ├── hooks/                    # Reusable SolidJS hooks
 │   │   │   ├── useAudioPlayback.ts   # Audio node lifecycle
+│   │   │   ├── useRemoteSpeaker.ts   # Remote peer → spatial pipeline
 │   │   │   ├── useMicrophone.ts      # Microphone access
 │   │   │   ├── useRoomManager.ts     # Room CRUD
 │   │   │   ├── useSpeakerManager.ts  # Speaker CRUD + perspective
-│   │   │   ├── useCanvasDrawing.ts   # Draw mode interactions
-│   │   │   └── useDragHandler.ts     # Drag/rotate interactions
+│   │   │   └── useCanvasDrawing.ts   # Draw mode interactions
 │   │   └── i18n.tsx                  # Localization
 │   └── locales/                      # Translation files
-└── docs/
-    └── TECHNICAL_ROADMAP.md          # Development roadmap & HRTF plan
+└── docs/                             # Roadmap & historical plans
 ```
 
 ### Spatial Audio Model
-
-The spatial audio system uses a 2D model with advanced features:
 
 ```
                     ┌─────────────────────────┐
@@ -180,41 +189,39 @@ Volume = distanceAttenuation × directivityGain × listenerDirectionalGain × wa
 Pan    = calculateStereoPan(listener, source, listenerFacing)
 ```
 
+A remote WebRTC peer enters this model via `useRemoteSpeaker`: its MediaStream feeds a source → panner → gain chain driven by the same math, with its position updated over the DataChannel.
+
 ## Roadmap
 
-See [docs/TECHNICAL_ROADMAP.md](./docs/TECHNICAL_ROADMAP.md) for the detailed technical roadmap.
+See [docs/TECHNICAL_ROADMAP.md](./docs/TECHNICAL_ROADMAP.md) for history and the HRTF plan.
 
 ### ✅ Phase 1: Foundation (Complete)
 
 - [x] Electron + SolidJS + Vite setup
 - [x] UI library extraction to `@tentchat/ui` package
-- [x] Spatial audio engine with distance models and directivity patterns
+- [x] Spatial audio with distance models and directivity patterns
 - [x] Interactive room drawing with wall occlusion
-- [x] Multiple speakers with configurable properties
-- [x] Perspective switching (become any speaker)
-- [x] Modular component architecture with SolidJS Context and hooks
-- [x] Comprehensive test coverage (275 unit + 19 E2E)
+- [x] Multiple speakers, perspective switching, modular architecture
 
-### 🔄 Phase 2: Voice Integration (In Progress)
+### ✅ Phase 4 (out of order): Two-client voice (Shipped)
 
-- [x] Microphone input capture with permissions
-- [x] Audio source switching (oscillator/microphone)
-- [ ] Voice activity detection (VAD)
+- [x] WebRTC peer-to-peer audio with mic capture
+- [x] Signaling server relay (offer/answer/ICE)
+- [x] Position sync over DataChannel
+- [x] Remote peer spatialized through the audio pipeline
+
+### 🔄 Phase 2: Voice polish (In Progress)
+
+- [ ] In-app connection panel (#31), canvas indicator for the remote peer (#33)
+- [ ] Voice activity detection (VAD) / speaking indicators
 - [ ] Push-to-talk mode
-- [ ] Audio level meters / visualizers
+- [ ] Keep audio alive across page navigation (remote peer goes silent on Settings)
 
 ### 📋 Phase 3: Advanced Audio (Planned)
 
 - [ ] **HRTF** — Migrate from StereoPanner to PannerNode for true 3D audio
 - [ ] **Room acoustics** — Reverb and early reflections
-- [ ] **Audio quality settings** — Bitrate, sample rate options
-
-### 📋 Phase 4: Multiplayer (Future)
-
-- [ ] WebRTC peer-to-peer connections
-- [ ] Signaling server for room coordination
-- [ ] User avatars with position sync
-- [ ] Proximity-based audio routing
+- [ ] **Multi-peer rooms** — beyond two clients (rooms in the signaling server, mesh or SFU)
 
 ## License
 

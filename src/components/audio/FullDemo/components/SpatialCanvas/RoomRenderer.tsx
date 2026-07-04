@@ -5,7 +5,7 @@
  */
 import { For } from "solid-js";
 import type { DrawingMode, DrawnRoom } from "../../context/types";
-import { toPercent } from "../../utils";
+import { sizeToPercent, toPercent } from "../../utils";
 import styles from "./SpatialCanvas.module.css";
 
 interface RoomRendererProps {
@@ -22,8 +22,8 @@ export function RoomRenderer(props: RoomRendererProps) {
         const b = room.bounds;
         const left = toPercent(b.x - b.width / 2);
         const top = toPercent(b.y - b.height / 2);
-        const width = b.width * 20;
-        const height = b.height * 20;
+        const width = sizeToPercent(b.width);
+        const height = sizeToPercent(b.height);
 
         return (
           <>
@@ -54,7 +54,7 @@ export function RoomRenderer(props: RoomRendererProps) {
                     style={{
                       left: `${toPercent(Math.min(wall.start.x, wall.end.x))}%`,
                       top: `${toPercent(Math.min(wall.start.y, wall.end.y))}%`,
-                      [isVertical ? "height" : "width"]: `${length * 20}%`,
+                      [isVertical ? "height" : "width"]: `${sizeToPercent(length)}%`,
                       background: room.color,
                     }}
                   />

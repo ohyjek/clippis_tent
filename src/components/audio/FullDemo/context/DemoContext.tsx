@@ -13,11 +13,8 @@ import {
   useRoomManager,
   useSpeakerManager,
 } from "@lib/hooks";
-import { logger } from "@lib/logger";
 import { calculateAudioParameters, createListener } from "@lib/spatial-audio-engine";
-import { isSpeakerInsideRoom } from "@lib/spatial-utils";
 import { audioStore } from "@stores/audio";
-import { showToast } from "@stores/toast";
 import { webRTCStore } from "@stores/webRTC";
 import type { DistanceModel } from "@tentchat/types";
 import {
@@ -35,7 +32,12 @@ import {
   DEFAULT_SPEAKERS,
   ROOM_COLORS,
 } from "../constants";
-import { DEFAULT_ATTENUATION, getPositionFromEvent, getScreenPosition } from "../utils";
+import {
+  DEFAULT_ATTENUATION,
+  getPositionFromEvent,
+  getScreenPosition,
+  maxWallAttenuationAt,
+} from "../utils";
 import type { AudioSourceType, DemoContextValue, Position, SpeakerState } from "./types";
 
 // ============================================================================
@@ -90,10 +92,8 @@ export function useDemoContext() {
 export function DemoProvider(props: { children: JSX.Element }) {
   // Room ref for coordinate calculations
   let roomRefValue: HTMLDivElement | undefined;
-  const [roomRef, setRoomRefSignal] = createSignal<HTMLDivElement | undefined>(undefined);
   const setRoomRef = (ref: HTMLDivElement | undefined) => {
     roomRefValue = ref;
-    setRoomRefSignal(ref);
   };
 
   // ============================================================================
@@ -162,20 +162,15 @@ export function DemoProvider(props: { children: JSX.Element }) {
   const [hearSelf, setHearSelf] = createSignal(false);
 
   // ============================================================================
-  // COMPUTED VALUES (from store managers) TODO: memoize ??
+  // COMPUTED VALUES (from store managers)
   // ============================================================================
 
   /**
-   * Calculate the effective attenuation for the current speaker.
+   * Calculate the effective attenuation for a source position, considering the
+   * rooms containing it and the rooms containing the current perspective speaker.
+   * Policy (max wins, DEFAULT_ATTENUATION fallback) lives in maxWallAttenuationAt.
    *
-   * Uses the MAXIMUM attenuation of all rooms containing the speaker and the perspective speaker.
-   * This ensures that a fully-blocking inner room can't be "diluted" by
-   * adding a less-blocking outer room around it.
-   *
-   * If the speaker is not inside any room, returns DEFAULT_ATTENUATION
-   * so that walls still block sound properly.
-   *
-   * @returns The effective attenuation for the current speaker.
+   * @returns The effective attenuation for the source position.
    */
   const effectiveAttenuationAt = (position: Position): number => {
     const roomList = roomManager.rooms();
@@ -183,20 +178,7 @@ export function DemoProvider(props: { children: JSX.Element }) {
     const perspectiveSpeaker = speakerManager.getCurrentPerspectiveSpeaker();
     if (!perspectiveSpeaker) return DEFAULT_ATTENUATION;
 
-    let maxAttenuation = -1;
-    for (const room of roomList) {
-      // logger.audio.debug("Room:", room.id, room.attenuation);
-
-      if (isSpeakerInsideRoom(room, perspectiveSpeaker)) {
-        maxAttenuation = Math.max(maxAttenuation, room.attenuation);
-      }
-      if (isSpeakerInsideRoom(room, { position })) {
-        maxAttenuation = Math.max(maxAttenuation, room.attenuation);
-      }
-    }
-
-    // logger.audio.debug("Info", { maxAttenuation });
-    return maxAttenuation >= 0 ? maxAttenuation : DEFAULT_ATTENUATION;
+    return maxWallAttenuationAt(roomList, [perspectiveSpeaker.position, position]);
   };
 
   const effectiveAttenuation = (speaker: SpeakerState): number =>
@@ -208,7 +190,6 @@ export function DemoProvider(props: { children: JSX.Element }) {
    * @returns The audio parameters for the speaker.
    */
   const getAudioParams = (speaker: SpeakerState) => {
-    // logger.audio.debug("Getting audio params for speaker:", speaker.id);
     const listener = createListener(
       speakerManager.getPerspectivePosition(),
       speakerManager.getPerspectiveFacing()
@@ -224,7 +205,6 @@ export function DemoProvider(props: { children: JSX.Element }) {
       playing: true,
     };
     const transmission = 1 - effectiveAttenuation(speaker);
-    // logger.audio.debug("Transmission Value:", transmission);
     const params = calculateAudioParameters(sourceConfig, listener, roomManager.allWalls(), {
       distanceModel: distanceModel(),
       masterVolume: audioStore.masterVolume(),
@@ -233,7 +213,6 @@ export function DemoProvider(props: { children: JSX.Element }) {
       rearGainFloor: rearGainFloor(),
     });
 
-    //logger.audio.debug("Audio Parameters:", { speakerId: speaker.id }, params);
     return params;
   };
 
@@ -259,25 +238,6 @@ export function DemoProvider(props: { children: JSX.Element }) {
   // ============================================================================
   // ROOM ACTIONS (delegated to hook)
   // ============================================================================
-
-  /**
-   * Add a room to the room manager.
-   * @param start - The start position of the room.
-   * @param end - The end position of the room.
-   */
-  const addRoom = (start: Position, end: Position): void => {
-    const color = ROOM_COLORS[nextColorIndex() % ROOM_COLORS.length];
-    const id = `room-${Date.now()}`;
-    if (roomManager.addRoom(start, end, { id, color, attenuation: DEFAULT_ATTENUATION })) {
-      setNextColorIndex((i) => i + 1);
-    } else {
-      showToast({
-        type: "error",
-        message: "Failed to add room. Please try again.",
-      });
-      logger.error("Failed to add room. Please try again.");
-    }
-  };
 
   /**
    * Update the attenuation for a room.
@@ -412,15 +372,6 @@ export function DemoProvider(props: { children: JSX.Element }) {
    * Handle the start of a speaker move.
    * @param speakerId - The ID of the speaker to handle the start of the move for.
    * @returns The event handler for the start of the move.
-   * @note stops the propagation and prevents the default behavior of the event
-   * @note initializes the audio context
-   * @note sets the selected speaker
-   * @note sets the is moving speaker state
-   * @note creates the event handler for the mouse move event
-   * @note creates the event handler for the mouse up event
-   * @note adds the event listeners for the mouse move and mouse up events
-   * @note removes the event listeners for the mouse move and mouse up events
-   * @note removes the event listeners for the mouse move and mouse up events
    */
   const handleSpeakerMoveStart = (speakerId: string) => (e: MouseEvent) => {
     e.stopPropagation();
@@ -618,7 +569,6 @@ export function DemoProvider(props: { children: JSX.Element }) {
 
     if (!audioContext) return;
 
-    // TODO: analysis and optimizations
     for (const speaker of speakerList) {
       if (!audioPlayback.isPlaying(speaker.id)) continue;
 
@@ -649,48 +599,32 @@ export function DemoProvider(props: { children: JSX.Element }) {
   const value: DemoContextValue = {
     // Room state (from hook)
     rooms: roomManager.rooms,
-    setRooms: roomManager.setRooms,
     selectedRoomId: roomManager.selectedRoomId,
     setSelectedRoomId: roomManager.setSelectedRoomId,
     selectedRoom: roomManager.selectedRoom,
-    allWalls: roomManager.allWalls,
 
     // Drawing state (from hook)
     drawingMode: drawing.drawingMode,
     setDrawingMode: drawing.setDrawingMode,
     isDrawing: drawing.isDrawing,
-    setIsDrawing: () => {
-      /* controlled by hook */
-    },
     drawStart: drawing.drawStart,
-    setDrawStart: () => {
-      /* controlled by hook */
-    },
     drawEnd: drawing.drawEnd,
-    setDrawEnd: () => {
-      /* controlled by hook */
-    },
 
     // Speaker state (from hook)
     speakers: speakerManager.speakers,
-    setSpeakers: speakerManager.setSpeakers,
     selectedSpeaker: speakerManager.selectedSpeaker,
     setSelectedSpeaker: speakerManager.setSelectedSpeaker,
     getSelectedSpeaker: speakerManager.getSelectedSpeaker,
-    getSpeakerById: speakerManager.getSpeakerById,
 
     // Perspective state (from hook)
     currentPerspective: speakerManager.currentPerspective,
     setCurrentPerspective: speakerManager.setCurrentPerspective,
     isCurrentPerspective: speakerManager.isCurrentPerspective,
     getPerspectivePosition: speakerManager.getPerspectivePosition,
-    getPerspectiveFacing: speakerManager.getPerspectiveFacing,
 
     // Interaction state
     isMovingSpeaker,
-    setIsMovingSpeaker,
     isRotatingSpeaker,
-    setIsRotatingSpeaker,
 
     // Audio state
     distanceModel,
@@ -711,11 +645,9 @@ export function DemoProvider(props: { children: JSX.Element }) {
     setHearSelf,
 
     // Room ref
-    roomRef,
     setRoomRef,
 
     // Room actions
-    addRoom,
     deleteSelectedRoom: roomManager.deleteSelectedRoom,
     updateRoomAttenuation,
     updateRoomLabel,
@@ -731,19 +663,12 @@ export function DemoProvider(props: { children: JSX.Element }) {
     updateSourceType,
 
     // Microphone state (from hook)
-    microphoneStream: microphone.stream,
     microphoneEnabled: microphone.enabled,
-    requestMicrophone: microphone.request,
-    stopMicrophone: microphone.stop,
 
     // Audio actions
-    startPlayback,
-    stopPlayback: audioPlayback.stop,
     togglePlayback,
-    stopAllPlayback,
 
     // Computed values
-    getAudioParams,
     calculateDisplayGain,
     getWallCount,
 
@@ -762,9 +687,6 @@ export function DemoProvider(props: { children: JSX.Element }) {
 
     // Reset
     resetDemo,
-
-    // Color index
-    nextColorIndex,
   };
 
   return <DemoContext.Provider value={value}>{props.children}</DemoContext.Provider>;

@@ -12,9 +12,11 @@
       "**/*.jsonc",
       "**/*.css",
       "!**/node_modules",
-      // Claude agent worktrees live under .claude/worktrees — each contains a full
-      // checkout with its own root biome config, which trips nested-root detection.
-      "!**/.claude",
+      // Keep out of .claude/ (agent worktrees under .claude/worktrees are full
+      // checkouts with their own root biome config). Anchored — NOT **/.claude —
+      // so biome still works when run INSIDE such a worktree, whose absolute
+      // path contains a .claude segment.
+      "!.claude",
       "!**/.vite",
       "!**/out",
       "!**/dist",

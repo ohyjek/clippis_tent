@@ -1,4 +1,4 @@
 /**
  * Speaker component exports
  */
-export { type Position, Speaker, type SpeakerProps } from "./Speaker";
+export { Speaker, type SpeakerProps } from "./Speaker";

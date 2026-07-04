@@ -16,9 +16,6 @@ import type { ListItem } from "@tentchat/types";
 import { For, type JSX, Show } from "solid-js";
 import styles from "./ItemList.module.css";
 
-/** @deprecated Use ListItem from @tentchat/types instead */
-export type ItemListItem = ListItem;
-
 export interface ItemListProps {
   /** Array of items to display */
   items: ListItem[];

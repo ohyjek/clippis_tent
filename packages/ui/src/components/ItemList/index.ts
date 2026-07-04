@@ -1,1 +1,1 @@
-export { ItemList, type ItemListItem, type ItemListProps } from "./ItemList";
+export { ItemList, type ItemListProps } from "./ItemList";

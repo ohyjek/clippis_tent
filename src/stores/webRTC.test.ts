@@ -13,10 +13,27 @@
  */
 
 import { createWebRTCStore, type WebRTCStore } from "@src/stores/webRTC";
+import { showToast } from "@stores/toast";
 import { createRoot } from "solid-js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Note: logger is mocked globally in src/test/setup.ts
+
+// Mock the audio store (must match exact import path in source)
+vi.mock("@stores/audio", () => ({
+  audioStore: {
+    microphoneConstraints: () => ({
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+    }),
+  },
+}));
+
+// Mock the toast store (must match exact import path in source)
+vi.mock("@stores/toast", () => ({
+  showToast: vi.fn(),
+}));
 
 // =============================================================================
 // WebRTC API Mocks
@@ -298,7 +315,7 @@ describe("webRTC store", () => {
 
     it("handles invalid SDP gracefully", async () => {
       // Should not throw; short/invalid pastes are rejected by validation
-      await expect(webrtc.setRemoteSdp("invalid-sdp")).resolves.toBe(false);
+      await expect(webrtc.setRemoteSdp("invalid-sdp", "offer")).resolves.toBe(false);
       expect(mockPeerConnection.setRemoteDescription).not.toHaveBeenCalled();
     });
   });
@@ -660,6 +677,30 @@ describe("webRTC store", () => {
         expect(mockPeerConnection.createAnswer).toHaveBeenCalled();
       });
     });
+
+    it("ignores a stale socket's close after reconnecting", () => {
+      openSignaling();
+      const oldSocket = lastSocket;
+      if (!oldSocket) throw new Error("expected a socket");
+
+      // The old socket dropped (no longer OPEN) but its onclose hasn't fired
+      // yet; reconnecting replaces the tracked socket
+      oldSocket.readyState = 3; // CLOSED
+      webrtc.connectSignaling("ws://localhost:8765");
+      expect(lastSocket).not.toBe(oldSocket);
+      lastSocket?.onopen?.();
+      expect(webrtc.signalingConnected()).toBe(true);
+      vi.mocked(showToast).mockClear();
+
+      // The stale socket's late close must not flip state or toast at the user
+      oldSocket.onclose?.();
+
+      expect(webrtc.signalingConnected()).toBe(true);
+      expect(showToast).not.toHaveBeenCalledWith({
+        type: "info",
+        message: "Disconnected from signaling",
+      });
+    });
   });
 
   describe("disconnect", () => {
@@ -717,52 +758,6 @@ describe("webRTC store", () => {
       dispose();
 
       expect(mockPeerConnection.close).toHaveBeenCalled();
-    });
-  });
-});
-
-// =============================================================================
-// Integration helpers
-// =============================================================================
-
-describe("useWebRTC integration helpers", () => {
-  describe("SDP parsing utilities", () => {
-    it("can detect offer vs answer from SDP", () => {
-      const offerSdp = "v=0\r\na=type:offer\r\n";
-      const answerSdp = "v=0\r\na=type:answer\r\n";
-
-      expect(offerSdp).toContain("offer");
-      expect(answerSdp).toContain("answer");
-    });
-  });
-
-  describe("DataChannel message serialization", () => {
-    it("serializes position message correctly", () => {
-      const message = {
-        type: "position" as const,
-        position: { x: 1.5, y: -2.3 },
-        facing: Math.PI / 2,
-      };
-
-      const serialized = JSON.stringify(message);
-      const parsed = JSON.parse(serialized);
-
-      expect(parsed.type).toBe("position");
-      expect(parsed.position.x).toBeCloseTo(1.5);
-      expect(parsed.facing).toBeCloseTo(Math.PI / 2);
-    });
-
-    it("serializes speaking message correctly", () => {
-      const message = {
-        type: "speaking" as const,
-        isSpeaking: true,
-      };
-
-      const serialized = JSON.stringify(message);
-      const parsed = JSON.parse(serialized);
-
-      expect(parsed.type).toBe("speaking");
-      expect(parsed.isSpeaking).toBe(true);
     });
   });
 });
