@@ -39,6 +39,9 @@
   "keywords": [],
   "author": "Omi",
   "license": "MIT",
+  "engines": {
+    "node": ">=26"
+  },
   "devDependencies": {
     "@biomejs/biome": "2.5.2",
     "@electron-forge/cli": "^7.11.2",
@@ -54,7 +57,7 @@
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/electron-squirrel-startup": "^1.0.2",
-    "@types/node": "^24.13.2",
+    "@types/node": "^26.1.0",
     "electron": "43.0.0",
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",

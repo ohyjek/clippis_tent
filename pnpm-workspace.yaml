@@ -23,5 +23,12 @@ allowBuilds:
 # Re-enable once upstream publishes @electron/node-gyp to the registry.
 blockExoticSubdeps: false
 
+# extract-zip@2 (via @electron/packager@18) deadlocks on Node >=26.1 / >=24.16 —
+# fd-slicer marks its stream destroyed before the last chunk drains, so forge
+# packaging silently exits 0 without producing out/ (electron/forge#4277).
+# Electron's fork is the drop-in fix; remove once forge ships @electron/packager >=20.
+overrides:
+  extract-zip: "npm:@electron-internal/extract-zip@^1.0.4"
+
 
 
