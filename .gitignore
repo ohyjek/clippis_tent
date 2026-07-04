@@ -95,3 +95,5 @@ out/
 playwright-report/
 test-results/
 blob-report/
+# Claude agent worktrees (full checkouts; never commit)
+.claude/worktrees/

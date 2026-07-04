@@ -12,6 +12,9 @@
       "**/*.jsonc",
       "**/*.css",
       "!**/node_modules",
+      // Claude agent worktrees live under .claude/worktrees — each contains a full
+      // checkout with its own root biome config, which trips nested-root detection.
+      "!**/.claude",
       "!**/.vite",
       "!**/out",
       "!**/dist",

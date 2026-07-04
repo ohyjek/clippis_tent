@@ -5,3 +5,23 @@ catalog:
   # TS 7 RC (native Go compiler) — exact prerelease pin, deduped workspace-wide.
   # Flip to stable at 7.0 GA (~mid-July 2026); verified fallback: 6.0.3.
   typescript: 7.0.1-rc
+
+# pnpm 11 reads settings from here — .npmrc and package.json#pnpm are no longer honored.
+
+# Flat npm-like node_modules; Electron Forge packaging expects this layout.
+nodeLinker: hoisted
+
+# Replaces onlyBuiltDependencies (removed in pnpm 11): postinstall scripts are
+# blocked unless allowed here.
+allowBuilds:
+  electron: true
+  electron-winstaller: true
+  esbuild: true
+
+# @electron/rebuild (via electron-forge) depends on @electron/node-gyp as a GitHub
+# tarball — not published to npm — which this policy rejects on any re-resolution.
+# Re-enable once upstream publishes @electron/node-gyp to the registry.
+blockExoticSubdeps: false
+
+
+
